@@ -1,0 +1,309 @@
+/* ================================================================
+   Positron System Console — Light Theme (Positron & Tidyverse)
+   ================================================================
+   Colors:
+     Background:  #f8f9fa
+     Cards:       #ffffff
+     Borders:     1px solid #e5e7eb
+     Text:        #212529 (primary), #495057 (secondary)
+     Viridis:     #3b528b (low), #21918c (mid), #fde725 (high)
+     Bar track:   #e9ecef
+   ================================================================ */
+
+/* ---------- Reset & Base ---------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: #f8f9fa;
+  color: #212529;
+  font-family: 'Consolas', 'Courier New', 'Lucida Console', 'Fira Code', monospace;
+  font-size: 12.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Top Bar ---------- */
+#top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 34px;
+  min-height: 34px;
+  padding: 0 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  user-select: none;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #495057;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #21918c;
+  transition: background 0.3s;
+}
+
+.status-dot.offline { background: #e74c3c; }
+.status-dot.mock    { background: #fde725; border: 1px solid #d4b800; }
+
+.top-title {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #6c757d;
+}
+
+.top-clock {
+  font-size: 11.5px;
+  color: #6c757d;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Main 3-Column Layout ---------- */
+#main-layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 290px 1fr 290px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ---------- Left / Right Columns ---------- */
+#col-left,
+#col-right {
+  background: #f8f9fa;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+#col-left  { border-right: 1px solid #e5e7eb; }
+#col-right { border-left:  1px solid #e5e7eb; }
+
+/* ---------- Center Canvas ---------- */
+#center-canvas {
+  position: relative;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+#center-canvas canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ---------- Cards ---------- */
+.card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  padding: 8px 10px;
+}
+
+.card-header {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: #6c757d;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 3px;
+  margin-bottom: 5px;
+}
+
+/* ---------- Stat Rows (CPU) ---------- */
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 1px 2px;
+  font-size: 11px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.stat-row:last-of-type {
+  border-bottom: none;
+}
+
+.stat-label { color: #6c757d; }
+.stat-value {
+  color: #212529;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* ---------- Stat Bar (CPU overall) ---------- */
+.stat-bar-track {
+  height: 6px;
+  background: #e9ecef;
+  margin-top: 5px;
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: #21918c;
+  transition: width 0.3s ease;
+}
+
+.ram-fill { background: #3b528b; }
+
+/* ---------- Core Bars ---------- */
+#core-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.core-bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 0;
+  font-size: 9.5px;
+}
+
+.core-label {
+  width: 24px;
+  color: #6c757d;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.core-track {
+  flex: 1;
+  height: 8px;
+  background: #e9ecef;
+  position: relative;
+  overflow: hidden;
+}
+
+.core-fill {
+  height: 100%;
+  width: 0%;
+  background: #21918c;
+  position: absolute;
+  left: 0;
+  top: 0;
+  transition: width 0.25s ease;
+}
+
+.core-value {
+  width: 30px;
+  text-align: right;
+  color: #495057;
+  font-variant-numeric: tabular-nums;
+}
+
+.core-spark {
+  width: 40px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ---------- Chart Canvases ---------- */
+#boxplot-canvas,
+#ram-boxplot-canvas,
+#density-canvas,
+#network-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  margin-top: 3px;
+}
+
+/* ---------- Mem / GPU / Net text lines ---------- */
+.mem-line,
+.gpu-line {
+  font-size: 10.5px;
+  color: #212529;
+  font-variant-numeric: tabular-nums;
+  padding: 1px 0;
+}
+
+.chart-label {
+  font-size: 8.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #adb5bd;
+  margin-top: 5px;
+}
+
+/* ---------- Canvas Tags ---------- */
+.canvas-tags {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: flex;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.tag {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 5px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #e5e7eb;
+  color: #6c757d;
+}
+
+
+/* ---------- Scrollbar ---------- */
+#col-left::-webkit-scrollbar,
+#col-right::-webkit-scrollbar,
+#core-list::-webkit-scrollbar {
+  width: 4px;
+}
+#col-left::-webkit-scrollbar-track,
+#col-right::-webkit-scrollbar-track,
+#core-list::-webkit-scrollbar-track {
+  background: #f8f9fa;
+}
+#col-left::-webkit-scrollbar-thumb,
+#col-right::-webkit-scrollbar-thumb,
+#core-list::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+}
+#col-left::-webkit-scrollbar-thumb:hover,
+#col-right::-webkit-scrollbar-thumb:hover,
+#core-list::-webkit-scrollbar-thumb:hover {
+  background: #bbb;
+}
+
+/* ---------- Selection ---------- */
+::selection {
+  background: #21918c;
+  color: #fff;
+}

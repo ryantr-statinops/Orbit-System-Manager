@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Positron System Console — Light</title>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ============================================================
+       TOP BAR
+  ============================================================ -->
+  <header id="top-bar">
+    <span class="status-indicator">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">INITIALIZING...</span>
+    </span>
+    <span class="top-title">POSITRON SYSTEM CONSOLE</span>
+    <span class="top-clock" id="clock">00:00:00</span>
+  </header>
+
+  <!-- ============================================================
+       MAIN 3-COLUMN LAYOUT
+  ============================================================ -->
+  <div id="main-layout">
+
+    <!-- ===== COLUMN 1: DATA VIEWER & PROCESSORS ===== -->
+    <aside id="col-left">
+
+      <!-- Environment Monitor -->
+      <section class="card">
+        <div class="card-header">Environment Monitor</div>
+        <div class="stat-row">
+          <span class="stat-label">Avg Utilization</span>
+          <span class="stat-value" id="cpu-avg">--%</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Std Dev (&sigma;)</span>
+          <span class="stat-value" id="cpu-std">--</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Variance (&sigma;&sup2;)</span>
+          <span class="stat-value" id="cpu-var">--</span>
+        </div>
+        <div class="stat-bar-track">
+          <div class="stat-bar-fill" id="cpu-bar-fill" style="width:0%"></div>
+        </div>
+      </section>
+
+      <!-- Logical Processors -->
+      <section class="card">
+        <div class="card-header">Logical Processors</div>
+        <div id="core-list"></div>
+      </section>
+
+      <!-- Boxplot: Copy Number vs OncobreastLineage -->
+      <section class="card">
+        <div class="card-header">Distribution &mdash; Load Percentiles</div>
+        <canvas id="boxplot-canvas" width="290" height="100"></canvas>
+      </section>
+
+    </aside>
+
+    <!-- ===== COLUMN 2: 3D TOPOLOGY CANVAS ===== -->
+    <main id="center-canvas">
+      <div class="canvas-tags">
+        <span class="tag">SOLID SURFACE</span>
+        <span class="tag">BLACK GRID OVERLAY</span>
+        <span class="tag" style="color:#FF0000;border-color:#FF0000;">JET RAINBOW</span>
+      </div>
+    </main>
+
+    <!-- ===== COLUMN 3: TELEMETRY & DISTRIBUTION ===== -->
+    <aside id="col-right">
+
+      <!-- System Memory -->
+      <section class="card">
+        <div class="card-header">System Memory (RAM)</div>
+        <div class="mem-line" id="ram-text">--.-- / 31.8 GB (--%)</div>
+        <div class="stat-bar-track">
+          <div class="stat-bar-fill ram-fill" id="ram-bar-fill" style="width:0%"></div>
+        </div>
+        <canvas id="ram-boxplot-canvas" width="290" height="60"></canvas>
+      </section>
+
+      <!-- GPU Telemetry -->
+      <section class="card">
+        <div class="card-header">GPU Telemetry</div>
+        <div class="gpu-line" id="gpu0-text">GPU 0 (Quadro T1000) &mdash; --&deg;C &mdash; Load: --%</div>
+        <div class="gpu-line" id="gpu1-text">GPU 1 (Intel UHD) &mdash; --&deg;C &mdash; Load: --%</div>
+        <div class="chart-label">Kernel Density &mdash; GPU Load</div>
+        <canvas id="density-canvas" width="290" height="80"></canvas>
+      </section>
+
+      <!-- Network Speeds -->
+      <section class="card">
+        <div class="card-header">Network Speeds</div>
+        <canvas id="network-canvas" width="290" height="90"></canvas>
+      </section>
+
+    </aside>
+
+  </div>
+
+  <!-- ============================================================
+       SCRIPTS
+  ============================================================ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="main.js"></script>
+
+</body>
+</html>
