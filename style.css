@@ -232,6 +232,7 @@ body {
 #boxplot-canvas,
 #ram-boxplot-canvas,
 #density-canvas,
+#gpu-timeseries-canvas,
 #network-canvas {
   width: 100%;
   height: auto;
@@ -300,6 +301,31 @@ body {
 #col-right::-webkit-scrollbar-thumb:hover,
 #core-list::-webkit-scrollbar-thumb:hover {
   background: #bbb;
+}
+
+/* ---------- HUD Overlay (3D Topology Header) ---------- */
+.hud-overlay {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  z-index: 10;
+  pointer-events: none;
+  font-family: 'Consolas', 'Courier New', 'Lucida Console', 'Fira Code', monospace;
+  user-select: none;
+}
+
+.hud-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #495057;
+  letter-spacing: 0.8px;
+}
+
+.hud-subtitle {
+  font-size: 9px;
+  color: #6c757d;
+  margin-top: 2px;
+  letter-spacing: 0.4px;
 }
 
 /* ---------- Selection ---------- */

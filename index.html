@@ -66,9 +66,9 @@
     <!-- ===== COLUMN 2: 3D TOPOLOGY CANVAS ===== -->
     <main id="center-canvas">
       <div class="canvas-tags">
-        <span class="tag">SOLID SURFACE</span>
-        <span class="tag">BLACK GRID OVERLAY</span>
-        <span class="tag" style="color:#FF0000;border-color:#FF0000;">JET RAINBOW</span>
+        <span class="tag">16 CORES</span>
+        <span class="tag">60s WINDOW</span>
+        <span class="tag" style="color:#21918c;border-color:#21918c;">VIRIDIS THERMAL</span>
       </div>
     </main>
 
@@ -91,7 +91,9 @@
         <div class="gpu-line" id="gpu0-text">GPU 0 (Quadro T1000) &mdash; --&deg;C &mdash; Load: --%</div>
         <div class="gpu-line" id="gpu1-text">GPU 1 (Intel UHD) &mdash; --&deg;C &mdash; Load: --%</div>
         <div class="chart-label">Kernel Density &mdash; GPU Load</div>
-        <canvas id="density-canvas" width="290" height="80"></canvas>
+        <canvas id="density-canvas" width="290" height="60"></canvas>
+        <div class="chart-label">GPU Load &mdash; Time Series (30s)</div>
+        <canvas id="gpu-timeseries-canvas" width="290" height="80"></canvas>
       </section>
 
       <!-- Network Speeds -->
@@ -108,7 +110,7 @@
        SCRIPTS
   ============================================================ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="libs/OrbitControls.js"></script>
   <script src="main.js"></script>
 
 </body>
