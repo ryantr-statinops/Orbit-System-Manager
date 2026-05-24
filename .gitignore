@@ -17,6 +17,6 @@ Desktop.ini
 .idea/
 *.log
 
-# Antigraity specific
+# AI skills & system prompts
 .antigravitycli/
-.agent/
+agent/
