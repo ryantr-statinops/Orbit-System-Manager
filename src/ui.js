@@ -515,6 +515,8 @@ export function updateHUD(data) {
     ? `${usedGb.toFixed(1)} / ${totalGb.toFixed(1)} GB (${ramPercent.toFixed(1)}%)`
     : `${ramPercent.toFixed(1)}%`;
   dom.ramBarFill.style.width = `${clamp(ramPercent)}%`;
+  ramHistory.push(clamp(ramPercent));
+  if (ramHistory.length > 30) ramHistory.shift();
 
   dom.gpu0Text.textContent = formatGpuLine('GPU 0', data.gpu_detail?.[0], data);
   dom.gpu1Text.textContent = formatGpuLine('GPU 1', data.gpu_detail?.[1]);
@@ -583,10 +585,6 @@ function emitMockTelemetry() {
   tsBuffer.addSample(cores);
   updateCoreBars(cores);
   updateHUD(mock);
-
-  // Push RAM history
-  ramHistory.push(memoryPercent);
-  if (ramHistory.length > 30) ramHistory.shift();
 
   // Populate GPU history for chart rendering
   const gpu0load = clamp(mock.gpu_detail[0].load_percent);
