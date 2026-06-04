@@ -1,0 +1,23 @@
+{
+  "name": "task-manager-3d-visualize",
+  "version": "1.0.0",
+  "description": "3D system monitor visualizer",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c",
+    "start": "rollup -c -w"
+  },
+  "dependencies": {
+    "three": "^0.152.0",
+    "plotly.js": "^2.20.0"
+  },
+  "devDependencies": {
+    "rollup": "^3.20.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-babel": "^6.0.0",
+    "@babel/core": "^7.20.0",
+    "@babel/preset-env": "^7.20.0"
+  }
+}
