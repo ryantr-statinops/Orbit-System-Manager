@@ -1,49 +1,19 @@
-// Shared mutable state used across modules
+import { CORE_COUNT, TIME_WINDOW } from './constants.js';
+
 export const targetGrid = Array.from({ length: TIME_WINDOW }, () => Array(CORE_COUNT).fill(0));
 export const renderGrid = Array.from({ length: TIME_WINDOW }, () => Array(CORE_COUNT).fill(0));
-export let isConnected = false;
-export let latestMetrics = null;
-export let retryDelay = 2000;
-export let reconnectTimer = null;
-export let ws = null;
-export let clock = null;
-export let mockInterval = null;
+
+export const connectionState = {
+  isConnected: false,
+  latestMetrics: null,
+  retryDelay: 2000,
+  reconnectTimer: null,
+  mockInterval: null,
+};
+
 export const historyDensity = [];
 export const gpuHistory0 = [];
 export const gpuHistory1 = [];
 export const historyNetwork = { time: [], sent: [], recv: [] };
 export const coreHistories = Array.from({ length: CORE_COUNT }, () => []);
 export const ramProcessData = [];
-export let ramUsedPercent = 0;
-export const coreHistoriesRef = coreHistories;
-export const historyNetworkRef = historyNetwork;
-export const gpuHistory0Ref = gpuHistory0;
-export const gpuHistory1Ref = gpuHistory1;
-export const historyDensityRef = historyDensity;
-export const ramProcessDataRef = ramProcessData;
-export const ramUsedPercentRef = ramUsedPercent;
-export const targetGridRef = targetGrid;
-export const renderGridRef = renderGrid;
-export const isConnectedRef = isConnected;
-export const latestMetricsRef = latestMetrics;
-export const retryDelayRef = retryDelay;
-export const reconnectTimerRef = reconnectTimer;
-export const wsRef = ws;
-export const clockRef = clock;
-export const mockIntervalRef = mockInterval;
-export const coreHistoriesRef2 = coreHistories;
-export const historyNetworkRef2 = historyNetwork;
-export const gpuHistory0Ref2 = gpuHistory0;
-export const gpuHistory1Ref2 = gpuHistory1;
-export const historyDensityRef2 = historyDensity;
-export const ramProcessDataRef2 = ramProcessData;
-export const ramUsedPercentRef2 = ramUsedPercent;
-export const targetGridRef2 = targetGrid;
-export const renderGridRef2 = renderGrid;
-export const isConnectedRef2 = isConnected;
-export const latestMetricsRef2 = latestMetrics;
-export const retryDelayRef2 = retryDelay;
-export const reconnectTimerRef2 = reconnectTimer;
-export const wsRef2 = ws;
-export const clockRef2 = clock;
-export const mockIntervalRef2 = mockInterval;
