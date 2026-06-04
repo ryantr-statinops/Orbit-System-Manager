@@ -1,5 +1,5 @@
 import { CORE_COUNT, SPARK_POINTS } from './constants.js';
-import { connectionState, coreHistories, historyNetwork, targetGrid } from './state.js';
+import { connectionState, coreHistories, historyNetwork, targetGrid, historyDensity, gpuHistory0, gpuHistory1 } from './state.js';
 import { tsBuffer } from './timeSeries.js';
 
 const $ = id => document.getElementById(id);
@@ -34,7 +34,9 @@ for (let i = 0; i < CORE_COUNT; i++) {
     <span class="core-label">C${String(i).padStart(2, '0')}</span>
     <span class="core-track"><span class="core-fill"></span></span>
     <span class="core-value">--%</span>
+    <canvas class="core-spark" width="40" height="14"></canvas>
   `;
+  el.querySelector('.core-spark').getContext('2d');
   dom.coreList.appendChild(el);
   coreBars.push(el);
 }
@@ -53,8 +55,371 @@ for (let i = 0; i < 24; i++) {
 updateClock();
 setInterval(updateClock, 1000);
 
-export function drawAllSparklines() {}
-export function drawTimeSeriesBoxplot() {}
+export function drawSparkline(canvas, history) {
+  if (!canvas || history.length < 2) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const max = Math.max(1, ...history);
+  const len = history.length;
+  ctx.strokeStyle = '#21918c';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let i = 0; i < len; i++) {
+    const x = (i / (len - 1)) * w;
+    const y = h - (history[i] / max) * (h - 2) - 1;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+
+export function drawAllSparklines() {
+  for (let i = 0; i < CORE_COUNT; i++) {
+    const sparkCanvas = coreBars[i].querySelector('.core-spark');
+    if (sparkCanvas) drawSparkline(sparkCanvas, coreHistories[i]);
+  }
+}
+
+// ---- Boxplot helpers ----
+
+function computeBoxplot(values) {
+  if (values.length === 0) return { min: 0, q1: 0, med: 0, q3: 0, max: 0 };
+  const s = values.slice().sort((a, b) => a - b);
+  const n = s.length;
+  return {
+    min: s[0],
+    q1:  s[Math.round(n * 0.25)],
+    med: s[Math.round(n * 0.5)],
+    q3:  s[Math.round(n * 0.75)],
+    max: s[n - 1],
+  };
+}
+
+function drawVerticalBoxplot(ctx, cx, topY, bottomY, boxWidth, bp, color) {
+  const mapY = (v) => bottomY - (Math.max(0, Math.min(100, v)) / 100) * (bottomY - topY);
+
+  const yMin = mapY(bp.min);
+  const yMax = mapY(bp.max);
+  const yQ1  = mapY(bp.q1);
+  const yQ3  = mapY(bp.q3);
+  const yMed = mapY(bp.med);
+  const halfW = boxWidth / 2;
+
+  ctx.strokeStyle = color || '#21918c';
+  ctx.lineWidth = 1;
+
+  /* Whisker line (min to max) */
+  ctx.beginPath();
+  ctx.moveTo(cx, yMin);
+  ctx.lineTo(cx, yMax);
+  ctx.stroke();
+
+  /* Caps at min and max */
+  const capW = 4;
+  ctx.beginPath();
+  ctx.moveTo(cx - capW, yMin);
+  ctx.lineTo(cx + capW, yMin);
+  ctx.moveTo(cx - capW, yMax);
+  ctx.lineTo(cx + capW, yMax);
+  ctx.stroke();
+
+  /* IQR Box */
+  const boxH = Math.max(2, Math.abs(yQ3 - yQ1));
+  const boxTop = Math.min(yQ1, yQ3);
+  ctx.fillStyle = color || '#21918c';
+  ctx.globalAlpha = 0.25;
+  ctx.fillRect(cx - halfW, boxTop, halfW * 2, boxH);
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = color || '#21918c';
+  ctx.lineWidth = 1.2;
+  ctx.strokeRect(cx - halfW, boxTop, halfW * 2, boxH);
+
+  /* Median line */
+  ctx.strokeStyle = color || '#21918c';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx - halfW, yMed);
+  ctx.lineTo(cx + halfW, yMed);
+  ctx.stroke();
+}
+
+function drawStripplot(ctx, cx, topY, bottomY, boxWidth, rawValues, color) {
+  if (!rawValues || rawValues.length === 0) return;
+
+  const halfW = boxWidth * 0.35;
+  const r = 2.5;
+
+  for (let i = 0; i < rawValues.length; i++) {
+    const v = Math.max(0, Math.min(100, rawValues[i]));
+    const y = bottomY - (v / 100) * (bottomY - topY);
+
+    const jitter = ((i / Math.max(1, rawValues.length - 1)) - 0.5) * halfW * 1.6;
+    const x = cx + jitter;
+
+    ctx.shadowColor = color || '#21918c';
+    ctx.shadowBlur = 6;
+    ctx.fillStyle = color || '#21918c';
+    ctx.globalAlpha = 0.85;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#ffffff';
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath();
+    ctx.arc(x, y, r * 0.45, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.globalAlpha = 1;
+  }
+}
+
+export function drawTimeSeriesBoxplot() {
+  const canvas = dom.boxplotCanvas;
+  const buffer = tsBuffer;
+  if (!canvas || !buffer || !buffer.hasData()) return;
+
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const margin = { left: 28, right: 4, top: 10, bottom: 18 };
+  const plotLeft = margin.left;
+  const plotTop = margin.top;
+  const plotW = W - margin.left - margin.right;
+  const plotH = H - margin.top - margin.bottom;
+
+  const color = '#21918c';
+  const blocks = buffer.getBlocks();
+  const currentRaw = buffer.getCurrentRawValues();
+  const hasCurrent = currentRaw.length > 0;
+
+  const totalSlots = blocks.length + (hasCurrent ? 1 : 0);
+  if (totalSlots === 0) return;
+
+  const slotWidth = plotW / Math.max(totalSlots, 1);
+
+  // Y-axis labels + grid lines
+  const yLabels = [0, 25, 50, 75, 100];
+  ctx.fillStyle = '#adb5bd';
+  ctx.font = '8px monospace';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+
+  for (const pct of yLabels) {
+    const y = plotTop + plotH * (1 - pct / 100);
+    ctx.strokeStyle = '#f0f0f0';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(plotLeft, Math.round(y) + 0.5);
+    ctx.lineTo(W - margin.right, Math.round(y) + 0.5);
+    ctx.stroke();
+
+    ctx.fillStyle = '#adb5bd';
+    ctx.fillText(pct + '%', plotLeft - 3, y);
+  }
+
+  // Render each finalized block as a vertical boxplot
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i];
+    const cx = plotLeft + i * slotWidth + slotWidth / 2;
+    const bp = computeBoxplot(block.coreValues);
+
+    drawVerticalBoxplot(ctx, cx, plotTop, plotTop + plotH, slotWidth * 0.6, bp, color);
+
+    ctx.fillStyle = '#adb5bd';
+    ctx.font = '7px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    if (i % 2 === 0 || i === blocks.length - 1) {
+      ctx.fillText(block.timestamp.slice(3), cx, plotTop + plotH + 3);
+    }
+  }
+
+  // Render the current (in-progress) block as a stripplot
+  if (hasCurrent) {
+    const cx = plotLeft + blocks.length * slotWidth + slotWidth / 2;
+
+    ctx.strokeStyle = '#21918c';
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([2, 3]);
+    ctx.beginPath();
+    ctx.moveTo(cx, plotTop);
+    ctx.lineTo(cx, plotTop + plotH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    drawStripplot(ctx, cx, plotTop, plotTop + plotH, slotWidth, currentRaw, color);
+
+    ctx.fillStyle = '#21918c';
+    ctx.font = '7px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText('NOW', cx, plotTop + plotH + 3);
+  }
+
+  // Horizontal axis baseline
+  ctx.strokeStyle = '#e5e7eb';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(plotLeft, plotTop + plotH + 0.5);
+  ctx.lineTo(W - margin.right, plotTop + plotH + 0.5);
+  ctx.stroke();
+
+  // Y-axis left border
+  ctx.beginPath();
+  ctx.moveTo(plotLeft + 0.5, plotTop);
+  ctx.lineTo(plotLeft + 0.5, plotTop + plotH);
+  ctx.stroke();
+}
+
+export function drawDensityPlot() {
+  const canvas = dom.densityCanvas;
+  const data = historyDensity;
+  if (!canvas || data.length < 3) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const pad = 4;
+  const drawW = w - pad * 2;
+  const drawH = h - pad * 2;
+
+  const n         = data.length;
+  const minVal    = Math.min(...data);
+  const maxVal    = Math.max(...data);
+  const range     = Math.max(1, maxVal - minVal);
+  const steps     = 60;
+  const bandwidth = range / 12;
+
+  const density = [];
+  for (let i = 0; i < steps; i++) {
+    const x = minVal + (i / (steps - 1)) * range;
+    let sum = 0;
+    for (let j = 0; j < n; j++) {
+      const d = (x - data[j]) / bandwidth;
+      sum += Math.exp(-0.5 * d * d) / (bandwidth * Math.sqrt(2 * Math.PI));
+    }
+    density.push(sum / n);
+  }
+  const maxD = Math.max(...density, 0.001);
+
+  const c = '#21918c';
+  ctx.fillStyle   = c;
+  ctx.globalAlpha = 0.2;
+  ctx.beginPath();
+  ctx.moveTo(pad, h - pad);
+  for (let i = 0; i < steps; i++) {
+    const x = pad + (i / (steps - 1)) * drawW;
+    const y = (h - pad) - (density[i] / maxD) * drawH;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(pad + drawW, h - pad);
+  ctx.closePath();
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  ctx.strokeStyle = c;
+  ctx.lineWidth   = 1.5;
+  ctx.beginPath();
+  for (let i = 0; i < steps; i++) {
+    const x = pad + (i / (steps - 1)) * drawW;
+    const y = (h - pad) - (density[i] / maxD) * drawH;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+
+export function drawGpuTimeSeries() {
+  const canvas = dom.gpuTimeseriesCanvas;
+  const data0 = gpuHistory0;
+  const data1 = gpuHistory1;
+  if (!canvas || data0.length < 2) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const pad  = { top: 4, right: 4, bottom: 14, left: 30 };
+  const drawW = w - pad.left - pad.right;
+  const drawH = h - pad.top - pad.bottom;
+
+  const yMax = 100;
+
+  // Grid lines at 25%, 50%, 75%
+  ctx.strokeStyle = '#f0f0f0';
+  ctx.lineWidth = 1;
+  for (let pct of [25, 50, 75]) {
+    const y = (h - pad.bottom) - (pct / yMax) * drawH;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(w - pad.right, y);
+    ctx.stroke();
+  }
+
+  // Y-axis labels
+  ctx.fillStyle = '#adb5bd';
+  ctx.font      = '8px monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText('100%', pad.left - 3, pad.top + 8);
+  ctx.fillText('50%',  pad.left - 3, pad.top + drawH / 2 + 3);
+  ctx.fillText('0',    pad.left - 3, h - pad.bottom - 2);
+
+  const drawLine = (data, strokeColor, fillColor) => {
+    const n = data.length;
+    if (n < 2) return;
+
+    const mapX = (i) => pad.left + (i / (n - 1)) * drawW;
+    const mapY = (v) => (h - pad.bottom) - (v / yMax) * drawH;
+
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth   = 1.5;
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const x = mapX(i), y = mapY(data[i]);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    if (fillColor) {
+      ctx.fillStyle   = fillColor;
+      ctx.globalAlpha = 0.1;
+      ctx.beginPath();
+      ctx.moveTo(mapX(0), h - pad.bottom);
+      for (let i = 0; i < n; i++) {
+        ctx.lineTo(mapX(i), mapY(data[i]));
+      }
+      ctx.lineTo(mapX(n - 1), h - pad.bottom);
+      ctx.closePath();
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  };
+
+  drawLine(data0, '#21918c', 'rgba(33, 145, 140, 0.15)');
+
+  // Skip GPU1 if not enough data (single-GPU system)
+  if (data1.length >= 2) {
+    drawLine(data1, '#d4a017', 'rgba(212, 160, 23, 0.12)');
+  }
+
+  ctx.fillStyle = '#21918c';
+  ctx.font      = '7px monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('\u25B2GPU0', pad.left + 2, pad.top + 8);
+
+  if (data1.length >= 2) {
+    ctx.fillStyle = '#d4a017';
+    ctx.fillText('\u25BCGPU1', pad.left + 42, pad.top + 8);
+  }
+
+  ctx.fillStyle = '#adb5bd';
+  ctx.font      = '7px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('time (s) \u2192', w / 2, h - 1);
+}
 
 export function updateCoreBars(cores = []) {
   const values = normalizeCores(cores);
@@ -156,6 +521,20 @@ function emitMockTelemetry() {
   tsBuffer.addSample(cores);
   updateCoreBars(cores);
   updateHUD(mock);
+
+  // Populate GPU history for chart rendering
+  const gpu0load = clamp(mock.gpu_detail[0].load_percent);
+  const gpu1load = clamp(mock.gpu_detail[1].load_percent);
+  gpuHistory0.push(gpu0load);
+  gpuHistory1.push(gpu1load);
+  if (gpuHistory0.length > 30) {
+    gpuHistory0.shift();
+    gpuHistory1.shift();
+  }
+  historyDensity.push(gpu0load);
+  if (historyDensity.length > 100) {
+    historyDensity.splice(0, historyDensity.length - 100);
+  }
 }
 
 function normalizeCores(cores) {

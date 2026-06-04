@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Positron System Console — Light</title>
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -57,7 +56,7 @@
 
       <!-- Time-Series Boxplot: CPU Load Distribution over Time -->
       <section class="card">
-        <div class="card-header">Time-Series &mdash; CPU Load Distribution (5s Blocks)</div>
+        <div class="card-header">Time-Series &mdash; CPU Load Distribution (1s Blocks)</div>
         <canvas id="boxplot-canvas" width="290" height="160"></canvas>
       </section>
 
@@ -126,11 +125,9 @@
   </div>
 
   <!-- ============================================================
-       SCRIPTS
+       SCRIPTS — bundled with Rollup (includes Three.js, OrbitControls)
   ============================================================ -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="libs/OrbitControls.js"></script>
-<script type="module" src="src/index.js"></script>
+  <script src="dist/bundle.js"></script>
 
 </body>
 </html>

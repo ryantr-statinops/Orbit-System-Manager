@@ -37,4 +37,4 @@ export class TimeSeriesBuffer {
   hasData() { return this.blocks.length > 0 || this.currentValues.length > 0; }
 }
 
-export const tsBuffer = new TimeSeriesBuffer(5, 12);
+export const tsBuffer = new TimeSeriesBuffer(1, 30);

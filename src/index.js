@@ -1,17 +1,33 @@
 import { ThreeScene } from './threeScene.js';
 import { TelemetryClient } from './websocket.js';
-import { dom } from './ui.js';
+import { dom, drawTimeSeriesBoxplot, drawDensityPlot, drawGpuTimeSeries, drawAllSparklines } from './ui.js';
+
+// Side chart redraw throttle
+let sideChartTick = 0;
+
+function redrawSideCharts() {
+  sideChartTick = (sideChartTick + 1) % 6;
+  if (sideChartTick !== 0) return;
+
+  drawDensityPlot();
+  drawGpuTimeSeries();
+  drawTimeSeriesBoxplot();
+  drawAllSparklines();
+}
 
 // Bootstrap
 function init() {
   const scene = new ThreeScene(dom.container);
   const client = new TelemetryClient();
   client.connect();
+
   // Animation loop
   function animate() {
     requestAnimationFrame(animate);
     scene.updateVertices(true);
+    scene.controls.update();
     scene.renderer.render(scene.scene, scene.camera);
+    redrawSideCharts();
   }
   animate();
 }

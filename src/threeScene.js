@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { ALPHA, CORE_COUNT, TIME_WINDOW, MAX_HEIGHT, SQUARE_SPAN, SEGMENTS_X, SEGMENTS_Z, X_SPACING, Z_SPACING, PLANE_WIDTH, PLANE_DEPTH, ACCENT_COLOR } from './constants.js';
 import { targetGrid, renderGrid } from './state.js';
 
@@ -16,6 +18,10 @@ export class ThreeScene {
     this.renderer.setSize(containerW, containerH);
     this.renderer.setClearColor('#f8f9fa');
     container.appendChild(this.renderer.domElement);
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.08;
+    this.controls.autoRotate = false;
     this._initGeometry();
   }
 

@@ -16,9 +16,11 @@ Dependencies:
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import json
 import logging
+import signal
 import sys
 import time
 from dataclasses import dataclass, field
@@ -433,9 +435,39 @@ class WebSocketServer:
 # ---------------------------------------------------------------------------
 
 
+def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments for desktop deployment."""
+    parser = argparse.ArgumentParser(
+        description="System Monitor WebSocket Backend Service"
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8080,
+        help="WebSocket server port (default: 8080)",
+    )
+    parser.add_argument(
+        "--host",
+        type=str,
+        default="127.0.0.1",
+        help="Bind address (default: 127.0.0.1)",
+    )
+    parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Suppress log output (for desktop app mode)",
+    )
+    return parser.parse_args()
+
+
 async def main() -> None:
     """Application entry point."""
-    server = WebSocketServer(host="127.0.0.1", port=8080)
+    args = parse_args()
+
+    if args.quiet:
+        logging.getLogger().setLevel(logging.WARNING)
+
+    server = WebSocketServer(host=args.host, port=args.port)
     try:
         await server.start()
     except (KeyboardInterrupt, asyncio.CancelledError):
@@ -446,9 +478,11 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
+    # Handle Windows Ctrl+C gracefully in bundled exe
+    if sys.platform == "win32":
+        signal.signal(signal.SIGINT, signal.SIG_DFL)
+
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        # asyncio.run() already handles SIGINT gracefully,
-        # but we provide a safety net.
         logger.info("Exiting.")
