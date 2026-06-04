@@ -205,7 +205,7 @@ export function drawTimeSeriesBoxplot() {
   // Y-axis labels + grid lines
   const yLabels = [0, 25, 50, 75, 100];
   ctx.fillStyle = '#adb5bd';
-  ctx.font = '8px monospace';
+  ctx.font = '9px monospace';
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
 
@@ -231,7 +231,7 @@ export function drawTimeSeriesBoxplot() {
     drawVerticalBoxplot(ctx, cx, plotTop, plotTop + plotH, slotWidth * 0.6, bp, color);
 
     ctx.fillStyle = '#adb5bd';
-    ctx.font = '7px monospace';
+    ctx.font = '8px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     if (i % 2 === 0 || i === blocks.length - 1) {
@@ -255,7 +255,7 @@ export function drawTimeSeriesBoxplot() {
     drawStripplot(ctx, cx, plotTop, plotTop + plotH, slotWidth, currentRaw, color);
 
     ctx.fillStyle = '#21918c';
-    ctx.font = '7px monospace';
+    ctx.font = '8px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     ctx.fillText('NOW', cx, plotTop + plotH + 3);
