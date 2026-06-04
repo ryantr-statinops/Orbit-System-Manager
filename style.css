@@ -123,14 +123,23 @@ body {
   position: relative;
   z-index: 10;
   user-select: none;
-  transition: background 0.15s ease;
+  transition: background 0.2s ease;
 }
 
-.splitter:hover,
-.splitter.dragging {
-  background: #21918c;
+/* Full-height faint border line on each side */
+.splitter::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-left: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  transition: border-color 0.2s ease;
 }
 
+/* Grip dots in the centre */
 .splitter::after {
   content: '';
   position: absolute;
@@ -138,15 +147,25 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   width: 2px;
-  height: 24px;
-  background: #d0d0d0;
+  height: 20px;
+  background: #c0c4c8;
   border-radius: 1px;
-  transition: background 0.15s ease;
+  transition: background 0.2s ease;
+}
+
+.splitter:hover::before,
+.splitter.dragging::before {
+  border-color: #21918c;
 }
 
 .splitter:hover::after,
 .splitter.dragging::after {
   background: #ffffff;
+}
+
+.splitter:hover,
+.splitter.dragging {
+  background: rgba(33, 145, 140, 0.08);
 }
 
 #center-canvas canvas {
