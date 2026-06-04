@@ -1,4 +1,4 @@
-# System Monitor Backend Dependencies
+# Orbit System Manager Backend Dependencies
 # Install with: pip install -r requirements.txt
 
 psutil>=5.9.0          # System resource metrics (CPU, RAM, Network I/O)

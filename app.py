@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-System Monitor WebSocket Backend Service
-=========================================
+Orbit System Manager — Backend Service
+==========================================
 Collects real-time hardware performance metrics (CPU, RAM, GPU, Network)
-and streams them via WebSocket to connected clients (e.g., Lively Wallpaper).
+and streams them via WebSocket to connected clients.
 
 Specifications:
   - Sampling rate: 1 Hz (1 second interval)
@@ -403,11 +403,11 @@ class WebSocketServer:
         The server runs until cancelled (Ctrl+C) or an unrecoverable
         error occurs.
         """
-        logger.info("=" * 52)
-        logger.info("  System Monitor WebSocket Server")
-        logger.info("  Endpoint: ws://%s:%d", self.host, self.port)
-        logger.info("  Sampling: 1 Hz")
-        logger.info("=" * 52)
+    logger.info("=" * 52)
+    logger.info("  Orbit System Manager — Backend Service")
+    logger.info("  Endpoint: ws://%s:%d", self.host, self.port)
+    logger.info("  Sampling: 1 Hz")
+    logger.info("=" * 52)
 
         try:
             async with websockets.serve(
@@ -438,7 +438,7 @@ class WebSocketServer:
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments for desktop deployment."""
     parser = argparse.ArgumentParser(
-        description="System Monitor WebSocket Backend Service"
+        description="Orbit System Manager — Backend Service"
     )
     parser.add_argument(
         "--port",

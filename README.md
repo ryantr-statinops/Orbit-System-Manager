@@ -1,6 +1,6 @@
-# Task Manager 3D Visualize
+# Orbit System Manager
 
-Ứng dụng giám sát hệ thống theo thời gian thực cho CPU, RAM, GPU và network. Phần frontend chạy trong trình duyệt bằng ES module, phần backend là server WebSocket viết bằng Python trong `app.py`.
+Orbit System Manager — Ứng dụng giám sát hệ thống thời gian thực với trực quan hoá 3D cho CPU, RAM, GPU và network.
 
 ## Kiến trúc mới (Tauri + Python sidecar + Frontend bundle)
 ```

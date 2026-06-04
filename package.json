@@ -1,7 +1,7 @@
 {
-  "name": "task-manager-3d-visualize",
+  "name": "orbit-system-manager",
   "version": "1.0.0",
-  "description": "3D system monitor visualizer",
+  "description": "Orbit System Manager - Real-time System Monitoring & 3D Topology",
   "main": "src/index.js",
   "type": "module",
   "scripts": {

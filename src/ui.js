@@ -43,7 +43,7 @@ for (let i = 0; i < CORE_COUNT; i++) {
 
 const hudOverlay = document.createElement('div');
 hudOverlay.className = 'hud-overlay';
-hudOverlay.innerHTML = '<div class="hud-title">SYSTEM MONITOR // 3D TOPOLOGY</div>';
+hudOverlay.innerHTML = '<div class="hud-title">ORBIT SYSTEM MANAGER // 3D TOPOLOGY</div>';
 dom.container.appendChild(hudOverlay);
 
 for (let i = 0; i < 24; i++) {

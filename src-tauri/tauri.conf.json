@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "System Monitor",
+  "productName": "Orbit System Manager",
   "version": "0.1.0",
-  "identifier": "com.positon.system-monitor",
+  "identifier": "com.orbit.system-manager",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:3000"
@@ -10,7 +10,7 @@
   "app": {
     "windows": [
       {
-        "title": "Positron System Console",
+        "title": "Orbit System Manager",
         "width": 1280,
         "height": 800,
         "minWidth": 960,
