@@ -6,7 +6,7 @@
      Cards:       #ffffff
      Borders:     1px solid #e5e7eb
      Text:        #212529 (primary), #495057 (secondary)
-     Viridis:     #3b528b (low), #21918c (mid), #fde725 (high)
+     Viridis:     #21918c (low/mid), #fde725 (high)
      Bar track:   #e9ecef
    ================================================================ */
 
@@ -171,7 +171,7 @@ body {
   transition: width 0.3s ease;
 }
 
-.ram-fill { background: #3b528b; }
+.ram-fill { background: #21918c; }
 
 /* ---------- Core Bars ---------- */
 #core-list {
@@ -277,8 +277,8 @@ body {
 }
 
 .allocation-blocks .block.active {
-  background: #3b528b;
-  box-shadow: 0 0 8px rgba(59, 82, 139, 0.5);
+  background: #21918c;
+  box-shadow: 0 0 8px rgba(33, 145, 140, 0.5);
 }
 
 /* ---- Process Dots (Foreground Layer) ---- */
@@ -298,19 +298,19 @@ body {
   height: 10px;
   border-radius: 50%;
   background: #ffffff;
-  border: 2px solid #3b528b;
+  border: 2px solid #21918c;
   transform: translate(-50%, -50%);
   transition: left 0.5s ease-in-out, transform 0.15s ease, box-shadow 0.15s ease;
   pointer-events: auto;
   cursor: pointer;
   z-index: 2;
-  box-shadow: 0 0 6px rgba(59, 82, 139, 0.35);
+  box-shadow: 0 0 6px rgba(33, 145, 140, 0.35);
 }
 
 .process-dots .proc-dot:hover {
   z-index: 10;
   transform: translate(-50%, -50%) scale(1.4);
-  box-shadow: 0 0 14px rgba(59, 82, 139, 0.7);
+  box-shadow: 0 0 14px rgba(33, 145, 140, 0.7);
   border-color: #21918c;
   background: #21918c;
 }
@@ -339,7 +339,7 @@ body {
 }
 
 .ram-tooltip .tooltip-name {
-  color: #3b528b;
+  color: #21918c;
   font-weight: 600;
 }
 

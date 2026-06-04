@@ -724,7 +724,7 @@ function drawNetworkChart(canvas, history) {
   const mapX = (i) => pad.left + (i / (n - 1)) * drawW;
   const mapY = (v) => (h - pad.bottom) - (v / yMax) * drawH;
 
-  ctx.strokeStyle = '#3b528b';
+  ctx.strokeStyle = '#21918c';
   ctx.lineWidth   = 1.2;
   ctx.beginPath();
   for (let i = 0; i < n; i++) {
@@ -742,7 +742,7 @@ function drawNetworkChart(canvas, history) {
   }
   ctx.stroke();
 
-  ctx.fillStyle = '#3b528b';
+  ctx.fillStyle = '#21918c';
   ctx.font      = '7px monospace';
   ctx.textAlign = 'left';
   ctx.fillText('\u25B2SEND', pad.left + 2, pad.top + 8);
