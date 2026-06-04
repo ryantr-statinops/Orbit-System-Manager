@@ -22,8 +22,6 @@ export const dom = {
   densityCanvas: $('density-canvas'),
   gpuTimeseriesCanvas: $('gpu-timeseries-canvas'),
   networkCanvas: $('network-canvas'),
-  allocationBlocks: $('allocation-blocks'),
-
 };
 
 export const coreBars = [];
@@ -45,12 +43,6 @@ const hudOverlay = document.createElement('div');
 hudOverlay.className = 'hud-overlay';
 hudOverlay.innerHTML = '<div class="hud-title">ORBIT SYSTEM MANAGER // 3D TOPOLOGY</div>';
 dom.container.appendChild(hudOverlay);
-
-for (let i = 0; i < 24; i++) {
-  const block = document.createElement('div');
-  block.className = 'block';
-  dom.allocationBlocks.appendChild(block);
-}
 
 updateClock();
 setInterval(updateClock, 1000);
@@ -451,7 +443,6 @@ export function updateHUD(data) {
     ? `${usedGb.toFixed(1)} / ${totalGb.toFixed(1)} GB (${ramPercent.toFixed(1)}%)`
     : `${ramPercent.toFixed(1)}%`;
   dom.ramBarFill.style.width = `${clamp(ramPercent)}%`;
-  updateRamBlocks(ramPercent);
 
   dom.gpu0Text.textContent = formatGpuLine('GPU 0', data.gpu_detail?.[0], data);
   dom.gpu1Text.textContent = formatGpuLine('GPU 1', data.gpu_detail?.[1]);
@@ -561,13 +552,6 @@ function formatGpuLine(label, gpu, fallback = {}) {
   const temp = Number(gpu?.temperature_c ?? fallback.gpu_temperature ?? 0);
   const load = Number(gpu?.load_percent ?? fallback.gpu_usage ?? 0);
   return `${name} - ${temp.toFixed(0)}C - Load: ${load.toFixed(1)}%`;
-}
-
-function updateRamBlocks(percent) {
-  const activeCount = Math.round((clamp(percent) / 100) * dom.allocationBlocks.children.length);
-  [...dom.allocationBlocks.children].forEach((block, i) => {
-    block.classList.toggle('active', i < activeCount);
-  });
 }
 
 function mockProcesses(memoryPercent) {
