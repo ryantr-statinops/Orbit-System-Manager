@@ -622,6 +622,59 @@ function drawLine(ctx, values, color, canvas) {
 }
 
 // ----------------------------------------------------------------
+// Sidebar Toggle Buttons
+// ----------------------------------------------------------------
+
+const SIDEBAR_KEY = 'orbit-sidebar-state';
+
+export function initSidebarToggles() {
+  const colLeft = document.getElementById('col-left');
+  const colRight = document.getElementById('col-right');
+  const btnLeft = document.getElementById('toggle-left');
+  const btnRight = document.getElementById('toggle-right');
+  const splitLeft = document.querySelector('.splitter[data-target="left"]');
+  const splitRight = document.querySelector('.splitter[data-target="right"]');
+
+  if (!colLeft || !colRight || !btnLeft || !btnRight) return;
+
+  function applyState(leftHidden, rightHidden) {
+    colLeft.classList.toggle('collapsed', leftHidden);
+    colRight.classList.toggle('collapsed', rightHidden);
+    btnLeft.classList.toggle('collapsed', leftHidden);
+    btnRight.classList.toggle('collapsed', rightHidden);
+    if (splitLeft) splitLeft.classList.toggle('collapsed', leftHidden);
+    if (splitRight) splitRight.classList.toggle('collapsed', rightHidden);
+  }
+
+  // Restore saved state
+  try {
+    const saved = localStorage.getItem(SIDEBAR_KEY);
+    if (saved) {
+      const { left, right } = JSON.parse(saved);
+      if (left === false || right === false) {
+        applyState(left === false, right === false);
+      }
+    }
+  } catch (e) { /* ignore */ }
+
+  btnLeft.addEventListener('click', () => {
+    const hide = !colLeft.classList.contains('collapsed');
+    applyState(hide, colRight.classList.contains('collapsed'));
+    saveSidebarState(hide, colRight.classList.contains('collapsed'));
+  });
+
+  btnRight.addEventListener('click', () => {
+    const hide = !colRight.classList.contains('collapsed');
+    applyState(colLeft.classList.contains('collapsed'), hide);
+    saveSidebarState(colLeft.classList.contains('collapsed'), hide);
+  });
+
+  function saveSidebarState(leftHidden, rightHidden) {
+    localStorage.setItem(SIDEBAR_KEY, JSON.stringify({ left: !leftHidden, right: !rightHidden }));
+  }
+}
+
+// ----------------------------------------------------------------
 // Resizable Column Splitters
 // ----------------------------------------------------------------
 

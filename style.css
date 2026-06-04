@@ -40,10 +40,68 @@ body {
   justify-content: space-between;
   height: 34px;
   min-height: 34px;
-  padding: 0 16px;
+  padding: 0 8px;
   background: #ffffff;
   border-bottom: 1px solid #e5e7eb;
   user-select: none;
+}
+
+.top-bar-left,
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ---- Sidebar Toggle Buttons ---- */
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  border-radius: 3px;
+  cursor: pointer;
+  color: #868e96;
+  transition: all 0.15s ease;
+}
+
+.sidebar-toggle:hover {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.sidebar-toggle:active {
+  background: #dee2e6;
+}
+
+/* Chevron icon made of CSS borders */
+.sidebar-toggle .chevron {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transition: transform 0.2s ease;
+}
+
+#toggle-left .chevron {
+  transform: rotate(135deg);   /* ◀ point left */
+}
+
+#toggle-right .chevron {
+  transform: rotate(-45deg);   /* ▶ point right */
+}
+
+/* When sidebar hidden, chevron points outward */
+#toggle-left.collapsed .chevron {
+  transform: rotate(-45deg);   /* ▶ point right = expand */
+}
+
+#toggle-right.collapsed .chevron {
+  transform: rotate(135deg);   /* ◀ point left = expand */
 }
 
 .status-indicator {
@@ -103,6 +161,22 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  transition: width 0.25s ease, min-width 0.25s ease, padding 0.25s ease, opacity 0.25s ease;
+}
+
+/* Collapsed sidebars — animate to zero width */
+#col-left.collapsed,
+#col-right.collapsed {
+  width: 0px !important;
+  min-width: 0px !important;
+  padding: 6px 0px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+/* Hide splitter when adjacent sidebar is collapsed (set via JS) */
+.splitter.collapsed {
+  display: none;
 }
 
 /* ---------- Center Canvas ---------- */

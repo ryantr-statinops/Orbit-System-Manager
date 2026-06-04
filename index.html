@@ -12,12 +12,22 @@
        TOP BAR
   ============================================================ -->
   <header id="top-bar">
-    <span class="status-indicator">
-      <span class="status-dot" id="status-dot"></span>
-      <span id="status-text">INITIALIZING...</span>
-    </span>
+    <div class="top-bar-left">
+      <button class="sidebar-toggle" id="toggle-left" title="Toggle left panel">
+        <span class="chevron"></span>
+      </button>
+      <span class="status-indicator">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">INITIALIZING...</span>
+      </span>
+    </div>
     <span class="top-title">ORBIT SYSTEM MANAGER</span>
-    <span class="top-clock" id="clock">00:00:00</span>
+    <div class="top-bar-right">
+      <span class="top-clock" id="clock">00:00:00</span>
+      <button class="sidebar-toggle" id="toggle-right" title="Toggle right panel">
+        <span class="chevron"></span>
+      </button>
+    </div>
   </header>
 
   <!-- ============================================================
