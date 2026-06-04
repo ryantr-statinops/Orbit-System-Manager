@@ -1,5 +1,5 @@
 import { CORE_COUNT, SPARK_POINTS } from './constants.js';
-import { connectionState, coreHistories, historyNetwork, targetGrid, historyDensity, gpuHistory0, gpuHistory1 } from './state.js';
+import { connectionState, coreHistories, historyNetwork, targetGrid, historyDensity, gpuHistory0, gpuHistory1, ramHistory } from './state.js';
 import { tsBuffer } from './timeSeries.js';
 
 const $ = id => document.getElementById(id);
@@ -22,6 +22,7 @@ export const dom = {
   densityCanvas: $('density-canvas'),
   gpuTimeseriesCanvas: $('gpu-timeseries-canvas'),
   networkCanvas: $('network-canvas'),
+  ramTimeseriesCanvas: $('ram-timeseries-canvas'),
 };
 
 export const coreBars = [];
@@ -325,6 +326,77 @@ export function drawDensityPlot() {
   ctx.stroke();
 }
 
+export function drawRamTimeSeries() {
+  const canvas = dom.ramTimeseriesCanvas;
+  const data = ramHistory;
+  if (!canvas || data.length < 2) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const pad  = { top: 4, right: 4, bottom: 14, left: 30 };
+  const drawW = w - pad.left - pad.right;
+  const drawH = h - pad.top - pad.bottom;
+  const yMax = 100;
+
+  // Grid lines
+  ctx.strokeStyle = '#f0f0f0';
+  ctx.lineWidth = 1;
+  for (let pct of [25, 50, 75]) {
+    const y = (h - pad.bottom) - (pct / yMax) * drawH;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(w - pad.right, y);
+    ctx.stroke();
+  }
+
+  // Y-axis labels
+  ctx.fillStyle = '#adb5bd';
+  ctx.font      = '8px monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText('100%', pad.left - 3, pad.top + 8);
+  ctx.fillText('50%',  pad.left - 3, pad.top + drawH / 2 + 3);
+  ctx.fillText('0',    pad.left - 3, h - pad.bottom - 2);
+
+  // Line
+  const n = data.length;
+  const mapX = (i) => pad.left + (i / (n - 1)) * drawW;
+  const mapY = (v) => (h - pad.bottom) - (v / yMax) * drawH;
+
+  ctx.strokeStyle = '#21918c';
+  ctx.lineWidth   = 1.5;
+  ctx.beginPath();
+  for (let i = 0; i < n; i++) {
+    const x = mapX(i), y = mapY(data[i]);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Fill under line
+  ctx.fillStyle   = 'rgba(33, 145, 140, 0.15)';
+  ctx.globalAlpha = 0.1;
+  ctx.beginPath();
+  ctx.moveTo(mapX(0), h - pad.bottom);
+  for (let i = 0; i < n; i++) {
+    ctx.lineTo(mapX(i), mapY(data[i]));
+  }
+  ctx.lineTo(mapX(n - 1), h - pad.bottom);
+  ctx.closePath();
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // Label
+  ctx.fillStyle = '#21918c';
+  ctx.font      = '7px monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('\u25CFRAM', pad.left + 2, pad.top + 8);
+
+  ctx.fillStyle = '#adb5bd';
+  ctx.font      = '7px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('time (s) \u2192', w / 2, h - 1);
+}
+
 export function drawGpuTimeSeries() {
   const canvas = dom.gpuTimeseriesCanvas;
   const data0 = gpuHistory0;
@@ -511,6 +583,10 @@ function emitMockTelemetry() {
   tsBuffer.addSample(cores);
   updateCoreBars(cores);
   updateHUD(mock);
+
+  // Push RAM history
+  ramHistory.push(memoryPercent);
+  if (ramHistory.length > 30) ramHistory.shift();
 
   // Populate GPU history for chart rendering
   const gpu0load = clamp(mock.gpu_detail[0].load_percent);

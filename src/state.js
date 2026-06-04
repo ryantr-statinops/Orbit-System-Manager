@@ -17,3 +17,4 @@ export const gpuHistory1 = [];
 export const historyNetwork = { time: [], sent: [], recv: [] };
 export const coreHistories = Array.from({ length: CORE_COUNT }, () => []);
 export const ramProcessData = [];
+export const ramHistory = [];
