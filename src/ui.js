@@ -620,3 +620,74 @@ function drawLine(ctx, values, color, canvas) {
   ctx.lineWidth = 2;
   ctx.stroke();
 }
+
+// ----------------------------------------------------------------
+// Resizable Column Splitters
+// ----------------------------------------------------------------
+
+const STORAGE_KEY = 'orbit-column-layout';
+const MIN_COL_WIDTH = 290;
+
+export function initSplitters() {
+  const colLeft = document.getElementById('col-left');
+  const colRight = document.getElementById('col-right');
+  const splitters = document.querySelectorAll('.splitter');
+
+  if (!colLeft || !colRight || splitters.length === 0) return;
+
+  // Restore saved widths
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const { left, right } = JSON.parse(saved);
+      if (typeof left === 'number' && left >= MIN_COL_WIDTH) colLeft.style.width = left + 'px';
+      if (typeof right === 'number' && right >= MIN_COL_WIDTH) colRight.style.width = right + 'px';
+    }
+  } catch (e) {
+    // ignore corrupt localStorage
+  }
+
+  splitters.forEach(splitter => {
+    splitter.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+
+      const target = splitter.dataset.target; // 'left' or 'right'
+      const col = target === 'left' ? colLeft : colRight;
+      const startX = e.clientX;
+      const startWidth = col.offsetWidth;
+
+      const onMove = (e) => {
+        const delta = e.clientX - startX;
+        let newWidth;
+        // Left splitter: dragging right → left column wider (+delta)
+        // Right splitter: dragging right → right column narrower (-delta)
+        if (target === 'left') {
+          newWidth = startWidth + delta;
+        } else {
+          newWidth = startWidth - delta;
+        }
+        newWidth = Math.max(MIN_COL_WIDTH, newWidth);
+        col.style.width = newWidth + 'px';
+        splitter.classList.add('dragging');
+      };
+
+      const onUp = () => {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        splitter.classList.remove('dragging');
+        // Persist to localStorage
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          left: colLeft.offsetWidth,
+          right: colRight.offsetWidth,
+        }));
+        // Prevent text selection from lingering
+        document.body.style.userSelect = '';
+      };
+
+      // Prevent text selection while dragging
+      document.body.style.userSelect = 'none';
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+}

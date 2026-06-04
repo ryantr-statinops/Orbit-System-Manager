@@ -1,6 +1,6 @@
 import { ThreeScene } from './threeScene.js';
 import { TelemetryClient } from './websocket.js';
-import { dom, drawTimeSeriesBoxplot, drawDensityPlot, drawGpuTimeSeries, drawAllSparklines } from './ui.js';
+import { dom, drawTimeSeriesBoxplot, drawDensityPlot, drawGpuTimeSeries, drawAllSparklines, initSplitters } from './ui.js';
 
 // Side chart redraw throttle
 let sideChartTick = 0;
@@ -17,6 +17,7 @@ function redrawSideCharts() {
 
 // Bootstrap
 function init() {
+  initSplitters();
   const scene = new ThreeScene(dom.container);
   const client = new TelemetryClient();
   client.connect();

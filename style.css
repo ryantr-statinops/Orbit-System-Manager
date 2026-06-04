@@ -82,11 +82,11 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* ---------- Main 3-Column Layout ---------- */
+/* ---------- Main 3-Column Layout (Flex with resizable splitters) ---------- */
 #main-layout {
   flex: 1;
-  display: grid;
-  grid-template-columns: 290px 1fr 290px;
+  display: flex;
+  flex-direction: row;
   overflow: hidden;
   min-height: 0;
 }
@@ -94,6 +94,8 @@ body {
 /* ---------- Left / Right Columns ---------- */
 #col-left,
 #col-right {
+  width: 290px;
+  min-width: 290px;
   background: #f8f9fa;
   overflow-y: auto;
   overflow-x: hidden;
@@ -103,14 +105,48 @@ body {
   gap: 6px;
 }
 
-#col-left  { border-right: 1px solid #e5e7eb; }
-#col-right { border-left:  1px solid #e5e7eb; }
-
 /* ---------- Center Canvas ---------- */
 #center-canvas {
+  flex: 1 1 0;
+  min-width: 0;
   position: relative;
   background: #ffffff;
   overflow: hidden;
+}
+
+/* ---------- Splitter Bars ---------- */
+.splitter {
+  width: 5px;
+  min-width: 5px;
+  cursor: col-resize;
+  background: transparent;
+  position: relative;
+  z-index: 10;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.splitter:hover,
+.splitter.dragging {
+  background: #21918c;
+}
+
+.splitter::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 24px;
+  background: #d0d0d0;
+  border-radius: 1px;
+  transition: background 0.15s ease;
+}
+
+.splitter:hover::after,
+.splitter.dragging::after {
+  background: #ffffff;
 }
 
 #center-canvas canvas {
