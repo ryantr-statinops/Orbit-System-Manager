@@ -20,3 +20,8 @@ Desktop.ini
 # AI skills & system prompts
 .antigravitycli/
 agent/
+
+# Node / frontend build output
+node_modules/
+dist/
+.rollup.cache/
