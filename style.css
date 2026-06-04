@@ -410,40 +410,6 @@ body {
   box-shadow: 0 0 8px rgba(33, 145, 140, 0.5);
 }
 
-/* ---- Process Dots (Foreground Layer) ---- */
-.process-dots {
-  position: absolute;
-  top: 0;
-  left: 4px;
-  right: 4px;
-  bottom: 0;
-  pointer-events: none;
-}
-
-.process-dots .proc-dot {
-  position: absolute;
-  top: 50%;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 2px solid #21918c;
-  transform: translate(-50%, -50%);
-  transition: left 0.5s ease-in-out, transform 0.15s ease, box-shadow 0.15s ease;
-  pointer-events: auto;
-  cursor: pointer;
-  z-index: 2;
-  box-shadow: 0 0 6px rgba(33, 145, 140, 0.35);
-}
-
-.process-dots .proc-dot:hover {
-  z-index: 10;
-  transform: translate(-50%, -50%) scale(1.4);
-  box-shadow: 0 0 14px rgba(33, 145, 140, 0.7);
-  border-color: #21918c;
-  background: #21918c;
-}
-
 /* ---- Tooltip ---- */
 .ram-tooltip {
   display: none;

@@ -23,7 +23,7 @@ export const dom = {
   gpuTimeseriesCanvas: $('gpu-timeseries-canvas'),
   networkCanvas: $('network-canvas'),
   allocationBlocks: $('allocation-blocks'),
-  processDots: $('process-dots'),
+
 };
 
 export const coreBars = [];
@@ -452,7 +452,6 @@ export function updateHUD(data) {
     : `${ramPercent.toFixed(1)}%`;
   dom.ramBarFill.style.width = `${clamp(ramPercent)}%`;
   updateRamBlocks(ramPercent);
-  updateProcessDots(memory.processes || []);
 
   dom.gpu0Text.textContent = formatGpuLine('GPU 0', data.gpu_detail?.[0], data);
   dom.gpu1Text.textContent = formatGpuLine('GPU 1', data.gpu_detail?.[1]);
@@ -568,17 +567,6 @@ function updateRamBlocks(percent) {
   const activeCount = Math.round((clamp(percent) / 100) * dom.allocationBlocks.children.length);
   [...dom.allocationBlocks.children].forEach((block, i) => {
     block.classList.toggle('active', i < activeCount);
-  });
-}
-
-function updateProcessDots(processes) {
-  dom.processDots.innerHTML = '';
-  processes.slice(0, 12).forEach((process, i) => {
-    const dot = document.createElement('span');
-    dot.className = 'proc-dot';
-    dot.style.left = `${Math.min(96, 4 + i * 8)}%`;
-    dot.title = `${process.name || 'process'}: ${process.memory_mb || 0} MB`;
-    dom.processDots.appendChild(dot);
   });
 }
 
