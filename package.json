@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "build": "rollup -c",
-    "start": "rollup -c -w"
+    "start": "rollup -c -w",
+    "dev": "tauri dev",
+    "build:app": "npm run build && tauri build"
   },
   "dependencies": {
     "plotly.js": "^2.20.0",

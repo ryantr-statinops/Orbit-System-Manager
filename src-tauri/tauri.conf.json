@@ -1,9 +1,10 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Orbit System Manager",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "identifier": "com.orbit.system-manager",
   "build": {
+    "beforeDevCommand": "node scripts/dev-server.mjs",
     "frontendDist": "../dist",
     "devUrl": "http://localhost:3000"
   },

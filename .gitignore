@@ -25,3 +25,13 @@ agent/
 node_modules/
 dist/
 .rollup.cache/
+
+# Rust / Tauri build output
+src-tauri/target/
+
+# Python backend binary (built from app.py)
+dist-backend/
+src-tauri/binaries/
+
+# Orphaned files
+nul

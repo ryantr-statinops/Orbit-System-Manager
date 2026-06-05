@@ -1,10 +1,10 @@
 [package]
 name = "orbit-system-manager"
-version = "0.1.0"
+version = "1.0.0"
 description = "Orbit System Manager - Desktop system monitoring app"
-authors = ["you"]
-license = ""
-repository = ""
+authors = ["ryantr-statinops"]
+license = "MIT"
+repository = "https://github.com/ryantr-statinops/task_manager_3D_visualize"
 edition = "2021"
 rust-version = "1.77.2"
 
@@ -15,12 +15,12 @@ name = "app_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.6.2" }
+tauri-build = { version = "2.6.2", features = [] }
 
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
-tauri = { version = "2.11.2" }
+tauri = { version = "2.11.2", features = [] }
 tauri-plugin-log = "2"
 tauri-plugin-shell = "2"
