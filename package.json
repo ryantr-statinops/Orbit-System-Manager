@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "build": "rollup -c",
+    "build": "rollup -c && node -e \"let h=require('fs').readFileSync('index.html','utf8');h=h.replace('dist/bundle.js','bundle.js');require('fs').writeFileSync('dist/index.html',h);require('fs').cpSync('style.css','dist/style.css')\"",
     "start": "rollup -c -w",
     "dev": "tauri dev",
     "build:app": "npm run build && tauri build"
