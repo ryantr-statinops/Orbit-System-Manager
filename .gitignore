@@ -19,7 +19,7 @@ Desktop.ini
 
 # AI skills & system prompts
 .antigravitycli/
-agent/
+
 
 # Node / frontend build output
 node_modules/
@@ -33,5 +33,5 @@ src-tauri/target/
 dist-backend/
 src-tauri/binaries/
 
-# Orphaned files
-nul
+36 | # Orphaned files
+37 | # End of file
