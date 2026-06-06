@@ -79,7 +79,7 @@ App sẽ tự động:
 
 ## 🏗️ Tổng quan kiến trúc
 
-![Architecture Overview](assets\images\architecture_overview.png)
+![Architecture Overview](assets/images/architecture_overview.png)
 
 
 ### Công nghệ sử dụng
