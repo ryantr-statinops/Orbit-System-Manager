@@ -81,7 +81,6 @@ App sẽ tự động:
 
 ![Architecture Overview](assets/images/architecture_overview.png)
 
-
 ### Công nghệ sử dụng
 
 | Thành phần | Công nghệ |
@@ -96,16 +95,39 @@ App sẽ tự động:
 
 ## ⚙️ Dành cho nhà phát triển
 
-> Phần này dành cho ai muốn build source từ code.
-
 ### Yêu cầu
 
 | Công cụ | Phiên bản |
 |---------|-----------|
-| [Python](https://www.python.org) | ≥ 3.9 |
+| [Miniconda / Conda](https://docs.conda.io/en/latest/miniconda.html) | ≥ 24 |
 | [Node.js](https://nodejs.org) | ≥ 18 |
 | [Rust](https://www.rust-lang.org) | ≥ 1.77 |
 | OS | Windows 10/11 |
+
+### Thiết lập môi trường Python (Miniconda)
+
+Dự án sử dụng **Miniconda** để quản lý môi trường Python độc lập. Môi trường được định nghĩa trong `environment.yml`:
+
+```bash
+# 1. Tạo môi trường từ file cấu hình
+conda env create -f environment.yml
+
+# 2. Kích hoạt môi trường
+conda activate orbit-system
+
+# 3. Kiểm tra backend hoạt động
+python app.py --port 8080
+```
+
+Nếu cần cập nhật dependencies sau khi pull code mới:
+```bash
+conda env update -f environment.yml --prune
+```
+
+Để export lại môi trường sau khi thay đổi:
+```bash
+conda env export -n orbit-system --no-builds > environment.yml
+```
 
 ### Cài đặt & Build
 
@@ -114,8 +136,9 @@ App sẽ tự động:
 git clone https://github.com/ryantr-statinops/task_manager_3D_visualize.git
 cd task_manager_3D_visualize
 
-# 2. Cài Python dependencies
-pip install -r requirements.txt
+# 2. Thiết lập Python environment (Miniconda)
+conda env create -f environment.yml
+conda activate orbit-system
 
 # 3. Cài npm dependencies
 npm install
@@ -137,10 +160,18 @@ File cài đặt sau khi build sẽ nằm tại:
 ### Chạy chế độ development
 
 ```bash
+# Terminal 1: Python backend (với conda environment)
+conda activate orbit-system
+python app.py --port 8080
+
+# Terminal 2: Frontend dev + Tauri desktop
 npm run dev
 ```
 
-Lệnh này sẽ tự động mở cửa sổ desktop app, load frontend từ dev server.
+Lệnh `npm run dev` sẽ tự động:
+1. Chạy `node scripts/dev-server.mjs` (static server tại port 3000)
+2. Mở WebView window của Tauri trỏ tới `http://localhost:3000`
+3. Frontend kết nối WebSocket tới Python backend
 
 ---
 
@@ -157,8 +188,12 @@ task_manager_3D_visualize/
 │   ├── timeSeries.js    # Time‑series data structures
 │   ├── websocket.js     # WebSocket + mock fallback
 │   └── constants.js     # Constants
+├── agent/               # AI agent specifications & documentation
+│   ├── promts/          # Agent prompt specifications
+│   └── about/           # Project reference docs
 ├── assets/images/       # Screenshots & assets
 ├── app.py               # Python backend
+├── environment.yml      # Conda environment definition
 ├── index.html           # Entry HTML
 ├── style.css            # Styles
 └── package.json         # npm scripts & dependencies
@@ -175,6 +210,7 @@ task_manager_3D_visualize/
 | 📊 **Không có dữ liệu GPU** | Máy không có GPU NVIDIA hoặc không hỗ trợ — các charts khác vẫn hoạt động |
 | 🔌 **Mất kết nối** | App tự động reconnect, nếu lâu quá thì restart app |
 | 💾 **Dung lượng RAM hiển thị sai** | App dùng dữ liệu từ `psutil`, dung lượng được tính theo hệ nhị phân (1 GB = 1024³ bytes) |
+| 🐍 **Conda environment lỗi** | Chạy `conda env update -f environment.yml --prune` để đồng bộ lại |
 
 ---
 
