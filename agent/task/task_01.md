@@ -21,14 +21,14 @@
 - [ ] Chạy cài đặt (mặc định)
 - [ ] Kiểm tra: `rustc --version` (≥ 1.77) và `cargo --version`
 
-### [ ] 1.3 Xoá plotly.js — 3.59 MB dead weight
+### [x] 1.3 Xoá plotly.js — 3.59 MB dead weight
 
-- [ ] Kiểm tra plotly.js có thực sự không được import: `rg "plotly" src/ index.html`
-- [ ] `npm uninstall plotly.js`
-- [ ] `rm -rf libs/plotly.min.js` (hoặc xoá thủ công)
-- [ ] Nếu thư mục `libs/` trống: `rm -rf libs/`
-- [ ] Build lại: `npx rollup -c`
-- [ ] Mở `index.html` kiểm tra charts vẫn hiển thị
+- [x] Kiểm tra plotly.js có thực sự không được import: `rg "plotly" src/ index.html`
+- [x] `npm uninstall plotly.js` (323 packages removed)
+- [x] `rm -rf libs/plotly.min.js` + xoá luôn thư mục `libs/`
+- [x] Nếu thư mục `libs/` trống: `rm -rf libs/`
+- [ ] Build lại: `npx rollup -c` *(chưa build lại)*
+- [ ] Mở `index.html` kiểm tra charts vẫn hiển thị *(chưa kiểm tra)*
 
 ### [ ] 1.4 Xác nhận Python syntax OK
 
@@ -164,7 +164,7 @@ asyncio.run(test())
 ## Tiến độ tổng thể
 
 ```
-Phase 1 — Fix lỗi chặn         [□□□□] 0/4 tasks
+Phase 1 — Fix lỗi chặn         [■□□□] 1/4 tasks
 Phase 2 — Củng cố nền tảng     [□□□□] 0/4 tasks
 Phase 3 — Kiểm thử tích hợp    [□□□□] 0/4 tasks
 Phase 4 — Spec còn thiếu       [□□□□] 0/4 tasks
