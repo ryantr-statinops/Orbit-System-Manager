@@ -11,7 +11,6 @@
     "build:app": "npm run build && tauri build"
   },
   "dependencies": {
-    "plotly.js": "^2.20.0",
     "three": "^0.152.0"
   },
   "devDependencies": {
