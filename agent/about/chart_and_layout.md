@@ -1,141 +1,128 @@
-## 📁 Cấu trúc tổng thể
+## 📁 Cấu trúc Frontend (Module ES6)
 
-index.html   → Layout HTML (bố cục 3 cột)
-style.css    → CSS Layout (kích thước, màu sắc, khoảng cách)
-main.js      → JavaScript biểu đồ (cấu hình vẽ, kích thước canvas, màu sắc biểu đồ)
+```
+src/
+├── index.js         → Entry point (init ThreeScene, TelemetryClient, animation loop)
+├── state.js         → Global state (grids, histories, connection state)
+├── ui.js            → DOM, HUD, charts (boxplot, density, network, sparklines), splitters
+├── threeScene.js    → 3D CPU topology (Three.js PlaneGeometry + OrbitControls)
+├── timeSeries.js    → TimeSeriesBuffer (block-based boxplot data)
+├── websocket.js     → TelemetryClient (WebSocket + auto-reconnect + mock fallback)
+└── constants.js     → All constants (ALPHA, CORE_COUNT, COLORS, WS_URL...)
+```
+
 ────────────────────────────────────────────────────────────────────────────────
-🎨 1. LAYOUT & KÍCH THƯỚC KHUNG —  style.css 
-Bố cục 3 cột (Layout chính)
-┌────────────────┬─────┬────────────────────────────────────────────────────────────────────┐
-│ Vị trí         │ Dòn │ Mô tả                                                              │
-│                │ g   │                                                                    │
-├────────────────┼─────┼────────────────────────────────────────────────────────────────────┤
-│ #main-layout   │ ~66 │ Grid 3 cột: 290px 1fr 290px — cột trái 290px, cột phải 290px, giữa │
-│                │     │ co giãn                                                            │
-│ #col-left      │ ~72 │ Cột trái — scroll dọc, padding: 6px 8px                            │
-│ #col-right     │ ~72 │ Cột phải — scroll dọc, padding: 6px 8px                            │
-│ #center-canvas │ ~82 │ Trung tâm — 3D canvas, position: relative, overflow: hidden        │
-└────────────────┴─────┴────────────────────────────────────────────────────────────────────┘
-Kích thước & màu sắc card
-┌─────────────────┬─────┬───────────────────────────────────────────────────────────────────┐
-│ Selector        │ Dòn │ Mô tả                                                             │
-│                 │ g   │                                                                   │
-├─────────────────┼─────┼───────────────────────────────────────────────────────────────────┤
-│ .card           │ ~90 │ Card: background: #ffffff, border 1px solid #e5e7eb, padding: 8px │
-│                 │     │ 10px                                                              │
-│ .card-header    │ ~94 │ Header card: chữ 9px, color: #6c757d, border-bottom               │
-│ .stat-row       │ ~10 │ Hàng thống kê: 11px, border-bottom #f0f0f0                        │
-│                 │ 2   │                                                                   │
-│ .stat-bar-track │ ~11 │ Thanh bar nền: height: 6px, background: #e9ecef                   │
-│                 │ 6   │                                                                   │
-│ .stat-bar-fill  │ ~12 │ Thanh bar fill: #21918c (teal), transition: width 0.3s            │
-│                 │ 1   │                                                                   │
-│ .ram-fill       │ ~12 │ RAM bar fill: #3b528b (xanh dương đậm)                            │
-│                 │ 7   │                                                                   │
-└─────────────────┴─────┴───────────────────────────────────────────────────────────────────┘
-Core Bars (16 cores)
-┌─────────────┬──────┬─────────────────────────────────────────────┐
-│ Selector    │ Dòng │ Mô tả                                       │
-├─────────────┼──────┼─────────────────────────────────────────────┤
-│ .core-bar   │ ~131 │ Flex row, gap 5px, font 9.5px               │
-│ .core-track │ ~140 │ Track bar: height: 8px, background: #e9ecef │
-│ .core-fill  │ ~147 │ Fill bar: #21918c, transition: width 0.25s  │
-│ .core-spark │ ~157 │ Sparkline: width: 40px, height: 14px        │
-└─────────────┴──────┴─────────────────────────────────────────────┘
-Canvas biểu đồ
-┌─────────────────────┬──────┬──────────────────────────────────────┐
-│ Selector            │ Dòng │ Mô tả                                │
-├─────────────────────┼──────┼──────────────────────────────────────┤
-│ #boxplot-canvas     │ ~163 │ Boxplot: width: 100%, border #f0f0f0 │
-│ #ram-boxplot-canvas │ ~163 │ RAM Boxplot: tương tự                │
-│ #density-canvas     │ ~163 │ KDE density: tương tự                │
-│ #network-canvas     │ ~163 │ Network chart: tương tự              │
-└─────────────────────┴──────┴──────────────────────────────────────┘
+🎨 **LAYOUT & CSS** — `style.css`
+
+Bố cục 3 cột (Flexbox với splitters có thể kéo thả)
+┌────────────────┬──────┬──────────────────────────────────────────────────────┐
+│ Vị trí         │ Dòng │ Mô tả                                                │
+├────────────────┼──────┼──────────────────────────────────────────────────────┤
+│ #main-layout   │ ~72  │ Flex row: col-left (290px) splitter center splitter  │
+│                │      │ col-right (290px). Center co giãn với flex: 1        │
+│ #top-bar       │ ~44  │ Fixed height: 34px, flex: space-between             │
+│ #col-left      │ ~79  │ Cột trái — width: 290px, scroll dọc                │
+│ #col-right     │ ~79  │ Cột phải — width: 290px, scroll dọc                │
+│ #center-canvas │ ~102 │ Trung tâm — flex: 1, position: relative             │
+│ .splitter      │ ~107 │ 5px width, cursor: col-resize, collapse animation   │
+└────────────────┴──────┴──────────────────────────────────────────────────────┘
+
+Cards (`style.css` ~ dòng 125)
+┌─────────────────┬──────────┬─────────────────────────────────────────────────┐
+│ Selector        │ Mô tả                                                      │
+├─────────────────┼──────────┼─────────────────────────────────────────────────┤
+│ .card           │ background: #ffffff, border: 1px solid #e5e7eb, padding: 8px 10px │
+│ .card-header    │ 0.72rem uppercase, color: #6c757d, border-bottom         │
+│ .stat-row       │ Flex space-between, padding: 1px 2px, font-size: 0.88rem │
+│ .stat-bar-track │ height: 6px (RAM: 16px), background: #e9ecef            │
+│ .stat-bar-fill  │ #21918c (teal), transition: width 0.3s ease             │
+│ .ram-bar-track  │ height: 16px                                             │
+│ .core-bar       │ Flex row, gap: 5px, font: 0.76rem                       │
+│ .core-track     │ height: 8px, background: #e9ecef                        │
+│ .core-fill      │ #21918c, transition: width 0.25s                       │
+│ .core-spark     │ width: 40px, height: 14px (canvas)                      │
+└─────────────────┴──────────┴─────────────────────────────────────────────────┘
+
 ────────────────────────────────────────────────────────────────────────────────
-📐 2. KÍCH THƯỚC CANVAS & BIỂU ĐỒ —  index.html 
-Trong file  index.html , kích thước  width/height  của các canvas được set cứng qua HTML attributes:
-┌─────────────────────┬─────────────┬─────────────────────────────┐
-│ Canvas              │ Dòng        │ Kích thước (width × height) │
-├─────────────────────┼─────────────┼─────────────────────────────┤
-│ #boxplot-canvas     │ ~36         │ 290 × 100                   │
-│ #ram-boxplot-canvas │ ~52         │ 290 × 60                    │
-│ #density-canvas     │ ~64         │ 290 × 80                    │
-│ #network-canvas     │ ~67         │ 290 × 90                    │
-│ Core sparklines     │ main.js ~69 │ 40 × 14 (tạo động trong JS) │
-└─────────────────────┴─────────────┴─────────────────────────────┘
+📐 **CANVAS KÍCH THƯỚC** — `index.html`
+
+┌─────────────────────┬──────────────┬────────────────────────────────┐
+│ Canvas              │ Dòng index   │ Kích thước (width × height)    │
+├─────────────────────┼──────────────┼────────────────────────────────┤
+│ #boxplot-canvas     │ ~59          │ 290 × 160                     │
+│ #ram-timeseries-canvas│ ~85        │ 290 × 80                      │
+│ #density-canvas     │ ~92          │ 290 × 60                      │
+│ #gpu-timeseries-canvas│ ~93         │ 290 × 80                      │
+│ #network-canvas     │ ~98          │ 290 × 90                      │
+│ Core sparklines     │ ui.js ~56    │ 40 × 14 (tạo động trong JS)  │
+└─────────────────────┴──────────────┴────────────────────────────────┘
+
 ────────────────────────────────────────────────────────────────────────────────
-🖌️ 3. CẤU HÌNH MÀU SẮC & VẼ BIỂU ĐỒ —  main.js 
-Màu chủ đạo (Accent Color)
-- Dòng  ~19 :  const ACCENT_COLOR = new THREE.Color('#21918c')  — màu teal Viridis, dùng cho toàn bộ 3D surface, wireframe, và sidebar charts
-3D Three.js (bắt đầu từ dòng  ~73 )
-┌───────────────────────┬──────────┬────────────────────────────────────┐
-│ Cấu hình              │ Dòng     │ Mô tả                              │
-├───────────────────────┼──────────┼────────────────────────────────────┤
-│ ALPHA                 │ ~3       │ Hệ số lerp = 0.1 (làm mượt độ cao) │
-│ CORE_COUNT            │ ~4       │ 16 cores                           │
-│ TIME_WINDOW           │ ~5       │ 60s rolling window                 │
-│ MAX_HEIGHT            │ ~6       │ Chiều cao tối đa terrain = 9.0     │
-│ scene.background      │ ~76      │ #f8f9fa                            │
-│ camera.position       │ ~81      │ Góc nhìn isometric                 │
-│ fillMat.opacity       │ ~98      │ Độ opaque surface fill = 0.06      │
-│ wireMat.opacity       │ ~106     │ Độ opaque wireframe = 0.55         │
-│ Bounding box color    │ ~120     │ 0x6c757d (xám)                     │
-│ Bounding box dash/gap │ ~122-123 │ dashSize: 0.5, gapSize: 0.6        │
-└───────────────────────┴──────────┴────────────────────────────────────┘
-Boxplot —  drawBoxplot()  (dòng ~223)
-┌─────────────┬────────────────────────────────────────────┐
-│ Cấu hình    │ Mô tả                                      │
-├─────────────┼────────────────────────────────────────────┤
-│ pad = 20    │ Khoảng cách lề 2 bên                       │
-│ boxH = 14   │ Chiều cao hộp IQR                          │
-│ Màu fill    │ color param (mặc định #21918c), alpha 0.25 │
-│ Màu stroke  │ color, lineWidth 1.5                       │
-│ Median line │ lineWidth = 2                              │
-└─────────────┴────────────────────────────────────────────┘
-KDE Density —  drawDensityPlot()  (dòng ~263)
-┌────────────────────────┬──────────────────────┐
-│ Cấu hình               │ Mô tả                │
-├────────────────────────┼──────────────────────┤
-│ pad = 4                │ Lề                   │
-│ steps = 60             │ Số điểm sampling KDE │
-│ bandwidth = range / 12 │ Bandwidth KDE        │
-│ Màu fill               │ color, alpha 0.2     │
-│ Line width             │ 1.5                  │
-└────────────────────────┴──────────────────────┘
-Network Line Chart —  drawNetworkChart()  (dòng ~320)
-┌──────────────────────────────────────────────────┬──────────────────────────────┐
-│ Cấu hình                                         │ Mô tả                        │
-├──────────────────────────────────────────────────┼──────────────────────────────┤
-│ pad = { top: 4, right: 4, bottom: 14, left: 30 } │ Lề chi tiết                  │
-│ Màu Sent line                                    │ #3b528b (xanh dương Viridis) │
-│ Màu Recv line                                    │ #21918c (teal)               │
-│ Line width                                       │ 1.2                          │
-└──────────────────────────────────────────────────┴──────────────────────────────┘
-Sparkline —  drawSparkline()  (dòng ~191)
-┌─────────────┬─────────┐
-│ Cấu hình    │ Mô tả   │
-├─────────────┼─────────┤
-│ strokeStyle │ #21918c │
-│ lineWidth   │ 1       │
-└─────────────┴─────────┘
-────────────────────────────────────────────────────────────────────────────────
-🎯 Tóm tắt nhanh
-┌─────────────────────────────────┬──────────┬──────────────────────────────────────────────┐
-│ Bạn muốn thay đổi               │ Vào file │ Vị trí                                       │
-├─────────────────────────────────┼──────────┼──────────────────────────────────────────────┤
-│ Kích thước sidebar (290px)      │ style.cs │ #main-layout grid                            │
-│                                 │ s        │                                              │
-│ Màu nền, border, padding card   │ style.cs │ .card, .card-header                          │
-│                                 │ s        │                                              │
-│ Kích thước canvas biểu đồ       │ index.ht │ Attributes width/height trên thẻ <canvas>    │
-│                                 │ ml       │                                              │
-│ Màu teal chủ đạo (#21918c)      │ main.js  │ Dòng 19: ACCENT_COLOR                        │
-│ Màu fill boxplot, density,      │ main.js  │ Hàm drawBoxplot, drawDensityPlot,            │
-│ network                         │          │ drawNetworkChart                             │
-│ Độ cao 3D terrain               │ main.js  │ Dòng 6: MAX_HEIGHT                           │
-│ Độ opaque wireframe/surface     │ main.js  │ Dòng ~98-106                                 │
-│ Hệ số làm mượt lerp             │ main.js  │ Dòng 3: ALPHA                                │
-│ Kích thước sparkline            │ main.js  │ Dòng ~69: width="40" height="14"             │
-│ Màu Top bar / Status            │ style.cs │ #top-bar, .status-dot                        │
-│                                 │ s        │                                              │
-└─────────────────────────────────┴──────────┴──────────────────────────────────────────────┘
+🖌️ **CẤU HÌNH MÀU SẮC & BIỂU ĐỒ** — `src/ui.js`
+
+Màu chủ đạo (Accent Color): `#21918c` (Viridis teal) — định nghĩa trong `src/constants.js`
+
+**3D Three.js** — `src/threeScene.js`
+┌──────────────────────────┬────────┬──────────────────────────────────────┐
+│ Cấu hình                 │ Dòng   │ Mô tả                                │
+├──────────────────────────┼────────┼──────────────────────────────────────┤
+│ ALPHA                    │ const. │ Hệ số lerp = 0.1 (làm mượt độ cao)   │
+│ CORE_COUNT               │ const. │ 16 cores                             │
+│ TIME_WINDOW              │ const. │ 30s rolling window                   │
+│ MAX_HEIGHT               │ const. │ Chiều cao tối đa terrain = 20        │
+│ SQUARE_SPAN              │ const. │ 60 units                             │
+│ scene.background         │ ~16    │ #f8f9fa (trắng xám)                  │
+│ camera.position          │ ~19    │ (48, 70, 42) — góc isometric        │
+│ MeshBasicMaterial.opacity│ ~46    │ fill: 0.06, wireframe: 0.55          │
+│ Color                    │ const. │ #21918c (teal Viridis)               │
+└──────────────────────────┴────────┴──────────────────────────────────────┘
+
+**Boxplot** — `ui.js` function `drawTimeSeriesBoxplot()` (~ dòng 170)
+┌──────────────────────┬─────────────────────────────────────────────────┐
+│ Cấu hình             │ Mô tả                                           │
+├──────────────────────┼─────────────────────────────────────────────────┤
+│ margin left: 28      │ Khoảng cách lề trái                                │
+│ Vertical boxplot     │ Vẽ boxplot dọc (thay vì ngang)                  │
+│ Màu fill             │ #21918c, alpha 0.25                               │
+│ Màu stroke           │ #21918c, lineWidth 1.2                            │
+│ Median line          │ lineWidth = 2                                   │
+│ Stripplot            │ Jittered scatter cho block hiện tại (NOW)       │
+│ Time blocks          │ 5s mỗi block, tối đa 30 blocks (TimeSeriesBuffer)│
+└──────────────────────┴─────────────────────────────────────────────────┘
+
+**KDE Density** — `ui.js` function `drawDensityPlot()` (~ dòng 240)
+┌─────────────────────────┬──────────────────────────────────────────┐
+│ Cấu hình                │ Mô tả                                    │
+├─────────────────────────┼──────────────────────────────────────────┤
+│ pad = 4                 │ Lề                                        │
+│ steps = 60              │ Số điểm sampling KDE                      │
+│ bandwidth = range / 12  │ Bandwidth KDE (Silverman's rule of thumb) │
+│ kernel                  │ Gaussian (exp(-0.5 * d²))                │
+│ Màu fill                │ #21918c, alpha 0.2                       │
+│ Line width              │ 1.5                                      │
+│ Data source             │ GPU 0 load history (hoặc first GPU)      │
+└─────────────────────────┴──────────────────────────────────────────┘
+
+**GPU Time-Series** — `ui.js` function `drawGpuTimeSeries()` (~ dòng 310)
+┌──────────────────────────┬──────────────────────────────────────────┐
+│ Cấu hình                 │ Mô tả                                    │
+├──────────────────────────┼──────────────────────────────────────────┤
+│ pad                      │ top: 4, right: 4, bottom: 14, left: 30  │
+│ GPU 0 line               │ #21918c (teal)                          │
+│ GPU 1 line               │ #d4a017 (gold, conditional)             │
+│ Line width               │ 1.5, fill alpha 0.1                     │
+│ Window                   │ 30 data points                          │
+└──────────────────────────┴──────────────────────────────────────────┘
+
+**Network Chart** — `ui.js` function `drawNetwork()` + `drawLine()` (~ dòng 413)
+┌──────────────────────────┬──────────────────────────────────────────┐
+│ Cấu hình                 │ Mô tả                                    │
+├──────────────────────────┼──────────────────────────────────────────┤
+│ Recv line                │ #21918c (teal)                          │
+│ Sent line                │ #fde725 (yellow Viridis)                │
+│ Line width               │ 2.0                                     │
+│ Normalization            │ scale bởi max value trong window         │
+│ Window                   │ 30 data points                          │
+└──────────────────────────┴──────────────────────────────────────────┘
+
+**Sparkline** — `ui.js` f
