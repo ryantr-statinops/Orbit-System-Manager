@@ -33,5 +33,9 @@ src-tauri/target/
 dist-backend/
 src-tauri/binaries/
 
-36 | # Orphaned files
-37 | # End of file
+# Conda / pip build artifacts
+*.egg-info/
+*.egg
+.eggs/
+pip-wheel-metadata/
+.conda/

@@ -1,0 +1,18 @@
+# Orbit System Manager — Conda Environment
+# Create with: conda env create -f environment.yml
+# Update with:  conda env update -f environment.yml
+
+name: orbit-system
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.11,<3.13
+  - pip
+  # System resource metrics (CPU, RAM, Network I/O)
+  - psutil>=5.9.0
+  # WebSocket server for streaming data
+  - websockets>=12.0
+  # NVIDIA GPU metrics (installed via pip — not available on conda-forge)
+  - pip:
+    - GPUtil>=1.4.0
