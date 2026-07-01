@@ -668,6 +668,45 @@ function drawLine(ctx, values, color, canvas) {
 }
 
 // ----------------------------------------------------------------
+// Responsive Resize
+// ----------------------------------------------------------------
+
+export function handleResize() {
+  if (window.__threeScene) {
+    window.__threeScene.resize();
+  }
+
+  resizeCanvas(dom.boxplotCanvas);
+  resizeCanvas(dom.ramTimeseriesCanvas);
+  resizeCanvas(dom.densityCanvas);
+  resizeCanvas(dom.gpuTimeseriesCanvas);
+  resizeCanvas(dom.networkCanvas);
+
+  document.querySelectorAll('.core-spark').forEach((canvas, i) => {
+    const parent = canvas.parentElement;
+    const availableWidth = parent ? parent.clientWidth - 24 - 30 - 5 - 2 : 40;
+    const newWidth = Math.max(40, Math.min(80, Math.round(availableWidth * 0.15)));
+    if (canvas.width !== newWidth) {
+      canvas.width = newWidth;
+      drawSparkline(canvas, coreHistories[i]);
+    }
+  });
+
+  drawTimeSeriesBoxplot();
+  drawDensityPlot();
+  drawGpuTimeSeries();
+  drawRamTimeSeries();
+  drawAllSparklines();
+}
+
+function resizeCanvas(canvas) {
+  if (!canvas) return;
+  const parent = canvas.parentElement;
+  const w = parent ? parent.clientWidth : 290;
+  canvas.width = Math.max(100, Math.round(w - 16));
+}
+
+// ----------------------------------------------------------------
 // Sidebar Toggle Buttons
 // ----------------------------------------------------------------
 
@@ -779,6 +818,7 @@ export function initSplitters() {
           left: colLeft.offsetWidth,
           right: colRight.offsetWidth,
         }));
+        handleResize();
         // Prevent text selection from lingering
         document.body.style.userSelect = '';
       };

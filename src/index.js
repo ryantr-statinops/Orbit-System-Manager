@@ -1,6 +1,6 @@
 import { ThreeScene } from './threeScene.js';
 import { TelemetryClient } from './websocket.js';
-import { dom, drawTimeSeriesBoxplot, drawDensityPlot, drawGpuTimeSeries, drawRamTimeSeries, drawAllSparklines, initSplitters, initSidebarToggles } from './ui.js';
+import { dom, drawTimeSeriesBoxplot, drawDensityPlot, drawGpuTimeSeries, drawRamTimeSeries, drawAllSparklines, initSplitters, initSidebarToggles, handleResize } from './ui.js';
 
 // Side chart redraw throttle
 let sideChartTick = 0;
@@ -21,6 +21,14 @@ function init() {
   initSidebarToggles();
   initSplitters();
   const scene = new ThreeScene(dom.container);
+  window.__threeScene = scene;
+
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    cancelAnimationFrame(resizeTimeout);
+    resizeTimeout = requestAnimationFrame(handleResize);
+  });
+
   const client = new TelemetryClient();
   client.connect();
 

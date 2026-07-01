@@ -25,6 +25,15 @@ export class ThreeScene {
     this._initGeometry();
   }
 
+  resize() {
+    const container = this.renderer.domElement.parentElement;
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    this.renderer.setSize(w, h);
+    this.camera.aspect = w / h;
+    this.camera.updateProjectionMatrix();
+  }
+
   _initGeometry() {
     const geometry = new THREE.PlaneGeometry(PLANE_WIDTH, PLANE_DEPTH, SEGMENTS_X, SEGMENTS_Z);
     geometry.rotateX(-Math.PI / 2);
