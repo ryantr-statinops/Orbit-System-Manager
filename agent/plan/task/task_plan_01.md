@@ -45,7 +45,7 @@ Khi kéo splitter, kích thước cột thay đổi nhưng các canvas bên tron
 
 ## Phase 2: Kế hoạch triển khai
 
-### 2.1 Thêm `resize()` method vào `ThreeScene` (2.1)
+### 2.1 Thêm `resize()` method vào `ThreeScene`
 **File:** `src/threeScene.js`
 
 ```js
@@ -66,27 +66,21 @@ resize() {
 
 ---
 
-### 2.2 Tạo hàm `handleResize` trong `ui.js` (2.2)
+### 2.2 Tạo hàm `handleResize` trong `ui.js`
 **File:** `src/ui.js`
-
-**Thêm cuối file** (trước export hoặc cuối module):
 
 ```js
 export function handleResize() {
-  // Resize Three.js
   if (window.__threeScene) {
     window.__threeScene.resize();
   }
 
-  // Resize 2D canvases in col-left
   resizeCanvas(dom.boxplotCanvas, 290, 160);
-  // Resize 2D canvases in col-right
   resizeCanvas(dom.ramTimeseriesCanvas, 290, 80);
   resizeCanvas(dom.densityCanvas, 290, 60);
   resizeCanvas(dom.gpuTimeseriesCanvas, 290, 80);
   resizeCanvas(dom.networkCanvas, 290, 90);
 
-  // Redraw all charts
   drawTimeSeriesBoxplot();
   drawDensityPlot();
   drawGpuTimeSeries();
@@ -94,21 +88,18 @@ export function handleResize() {
   drawAllSparklines();
 }
 
-function resizeCanvas(canvas, defaultHeight) {
+function resizeCanvas(canvas, defaultWidth, defaultHeight) {
   if (!canvas) return;
   const parent = canvas.parentElement;
-  const w = parent ? parent.clientWidth : defaultHeight;
-  const ratio = canvas.width / canvas.height || 1;
-  canvas.width = Math.max(100, w - 16); // account for card padding
-  canvas.height = Math.round(canvas.width / ratio);
+  const w = parent ? parent.clientWidth : defaultWidth;
+  canvas.width = Math.max(100, w - 16);
+  canvas.height = defaultHeight;
 }
 ```
 
-> **Lưu ý:** Các canvas trong side columns không cần thay đổi `height`, chỉ cần `width` co giãn theo cột. Giữ nguyên aspect ratio để nội dung không bị méo.
-
 ---
 
-### 2.3 Gắn resize listener trong `index.js` (2.3)
+### 2.3 Gắn resize listener trong `index.js`
 **File:** `src/index.js`
 
 **Import thêm:**
@@ -118,10 +109,8 @@ import { ..., handleResize } from './ui.js';
 
 **Trong `init()`, sau khi `const scene = new ThreeScene(dom.container)`:**
 ```js
-// Expose scene cho resize handler
 window.__threeScene = scene;
 
-// Debounced resize handler
 let resizeTimeout;
 window.addEventListener('resize', () => {
   cancelAnimationFrame(resizeTimeout);
@@ -136,44 +125,38 @@ window.addEventListener('resize', () => {
 
 ---
 
-### 2.4 Patch splitter `onUp` để trigger resize (2.4)
-**File:** `src/ui.js:775-784` (trong `initSplitters`)
+### 2.4 Patch splitter `onUp` để trigger resize
+**File:** `src/ui.js` (trong `initSplitters`, callback `onUp`)
 
-Trong callback `onUp`, thêm sau dòng `localStorage.setItem(...)`:
+Sau dòng `localStorage.setItem(...)`:
 ```js
 handleResize();
 ```
 
-Đảm bảo import hoặc expose `handleResize` trong scope của `initSplitters`.
-
 ---
 
-### 2.5 Xoá hardcoded dimensions khỏi HTML (2.5 — optional)
+### 2.5 Xoá hardcoded dimensions khỏi HTML (optional)
 **File:** `index.html`
 
-Có thể xoá `width` và `height` attributes khỏi các `<canvas>` vì chúng sẽ được set động qua JS:
+Có thể xoá `width` và `height` attributes khỏi các `<canvas>`:
 - `#boxplot-canvas`: `width="290" height="160"` → bỏ
 - `#ram-timeseries-canvas`: `width="290" height="80"` → bỏ
 - `#density-canvas`: `width="290" height="60"` → bỏ
 - `#gpu-timeseries-canvas`: `width="290" height="80"` → bỏ
 - `#network-canvas`: `width="290" height="90"` → bỏ
 
-Không xoá `canvas.core-spark` (40x14) vì chúng được tạo động trong JS.
-
-> **Lưu ý:** Việc này có thể làm mất kích thước mặc định nếu JS load chậm — cần cân nhắc hoặc giữ lại để fallback.
+> **Lưu ý:** Có thể giữ lại để fallback nếu JS load chậm.
 
 ---
 
-### 2.6 Sparkline canvases resize (2.6)
+### 2.6 Sparkline canvases resize
 **File:** `src/ui.js`
-
-Các sparkline canvas (40x14) trong core bars được tạo động ở dòng 29-41. Khi cột trái rộng hơn 290px, có thể tăng chiều rộng sparkline để tận dụng không gian.
 
 Trong `handleResize()`:
 ```js
 document.querySelectorAll('.core-spark').forEach((canvas, i) => {
   const parent = canvas.parentElement;
-  const availableWidth = parent ? parent.clientWidth - 24 - 30 - 5 - 2 : 40; // label + track + value + gap
+  const availableWidth = parent ? parent.clientWidth - 24 - 30 - 5 - 2 : 40;
   const newWidth = Math.max(40, Math.min(80, availableWidth * 0.15));
   if (canvas.width !== newWidth) {
     canvas.width = newWidth;
@@ -188,33 +171,25 @@ document.querySelectorAll('.core-spark').forEach((canvas, i) => {
 
 ### 3.1 Test Three.js resize
 ```js
-// Mở DevTools Console:
 window.__threeScene.resize();
 // Kiểm tra: renderer.domElement.width / height = container mới
 ```
 
 ### 3.2 Test 2D canvas resize
-```js
-// Kéo splitter giữa → cột trái rộng hơn
-// Kiểm tra: canvas#boxplot-canvas.width > 290
-// Kiểm tra: nội dung boxplot được redraw đúng
-```
+- Kéo splitter → cột trái rộng hơn
+- Kiểm tra: `canvas#boxplot-canvas.width > 290`
 
 ### 3.3 Test window resize
-- Kéo góc window to ra / nhỏ lại
-- Kiểm tra: 3D scene fill đúng center column
-- Kiểm tra: 2D charts fill đúng side columns
+- Kéo góc window to/nhỏ → 3D scene + 2D charts fill đúng
 
 ### 3.4 Test toggle sidebar
-- Nhấn nút mũi tên trên top bar để ẩn/hiện panel trái/phải
-- Kiểm tra: center column mở rộng chiếm khoảng trống
-- Kiểm tra: 3D scene renderer update kích thước
+- Ẩn/hiện panel trái/phải → center column mở rộng, scene update
 
 ### 3.5 Edge cases
 - Resize về kích thước rất nhỏ (min-width)
 - Toggle sidebar nhiều lần liên tiếp
 - Kéo splitter đến giới hạn (290px min)
-- Window bị minimize rồi restore
+- Window minimize rồi restore
 
 ---
 
@@ -222,10 +197,10 @@ window.__threeScene.resize();
 
 | File | Thay đổi | Rủi ro |
 |---|---|---|
-| `src/threeScene.js` | +1 method `resize()` | Thấp — chỉ thêm method mới |
-| `src/ui.js` | +2 functions: `handleResize()`, `resizeCanvas()` + patch `initSplitters` | Trung bình — cần import đúng |
+| `src/threeScene.js` | +1 method `resize()` | Thấp |
+| `src/ui.js` | +2 functions + patch `initSplitters` | Trung bình |
 | `src/index.js` | +5 dòng | Thấp |
-| `index.html` | Có thể xoá width/height (optional) | Thấp — nếu JS không load thì canvas mất kích thước mặc định |
+| `index.html` | Xoá width/height (optional) | Thấp |
 
 **Không ảnh hưởng:** `constants.js`, `state.js`, `websocket.js`, `timeSeries.js`, `style.css`
 
@@ -235,11 +210,10 @@ window.__threeScene.resize();
 
 | File | Vai trò |
 |---|---|
-| `src/threeScene.js` | Cần thêm `resize()` method |
-| `src/ui.js` | Cần thêm `handleResize()`, patch `initSplitters` |
-| `src/index.js` | Cần thêm event listener + expose scene |
-| `index.html` | Có thể xoá hardcoded canvas dimensions |
-| `style.css` | Không cần thay đổi (CSS đã dùng `flex: 1` cho center canvas) |
+| `src/threeScene.js` | Thêm `resize()` method |
+| `src/ui.js` | Thêm `handleResize()`, patch `initSplitters` |
+| `src/index.js` | Thêm event listener + expose scene |
+| `index.html` | Xoá hardcoded canvas dimensions (optional) |
 
 ---
 
