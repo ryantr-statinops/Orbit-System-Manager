@@ -29,6 +29,8 @@ function init() {
     resizeTimeout = requestAnimationFrame(handleResize);
   });
 
+  handleResize();
+
   const client = new TelemetryClient();
   client.connect();
 
