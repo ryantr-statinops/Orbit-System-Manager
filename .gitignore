@@ -11,17 +11,10 @@ Desktop.ini
 # AI skills & system prompts
 .antigravitycli/
 
-
-# Node / frontend build output
-node_modules/
-dist/
-.rollup.cache/
-
-# Rust / Tauri build output
-core/target/
+# Rust build artifacts
 target/
+Cargo.lock
 
 # Cache artifacts
 __pycache__/
 *.py[cod]
-
