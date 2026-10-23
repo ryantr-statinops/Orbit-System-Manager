@@ -2,7 +2,7 @@
   "name": "orbit-system-manager",
   "version": "1.0.0",
   "description": "Orbit System Manager - Real-time System Monitoring & 3D Topology",
-  "main": "src/index.js",
+  "main": "ui/index.js",
   "type": "module",
   "scripts": {
     "build": "rollup -c && node -e \"let h=require('fs').readFileSync('index.html','utf8');h=h.replace('dist/bundle.js','bundle.js');require('fs').writeFileSync('dist/index.html',h);require('fs').cpSync('style.css','dist/style.css')\"",

@@ -3,7 +3,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import { babel } from '@rollup/plugin-babel';
 
 export default {
-  input: 'src/index.js',
+  input: 'ui/index.js',
   output: {
     file: 'dist/bundle.js',
     format: 'iife',
