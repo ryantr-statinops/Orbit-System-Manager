@@ -1,5 +1,5 @@
 import { ThreeScene } from './threeScene.js';
-import { TelemetryClient } from './websocket.js';
+import { TelemetryClient } from './telemetryClient.js';
 import { dom, drawTimeSeriesBoxplot, drawDensityPlot, drawGpuTimeSeries, drawRamTimeSeries, drawAllSparklines, initSplitters, initSidebarToggles, handleResize } from './ui.js';
 
 // Side chart redraw throttle

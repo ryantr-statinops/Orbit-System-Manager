@@ -11,6 +11,7 @@
     "build:app": "npm run build && tauri build -c core/tauri.conf.json"
   },
   "dependencies": {
+    "@tauri-apps/api": "^2.0.0",
     "three": "^0.152.0"
   },
   "devDependencies": {

@@ -1,37 +1,55 @@
-import { WS_URL } from './constants.js';
 import { connectionState, targetGrid, gpuHistory0, gpuHistory1, historyDensity } from './state.js';
 import { tsBuffer } from './timeSeries.js';
 import { updateCoreBars, updateHUD, setStatus, startMockTelemetry, stopMockTelemetry } from './ui.js';
 
 export class TelemetryClient {
   constructor() {
-    this.ws = null;
-    this.retryDelay = 2000;
-    this.reconnectTimer = null;
+    this.unlisten = null;
   }
 
-  connect() {
-    if (this.ws) this.ws.close();
+  async connect() {
+    // Check if running inside Tauri desktop shell
+    const isTauri = typeof window !== 'undefined' && Boolean(window.__TAURI_INTERNALS__ || window.__TAURI__);
 
-    this.ws = new WebSocket(WS_URL);
-    this.ws.onopen = () => {
-      connectionState.isConnected = true;
-      setStatus('online');
-      stopMockTelemetry();
-    };
-    this.ws.onmessage = event => this._handleMessage(JSON.parse(event.data));
-    this.ws.onclose = () => {
-      connectionState.isConnected = false;
-      setStatus('mock');
-      startMockTelemetry();
-      this._scheduleReconnect();
-    };
-    this.ws.onerror = () => {
-      this.ws.close();
-    };
+    if (isTauri) {
+      try {
+        let listenFn = window.__TAURI__?.event?.listen;
+        if (!listenFn) {
+          const tauriEvent = await import('@tauri-apps/api/event').catch(() => null);
+          listenFn = tauriEvent?.listen;
+        }
+
+        if (listenFn) {
+          connectionState.isConnected = true;
+          setStatus('online');
+          stopMockTelemetry();
+
+          this.unlisten = await listenFn('telemetry-data', (event) => {
+            this._handleMessage(event.payload);
+          });
+          return;
+        }
+      } catch (err) {
+        console.warn('Could not connect to Tauri event channel, falling back to mock:', err);
+      }
+    }
+
+    // Standalone browser fallback (dev preview or testing outside Tauri)
+    connectionState.isConnected = false;
+    setStatus('mock');
+    startMockTelemetry();
+  }
+
+  disconnect() {
+    if (this.unlisten) {
+      this.unlisten();
+      this.unlisten = null;
+    }
+    stopMockTelemetry();
   }
 
   _handleMessage(data) {
+    if (!data) return;
     connectionState.latestMetrics = data;
     if (data.cpu_detail?.cores) pushTelemetryRow(data.cpu_detail.cores);
     updateCoreBars(data.cpu_detail?.cores);
@@ -48,21 +66,12 @@ export class TelemetryClient {
           gpuHistory1.push(load);
         }
       });
-      // Cap GPU history arrays independently to handle 1 vs 2 GPUs
       while (gpuHistory0.length > 30) gpuHistory0.shift();
       while (gpuHistory1.length > 30) gpuHistory1.shift();
       while (historyDensity.length > 100) {
         historyDensity.splice(0, historyDensity.length - 100);
       }
     }
-  }
-
-  _scheduleReconnect() {
-    if (this.reconnectTimer) return;
-    this.reconnectTimer = setTimeout(() => {
-      this.connect();
-      this.reconnectTimer = null;
-    }, this.retryDelay);
   }
 }
 
