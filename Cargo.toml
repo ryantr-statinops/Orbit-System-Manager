@@ -21,3 +21,10 @@ log = "0.4"
 
 [build-dependencies]
 slint-build = "1.9"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
