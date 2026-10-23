@@ -82,5 +82,5 @@ jobs:
           npm run build
 
       - name: Check Rust Compilation
-        working-directory: src-tauri
+        working-directory: core
         run: cargo check

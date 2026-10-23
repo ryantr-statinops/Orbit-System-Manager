@@ -45,4 +45,4 @@ RUN npm ci
 COPY . .
 
 # 6. Build script: frontend bundle + tauri packages
-CMD ["bash", "-c", "npm run build && npx tauri build --bundles deb,appimage"]
+CMD ["bash", "-c", "npm run build && npx tauri build -c core/tauri.conf.json --bundles deb,appimage"]

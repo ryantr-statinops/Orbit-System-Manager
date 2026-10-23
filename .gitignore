@@ -27,11 +27,11 @@ dist/
 .rollup.cache/
 
 # Rust / Tauri build output
-src-tauri/target/
+core/target/
+target/
 
-# Python backend binary (built from app.py)
+# Backend build output
 dist-backend/
-src-tauri/binaries/
 
 # Conda / pip build artifacts
 *.egg-info/
