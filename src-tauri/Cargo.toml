@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "Orbit System Manager - Desktop system monitoring app"
 authors = ["ryantr-statinops"]
 license = "MIT"
-repository = "https://github.com/ryantr-statinops/task_manager_3D_visualize"
+repository = "https://github.com/ryantr-statinops/Orbit-System-Manager"
 edition = "2021"
 rust-version = "1.77.2"
 
