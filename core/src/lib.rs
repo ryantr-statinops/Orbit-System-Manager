@@ -1,55 +1,37 @@
-use std::sync::Mutex;
-use tauri::Manager;
-use tauri_plugin_shell::ShellExt;
-use tauri_plugin_shell::process::CommandChild;
+pub mod telemetry;
 
-struct SidecarChild(Mutex<Option<CommandChild>>);
+use std::time::Duration;
+use tauri::{Emitter, Manager};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-  tauri::Builder::default()
-    .plugin(tauri_plugin_shell::init())
-    .setup(|app| {
-      if cfg!(debug_assertions) {
-        app.handle().plugin(
-          tauri_plugin_log::Builder::default()
-            .level(log::LevelFilter::Info)
-            .build(),
-        )?;
-      }
-
-      // Start the Python backend sidecar (non-fatal if it fails)
-      let child = app.shell()
-        .sidecar("app")
-        .ok()
-        .and_then(|cmd| {
-          cmd.args(["--port", "8080", "--quiet"])
-             .spawn()
-             .ok()
-        })
-        .map(|(_rx, child)| child);
-
-      if child.is_some() {
-        log::info!("Python backend sidecar started on port 8080");
-      } else {
-        log::warn!("Python backend sidecar not available - frontend will use mock telemetry");
-      }
-
-      app.manage(SidecarChild(Mutex::new(child)));
-      Ok(())
-    })
-    .on_window_event(|window, event| {
-      if let tauri::WindowEvent::CloseRequested { .. } = event {
-        if let Some(state) = window.try_state::<SidecarChild>() {
-          if let Ok(mut guard) = state.0.lock() {
-            if let Some(child) = guard.take() {
-              let _ = child.kill();
-              log::info!("Python backend sidecar stopped");
+    tauri::Builder::default()
+        .setup(|app| {
+            if cfg!(debug_assertions) {
+                app.handle().plugin(
+                    tauri_plugin_log::Builder::default()
+                        .level(log::LevelFilter::Info)
+                        .build(),
+                )?;
             }
-          }
-        }
-      }
-    })
-    .run(tauri::generate_context!())
-    .expect("error while running tauri application");
+
+            // Start native Rust telemetry background thread (1 Hz)
+            let app_handle = app.handle().clone();
+            std::thread::spawn(move || {
+                let mut collector = telemetry::collector::TelemetryCollector::new();
+                log::info!("Native Rust Telemetry Collector started (1 Hz interval)");
+
+                loop {
+                    std::thread::sleep(Duration::from_secs(1));
+                    let payload = collector.collect();
+                    if let Err(err) = app_handle.emit("telemetry-data", &payload) {
+                        log::debug!("Telemetry emit error: {err}");
+                    }
+                }
+            });
+
+            Ok(())
+        })
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
 }
