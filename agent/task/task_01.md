@@ -8,12 +8,12 @@
 
 ## Phase 1: 🚨 Fix lỗi chặn (Critical)
 
-### [ ] 1.1 Fix lỗi Python backend — IndentationError
+### [x] 1.1 Fix lỗi Python backend — IndentationError
 
-- [ ] Mở `app.py`, tìm method `WebSocketServer.start()` (~ dòng 405-416)
-- [ ] Sửa indent của 4 dòng `logger.info(...)` vào đúng trong method body
-- [ ] Kiểm tra: `conda activate orbit-system && python app.py --port 8080`
-- [ ] Kỳ vọng: Server chạy, không báo lỗi
+- [x] Mở `app.py`, tìm method `WebSocketServer.start()` (~ dòng 405-416)
+- [x] Sửa indent của 4 dòng `logger.info(...)` vào đúng trong method body
+- [x] Kiểm tra: `conda activate orbit-system && python app.py --port 8080`
+- [x] Kỳ vọng: Server chạy, không báo lỗi
 
 ### [ ] 1.2 Cài Rust toolchain
 
@@ -30,10 +30,10 @@
 - [ ] Build lại: `npx rollup -c` *(chưa build lại)*
 - [ ] Mở `index.html` kiểm tra charts vẫn hiển thị *(chưa kiểm tra)*
 
-### [ ] 1.4 Xác nhận Python syntax OK
+### [x] 1.4 Xác nhận Python syntax OK
 
-- [ ] `conda run -n orbit-system python -c "import ast; ast.parse(open('app.py').read()); print('OK')"`
-- [ ] Kỳ vọng: in ra `OK`
+- [x] `conda run -n orbit-system python -c "import ast; ast.parse(open('app.py').read()); print('OK')"`
+- [x] Kỳ vọng: in ra `OK`
 
 ---
 

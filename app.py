@@ -403,11 +403,11 @@ class WebSocketServer:
         The server runs until cancelled (Ctrl+C) or an unrecoverable
         error occurs.
         """
-    logger.info("=" * 52)
-    logger.info("  Orbit System Manager — Backend Service")
-    logger.info("  Endpoint: ws://%s:%d", self.host, self.port)
-    logger.info("  Sampling: 1 Hz")
-    logger.info("=" * 52)
+        logger.info("=" * 52)
+        logger.info("  Orbit System Manager — Backend Service")
+        logger.info("  Endpoint: ws://%s:%d", self.host, self.port)
+        logger.info("  Sampling: 1 Hz")
+        logger.info("=" * 52)
 
         try:
             async with websockets.serve(
