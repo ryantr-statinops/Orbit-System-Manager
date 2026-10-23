@@ -1,8 +1,8 @@
 # 🛸 Orbit System Manager
 
-[![Download](https://img.shields.io/badge/Download-Latest_Release-green?style=for-the-badge&logo=github)](https://github.com/ryantr-statinops/task_manager_3D_visualize/releases)
+[![Download](https://img.shields.io/badge/Download-Latest_Release-green?style=for-the-badge&logo=github)](https://github.com/ryantr-statinops/Orbit-System-Manager/releases)
 
-**Ứng dụng giám sát hệ thống thời gian thực với trực quan hoá 3D CPU, RAM, GPU và Network**
+**Ứng dụng giám sát hệ thống thời gian thực với trực quan hoá 3D CPU, RAM, GPU và Network (Pure Rust & Tauri v2)**
 
 ![Orbit System Manager](assets/images/example.png)
 
@@ -14,11 +14,12 @@ Orbit System Manager là desktop app giám sát hiệu năng hệ thống theo t
 
 ### Cách 1: Download từ GitHub Releases (khuyên dùng)
 
-1. Truy cập **[Releases](https://github.com/ryantr-statinops/task_manager_3D_visualize/releases)** của repo này
+1. Truy cập **[Releases](https://github.com/ryantr-statinops/Orbit-System-Manager/releases)** của repo này
 2. Tải file mới nhất:
    - **`Orbit-System-Manager_x64-setup.exe`** — dành cho Windows (NSIS installer)
-3. **Double-click** file vừa tải → chạy trình cài đặt
-4. Sau khi cài xong, app sẽ có trong **Start Menu** 🎉
+   - **`.AppImage` / `.deb`** — dành cho Linux
+   - **`.dmg`** — dành cho macOS
+3. Cài đặt và mở app từ Start Menu / Applications 🎉
 
 > **Lưu ý:** Windows Defender có thể hiện cảnh báo "Windows protected your PC". Nhấn **"More info"** → **"Run anyway"** để tiếp tục.
 
@@ -33,14 +34,15 @@ Trong mục **Releases**, tải file `.zip` và giải nén, chạy `Orbit Syste
 ### Khi app khởi động
 
 App sẽ tự động:
-1. Mở cửa sổ desktop với giao diện 3 cột
-2. Kết nối WebSocket đến backend thu thập dữ liệu hệ thống
-3. Nếu không có backend, app tự động dùng **dữ liệu giả lập** — bạn vẫn xem được đầy đủ demo
+1. Mở cửa sổ desktop native siêu nhẹ với giao diện 3 cột
+2. Khởi chạy luồng đo phần cứng native bằng Rust (`sysinfo`) với tần số 1 Hz
+3. Tự động stream dữ liệu trực tiếp vào WebView qua kênh bộ nhớ Tauri IPC nội bộ (zero network overhead)
+4. Nếu mở trên trình duyệt web độc lập bên ngoài Tauri, app tự động chuyển sang chế độ **dữ liệu mô phỏng (Mock Telemetry)**
 
 ### Các thao tác chính
 
 | Thao tác | Mô tả |
-|---------|-------|
+| :--- | :--- |
 | **🖱️ Kéo thả splitter (gạch dọc)** | Resize 3 cột, kích thước được lưu tự động |
 | **◀▶ Nhấn nút mũi tên trên thanh top bar** | Ẩn/hiện panel trái và phải |
 | **🔄 Xoay 3D** | Giữ chuột trái + kéo trên canvas 3D |
@@ -70,26 +72,42 @@ App sẽ tự động:
 ## 🔧 Yêu cầu hệ thống
 
 | Yêu cầu | Tối thiểu |
-|---------|-----------|
-| **Hệ điều hành** | Windows 10 / 11 (64-bit) |
-| **RAM** | 2 GB |
-| **GPU** | Không bắt buộc (có càng tốt để xem GPU charts) |
+| :--- | :--- |
+| **Hệ điều hành** | Windows 10/11, Ubuntu 22.04+ (Linux), macOS 11+ |
+| **RAM** | < 50 MB khi app đang chạy |
+| **GPU** | Hỗ trợ WebGL |
 
 ---
 
 ## 🏗️ Tổng quan kiến trúc
 
-![Architecture Overview](assets/images/architecture_overview.png)
+```mermaid
+graph TD
+    subgraph Core_Rust [core/ — Rust Native Host]
+        TauriHost[Tauri v2 Shell]
+        Telemetry[sysinfo Collector 1Hz]
+        Telemetry -->|app_handle.emit 'telemetry-data'| TauriHost
+    end
+
+    subgraph UI_Web [ui/ — Webview Interface]
+        Client[telemetryClient.js]
+        ThreeJS[threeScene.js — 3D CPU Terrain]
+        CanvasHUD[ui.js — 2D HUD Charts]
+        Client --> ThreeJS
+        Client --> CanvasHUD
+    end
+
+    TauriHost -->|Direct In-Memory IPC| Client
+```
 
 ### Công nghệ sử dụng
 
 | Thành phần | Công nghệ |
-|-----------|-----------|
-| **Desktop shell** | [Tauri v2](https://tauri.app) (Rust) |
-| **Frontend** | Vanilla JS + [Three.js](https://threejs.org) |
-| **Backend** | Python + [websockets](https://websockets.readthedocs.io) |
-| **System metrics** | [psutil](https://github.com/giampaolo/psutil) + [GPUtil](https://github.com/anderskm/gputil) |
+| :--- | :--- |
+| **Desktop Shell & Telemetry** | [Tauri v2](https://tauri.app) (Rust) + [sysinfo](https://crates.io/crates/sysinfo) |
+| **Frontend UI** | Vanilla JS + [Three.js](https://threejs.org) + Canvas 2D API |
 | **Bundler** | [Rollup](https://rollupjs.org) |
+| **CI / CD Container** | Docker (Ubuntu 22.04 + WebKitGTK) |
 
 ---
 
@@ -98,122 +116,81 @@ App sẽ tự động:
 ### Yêu cầu
 
 | Công cụ | Phiên bản |
-|---------|-----------|
-| [Miniconda / Conda](https://docs.conda.io/en/latest/miniconda.html) | ≥ 24 |
+| :--- | :--- |
 | [Node.js](https://nodejs.org) | ≥ 18 |
-| [Rust](https://www.rust-lang.org) | ≥ 1.77 |
-| OS | Windows 10/11 |
-
-### Thiết lập môi trường Python (Miniconda)
-
-Dự án sử dụng **Miniconda** để quản lý môi trường Python độc lập. Môi trường được định nghĩa trong `environment.yml`:
-
-```bash
-# 1. Tạo môi trường từ file cấu hình
-conda env create -f environment.yml
-
-# 2. Kích hoạt môi trường
-conda activate orbit-system
-
-# 3. Kiểm tra backend hoạt động
-python app.py --port 8080
-```
-
-Nếu cần cập nhật dependencies sau khi pull code mới:
-```bash
-conda env update -f environment.yml --prune
-```
-
-Để export lại môi trường sau khi thay đổi:
-```bash
-conda env export -n orbit-system --no-builds > environment.yml
-```
+| [Rust & Cargo](https://www.rust-lang.org) | ≥ 1.77 |
 
 ### Cài đặt & Build
 
 ```bash
-# 1. Clone repo
-git clone https://github.com/ryantr-statinops/task_manager_3D_visualize.git
-cd task_manager_3D_visualize
+# 1. Clone repository
+git clone https://github.com/ryantr-statinops/Orbit-System-Manager.git
+cd Orbit-System-Manager
 
-# 2. Thiết lập Python environment (Miniconda)
-conda env create -f environment.yml
-conda activate orbit-system
-
-# 3. Cài npm dependencies
+# 2. Cài đặt npm dependencies
 npm install
 
-# 4. Build frontend
+# 3. Build frontend bundle
 npm run build
 
-# 5. Build desktop app (ra file .msi / .exe)
+# 4. Build ứng dụng desktop (ra file .msi / .exe / .deb / .AppImage)
 npm run build:app
 ```
 
 File cài đặt sau khi build sẽ nằm tại:
 
 | Định dạng | Đường dẫn |
-|-----------|----------|
-| 📦 **MSI** | `src-tauri/target/release/bundle/msi/` |
-| 📦 **NSIS** | `src-tauri/target/release/bundle/nsis/` |
+| :--- | :--- |
+| 📦 **MSI** | `core/target/release/bundle/msi/` |
+| 📦 **NSIS (.exe)** | `core/target/release/bundle/nsis/` |
+| 📦 **AppImage / DEB** | `core/target/release/bundle/appimage/` hoặc `deb/` |
 
 ### Chạy chế độ development
 
 ```bash
-# Terminal 1: Python backend (với conda environment)
-conda activate orbit-system
-python app.py --port 8080
-
-# Terminal 2: Frontend dev + Tauri desktop
 npm run dev
 ```
 
 Lệnh `npm run dev` sẽ tự động:
 1. Chạy `node scripts/dev-server.mjs` (static server tại port 3000)
 2. Mở WebView window của Tauri trỏ tới `http://localhost:3000`
-3. Frontend kết nối WebSocket tới Python backend
+3. Kích hoạt luồng telemetry Rust và stream dữ liệu trực tiếp vào UI
 
 ---
 
 ## 📁 Cấu trúc thư mục
 
 ```
-task_manager_3D_visualize/
-├── src-tauri/           # Tauri (Rust) — desktop app
-├── src/                 # Frontend source (JS modules)
+Orbit-System-Manager/
+├── core/                # Rust Native Core & Tauri Host
+│   ├── Cargo.toml       # Rust dependencies (sysinfo, tauri v2, serde)
+│   ├── tauri.conf.json  # Desktop window & bundle configuration
+│   └── src/
+│       ├── main.rs      # Native entry point
+│       ├── lib.rs       # Tauri builder & telemetry event loop
+│       └── telemetry/   # Hardware telemetry collector (sysinfo)
+│           ├── mod.rs
+│           ├── models.rs
+│           └── collector.rs
+├── ui/                  # Frontend UI Source (Web / JS modules)
 │   ├── index.js         # Entry point
 │   ├── state.js         # Global state
 │   ├── ui.js            # Charts, HUD, layout
 │   ├── threeScene.js    # 3D CPU topology (Three.js)
 │   ├── timeSeries.js    # Time‑series data structures
-│   ├── websocket.js     # WebSocket + mock fallback
+│   ├── telemetryClient.js # Tauri IPC event listener + mock fallback
 │   └── constants.js     # Constants
-├── agent/               # AI agent specifications & documentation
-│   ├── promts/          # Agent prompt specifications
-│   └── about/           # Project reference docs
+├── agent/               # Architectural plans & specifications
 ├── assets/images/       # Screenshots & assets
-├── app.py               # Python backend
-├── environment.yml      # Conda environment definition
+├── Dockerfile.build-linux # Linux packaging build container
 ├── index.html           # Entry HTML
 ├── style.css            # Styles
+├── rollup.config.js     # Rollup bundler config
 └── package.json         # npm scripts & dependencies
 ```
 
 ---
 
-## 🐞 Xử lý sự cố
-
-| Vấn đề | Giải pháp |
-|--------|-----------|
-| 🛡️ **Windows Defender chặn** | Nhấn **"More info"** → **"Run anyway"** |
-| ❌ **App mở ra nhưng trắng** | Tắt và mở lại app, hoặc restart máy |
-| 📊 **Không có dữ liệu GPU** | Máy không có GPU NVIDIA hoặc không hỗ trợ — các charts khác vẫn hoạt động |
-| 🔌 **Mất kết nối** | App tự động reconnect, nếu lâu quá thì restart app |
-| 💾 **Dung lượng RAM hiển thị sai** | App dùng dữ liệu từ `psutil`, dung lượng được tính theo hệ nhị phân (1 GB = 1024³ bytes) |
-| 🐍 **Conda environment lỗi** | Chạy `conda env update -f environment.yml --prune` để đồng bộ lại |
-
----
-
 ## 📄 Giấy phép
 
-MIT
+MIT License.
