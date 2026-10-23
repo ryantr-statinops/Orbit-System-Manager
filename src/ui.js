@@ -635,9 +635,20 @@ function mockProcesses(memoryPercent) {
   }));
 }
 
-function drawNetwork(network) {
+export function redrawNetworkChart() {
   const canvas = dom.networkCanvas;
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (historyNetwork.recv.length > 0) {
+    drawLine(ctx, historyNetwork.recv, '#21918c', canvas);
+  }
+  if (historyNetwork.sent.length > 0) {
+    drawLine(ctx, historyNetwork.sent, '#fde725', canvas);
+  }
+}
+
+function drawNetwork(network) {
   const sent = Number(network.sent_kbps || 0);
   const recv = Number(network.received_kbps || 0);
 
@@ -648,9 +659,7 @@ function drawNetwork(network) {
     historyNetwork.recv.shift();
   }
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawLine(ctx, historyNetwork.recv, '#21918c', canvas);
-  drawLine(ctx, historyNetwork.sent, '#fde725', canvas);
+  redrawNetworkChart();
 }
 
 function drawLine(ctx, values, color, canvas) {
@@ -676,11 +685,11 @@ export function handleResize() {
     window.__threeScene.resize();
   }
 
-  resizeCanvas(dom.boxplotCanvas);
-  resizeCanvas(dom.ramTimeseriesCanvas);
-  resizeCanvas(dom.densityCanvas);
-  resizeCanvas(dom.gpuTimeseriesCanvas);
-  resizeCanvas(dom.networkCanvas);
+  resizeCanvas(dom.boxplotCanvas, 160);
+  resizeCanvas(dom.ramTimeseriesCanvas, 80);
+  resizeCanvas(dom.densityCanvas, 60);
+  resizeCanvas(dom.gpuTimeseriesCanvas, 80);
+  resizeCanvas(dom.networkCanvas, 90);
 
   document.querySelectorAll('.core-spark').forEach((canvas, i) => {
     const parent = canvas.parentElement;
@@ -696,14 +705,18 @@ export function handleResize() {
   drawDensityPlot();
   drawGpuTimeSeries();
   drawRamTimeSeries();
+  redrawNetworkChart();
   drawAllSparklines();
 }
 
-function resizeCanvas(canvas) {
+function resizeCanvas(canvas, targetHeight) {
   if (!canvas) return;
   const parent = canvas.parentElement;
   const w = parent ? parent.clientWidth : 290;
   canvas.width = Math.max(100, Math.round(w - 16));
+  if (targetHeight) {
+    canvas.height = targetHeight;
+  }
 }
 
 // ----------------------------------------------------------------
