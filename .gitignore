@@ -1,12 +1,3 @@
-# Python environment
-__pycache__/
-*.py[cod]
-*$py.class
-.venv/
-venv/
-ENV/
-env/
-
 # Operating System Files
 Thumbs.db
 ehthumbs.db
@@ -30,12 +21,7 @@ dist/
 core/target/
 target/
 
-# Backend build output
-dist-backend/
+# Cache artifacts
+__pycache__/
+*.py[cod]
 
-# Conda / pip build artifacts
-*.egg-info/
-*.egg
-.eggs/
-pip-wheel-metadata/
-.conda/

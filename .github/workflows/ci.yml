@@ -7,22 +7,6 @@ on:
     branches: [main]
 
 jobs:
-  python-backend:
-    name: Verify Python Backend
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Verify Python Syntax
-        run: |
-          python -m py_compile app.py
-          python -c "import ast; ast.parse(open('app.py', encoding='utf-8').read()); print('app.py syntax is valid')"
-
   frontend-build:
     name: Verify Frontend Build
     runs-on: ubuntu-latest
@@ -43,7 +27,7 @@ jobs:
 
   tauri-cross-platform:
     name: Build Desktop (${{ matrix.platform }})
-    needs: [python-backend, frontend-build]
+    needs: [frontend-build]
     strategy:
       fail-fast: false
       matrix:
