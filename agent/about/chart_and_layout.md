@@ -1,128 +1,66 @@
-## 📁 Cấu trúc Frontend (Module ES6)
+# Slint UI Layout & Component Architecture
+
+Tài liệu này mô tả cấu trúc giao diện native của **Orbit System Manager** được định nghĩa bằng ngôn ngữ khai báo **Slint** trong `ui/appwindow.slint`.
+
+---
+
+## 🎨 Bố cục giao diện 3 cột (3-Column Layout)
+
+Ứng dụng sử dụng bố cục 3 cột hiện đại được điều phối qua `HorizontalLayout` với kích thước cửa sổ tối thiểu `1024 × 720` và kích thước ưu tiên `1280 × 800`.
 
 ```
-src/
-├── index.js         → Entry point (init ThreeScene, TelemetryClient, animation loop)
-├── state.js         → Global state (grids, histories, connection state)
-├── ui.js            → DOM, HUD, charts (boxplot, density, network, sparklines), splitters
-├── threeScene.js    → 3D CPU topology (Three.js PlaneGeometry + OrbitControls)
-├── timeSeries.js    → TimeSeriesBuffer (block-based boxplot data)
-├── websocket.js     → TelemetryClient (WebSocket + auto-reconnect + mock fallback)
-└── constants.js     → All constants (ALPHA, CORE_COUNT, COLORS, WS_URL...)
+┌────────────────────────────────────────────────────────────────────────┐
+│  🛸 ORBIT SYSTEM MANAGER          ● NATIVE SLINT ENGINE   1 HZ SAMPLING │ (Top Bar)
+├───────────────┬────────────────────────────────────────┬───────────────┤
+│  LEFT COLUMN  │             CENTER COLUMN              │ RIGHT COLUMN  │
+│    (310px)    │                (Flex: 1)               │    (290px)    │
+│               │                                        │               │
+│ - RAM Track   │ - 3D Topology Viewport Container       │ - GPU Card    │
+│ - 16 CoreBars │ - Max/Idle Core Summary Bar            │ - GPU Load Bar│
+│ - HUD Stats   │ - Load Distribution Indicators         │ - Net Speeds  │
+└───────────────┴────────────────────────────────────────┴───────────────┘
 ```
 
-────────────────────────────────────────────────────────────────────────────────
-🎨 **LAYOUT & CSS** — `style.css`
+---
 
-Bố cục 3 cột (Flexbox với splitters có thể kéo thả)
-┌────────────────┬──────┬──────────────────────────────────────────────────────┐
-│ Vị trí         │ Dòng │ Mô tả                                                │
-├────────────────┼──────┼──────────────────────────────────────────────────────┤
-│ #main-layout   │ ~72  │ Flex row: col-left (290px) splitter center splitter  │
-│                │      │ col-right (290px). Center co giãn với flex: 1        │
-│ #top-bar       │ ~44  │ Fixed height: 34px, flex: space-between             │
-│ #col-left      │ ~79  │ Cột trái — width: 290px, scroll dọc                │
-│ #col-right     │ ~79  │ Cột phải — width: 290px, scroll dọc                │
-│ #center-canvas │ ~102 │ Trung tâm — flex: 1, position: relative             │
-│ .splitter      │ ~107 │ 5px width, cursor: col-resize, collapse animation   │
-└────────────────┴──────┴──────────────────────────────────────────────────────┘
+## 🧩 Danh sách Component (`ui/appwindow.slint`)
 
-Cards (`style.css` ~ dòng 125)
-┌─────────────────┬──────────┬─────────────────────────────────────────────────┐
-│ Selector        │ Mô tả                                                      │
-├─────────────────┼──────────┼─────────────────────────────────────────────────┤
-│ .card           │ background: #ffffff, border: 1px solid #e5e7eb, padding: 8px 10px │
-│ .card-header    │ 0.72rem uppercase, color: #6c757d, border-bottom         │
-│ .stat-row       │ Flex space-between, padding: 1px 2px, font-size: 0.88rem │
-│ .stat-bar-track │ height: 6px (RAM: 16px), background: #e9ecef            │
-│ .stat-bar-fill  │ #21918c (teal), transition: width 0.3s ease             │
-│ .ram-bar-track  │ height: 16px                                             │
-│ .core-bar       │ Flex row, gap: 5px, font: 0.76rem                       │
-│ .core-track     │ height: 8px, background: #e9ecef                        │
-│ .core-fill      │ #21918c, transition: width 0.25s                       │
-│ .core-spark     │ width: 40px, height: 14px (canvas)                      │
-└─────────────────┴──────────┴─────────────────────────────────────────────────┘
+### 1. `CoreBar` (Thanh tải từng nhân CPU)
+* **Thuộc tính đầu vào:**
+  * `in property <int> core_id`: Chỉ số nhân (0 $\rightarrow$ 15).
+  * `in property <float> load`: Mức tải thực tế từ 0.0 đến 100.0%.
+* **Đặc tính đồ hoạ:**
+  * Chiều cao: `22px`, bo góc `4px`, viền `#dee2e6`.
+  * Màu sắc động:
+    * Load $> 85\%$: Màu đỏ (`#fa5252`).
+    * Load $> 55\%$: Màu vàng cam (`#fab005`).
+    * Load $\le 55\%$: Màu xanh Viridis teal (`#21918c`).
+  * Animation: `animate width { duration: 300ms; easing: ease-out; }` tạo hiệu ứng co giãn mượt mà khi mức tải thay đổi.
 
-────────────────────────────────────────────────────────────────────────────────
-📐 **CANVAS KÍCH THƯỚC** — `index.html`
+### 2. `StatCard` (Thẻ hiển thị thông số HUD)
+* **Thuộc tính đầu vào:**
+  * `in property <string> title`: Tiêu đề nhỏ viết hoa (ví dụ: `AVG UTIL`, `STD DEV`).
+  * `in property <string> value`: Giá trị số nổi bật font size `18px`, đậm `700`.
+  * `in property <string> subtitle`: Thông tin phụ (tùy chọn).
+* **Đặc tính đồ hoạ:** Nền trắng `#ffffff`, bo góc `6px`, đệm `10px`, viền `#e9ecef`.
 
-┌─────────────────────┬──────────────┬────────────────────────────────┐
-│ Canvas              │ Dòng index   │ Kích thước (width × height)    │
-├─────────────────────┼──────────────┼────────────────────────────────┤
-│ #boxplot-canvas     │ ~59          │ 290 × 160                     │
-│ #ram-timeseries-canvas│ ~85        │ 290 × 80                      │
-│ #density-canvas     │ ~92          │ 290 × 60                      │
-│ #gpu-timeseries-canvas│ ~93         │ 290 × 80                      │
-│ #network-canvas     │ ~98          │ 290 × 90                      │
-│ Core sparklines     │ ui.js ~56    │ 40 × 14 (tạo động trong JS)  │
-└─────────────────────┴──────────────┴────────────────────────────────┘
+---
 
-────────────────────────────────────────────────────────────────────────────────
-🖌️ **CẤU HÌNH MÀU SẮC & BIỂU ĐỒ** — `src/ui.js`
+## 🔗 Liên kết dữ liệu giữa Rust và Slint (Data Binding)
 
-Màu chủ đạo (Accent Color): `#21918c` (Viridis teal) — định nghĩa trong `src/constants.js`
+Các thuộc tính trên `AppWindow` được Rust cập nhật định kỳ mỗi 1 giây qua timer trong `src/main.rs`:
 
-**3D Three.js** — `src/threeScene.js`
-┌──────────────────────────┬────────┬──────────────────────────────────────┐
-│ Cấu hình                 │ Dòng   │ Mô tả                                │
-├──────────────────────────┼────────┼──────────────────────────────────────┤
-│ ALPHA                    │ const. │ Hệ số lerp = 0.1 (làm mượt độ cao)   │
-│ CORE_COUNT               │ const. │ 16 cores                             │
-│ TIME_WINDOW              │ const. │ 30s rolling window                   │
-│ MAX_HEIGHT               │ const. │ Chiều cao tối đa terrain = 20        │
-│ SQUARE_SPAN              │ const. │ 60 units                             │
-│ scene.background         │ ~16    │ #f8f9fa (trắng xám)                  │
-│ camera.position          │ ~19    │ (48, 70, 42) — góc isometric        │
-│ MeshBasicMaterial.opacity│ ~46    │ fill: 0.06, wireframe: 0.55          │
-│ Color                    │ const. │ #21918c (teal Viridis)               │
-└──────────────────────────┴────────┴──────────────────────────────────────┘
-
-**Boxplot** — `ui.js` function `drawTimeSeriesBoxplot()` (~ dòng 170)
-┌──────────────────────┬─────────────────────────────────────────────────┐
-│ Cấu hình             │ Mô tả                                           │
-├──────────────────────┼─────────────────────────────────────────────────┤
-│ margin left: 28      │ Khoảng cách lề trái                                │
-│ Vertical boxplot     │ Vẽ boxplot dọc (thay vì ngang)                  │
-│ Màu fill             │ #21918c, alpha 0.25                               │
-│ Màu stroke           │ #21918c, lineWidth 1.2                            │
-│ Median line          │ lineWidth = 2                                   │
-│ Stripplot            │ Jittered scatter cho block hiện tại (NOW)       │
-│ Time blocks          │ 5s mỗi block, tối đa 30 blocks (TimeSeriesBuffer)│
-└──────────────────────┴─────────────────────────────────────────────────┘
-
-**KDE Density** — `ui.js` function `drawDensityPlot()` (~ dòng 240)
-┌─────────────────────────┬──────────────────────────────────────────┐
-│ Cấu hình                │ Mô tả                                    │
-├─────────────────────────┼──────────────────────────────────────────┤
-│ pad = 4                 │ Lề                                        │
-│ steps = 60              │ Số điểm sampling KDE                      │
-│ bandwidth = range / 12  │ Bandwidth KDE (Silverman's rule of thumb) │
-│ kernel                  │ Gaussian (exp(-0.5 * d²))                │
-│ Màu fill                │ #21918c, alpha 0.2                       │
-│ Line width              │ 1.5                                      │
-│ Data source             │ GPU 0 load history (hoặc first GPU)      │
-└─────────────────────────┴──────────────────────────────────────────┘
-
-**GPU Time-Series** — `ui.js` function `drawGpuTimeSeries()` (~ dòng 310)
-┌──────────────────────────┬──────────────────────────────────────────┐
-│ Cấu hình                 │ Mô tả                                    │
-├──────────────────────────┼──────────────────────────────────────────┤
-│ pad                      │ top: 4, right: 4, bottom: 14, left: 30  │
-│ GPU 0 line               │ #21918c (teal)                          │
-│ GPU 1 line               │ #d4a017 (gold, conditional)             │
-│ Line width               │ 1.5, fill alpha 0.1                     │
-│ Window                   │ 30 data points                          │
-└──────────────────────────┴──────────────────────────────────────────┘
-
-**Network Chart** — `ui.js` function `drawNetwork()` + `drawLine()` (~ dòng 413)
-┌──────────────────────────┬──────────────────────────────────────────┐
-│ Cấu hình                 │ Mô tả                                    │
-├──────────────────────────┼──────────────────────────────────────────┤
-│ Recv line                │ #21918c (teal)                          │
-│ Sent line                │ #fde725 (yellow Viridis)                │
-│ Line width               │ 2.0                                     │
-│ Normalization            │ scale bởi max value trong window         │
-│ Window                   │ 30 data points                          │
-└──────────────────────────┴──────────────────────────────────────────┘
-
-**Sparkline** — `ui.js` f
+| Thuộc tính Slint | Kiểu dữ liệu | Nguồn từ Rust `TelemetryPayload` |
+| :--- | :--- | :--- |
+| `cpu_avg` | `float` | `payload.cpu_detail.avg_utilization` |
+| `cpu_std` | `float` | `payload.cpu_detail.std_dev` |
+| `cpu_var` | `float` | `payload.cpu_detail.variance` |
+| `cores` | `[CoreItem]` | `payload.cpu_detail.cores` (16 phần tử `CoreItem { id, load }`) |
+| `ram_percent` | `float` | `payload.memory_detail.percent` |
+| `ram_used_gb` | `float` | `payload.memory_detail.used_gb` |
+| `ram_total_gb` | `float` | `payload.memory_detail.total_gb` |
+| `net_sent_kbps` | `float` | `payload.network_speed.sent_kbps` |
+| `net_recv_kbps` | `float` | `payload.network_speed.received_kbps` |
+| `gpu_load` | `float` | `payload.gpu_detail[0].load_percent` |
+| `gpu_temp` | `float` | `payload.gpu_detail[0].temperature_c` |
+| `gpu_name` | `string` | `payload.gpu_detail[0].name` |

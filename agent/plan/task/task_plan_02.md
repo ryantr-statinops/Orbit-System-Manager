@@ -6,31 +6,17 @@
 
 ## Phase 1: Rust Telemetry Collector Module
 
-### [ ] 1.1 Thêm dependency vào `src-tauri/Cargo.toml`
-- [ ] Thêm `sysinfo = "0.33"`
-- [ ] Thêm `tokio = { version = "1", features = ["sync", "time"] }`
-- [ ] Thêm `serde = { version = "1.0", features = ["derive"] }`
+### [x] 1.1 Thêm dependency vào `Cargo.toml`
+- [x] Thêm `sysinfo = "0.33"`
+- [x] Thêm `serde = { version = "1.0", features = ["derive"] }`
+- [x] Thêm `slint = "1.9"` và `slint-build = "1.9"`
 
-### [ ] 1.2 Viết Data Structures (`src-tauri/src/telemetry/models.rs`)
-- [ ] Struct `TelemetryPayload`:
-  ```rust
-  #[derive(serde::Serialize, Clone, Debug)]
-  pub struct TelemetryPayload {
-      pub cpu_percent: f32,
-      pub cpu_detail: CpuDetail,
-      pub memory_percent: f32,
-      pub memory_used_gb: f32,
-      pub memory_total_gb: f32,
-      pub network: NetworkDetail,
-      pub gpu_detail: Vec<GpuMetric>,
-  }
-  ```
+### [x] 1.2 Viết Data Structures (`src/telemetry/models.rs`)
+- [x] Struct `TelemetryPayload`, `CpuDetail`, `MemoryDetail`, `GpuMetric`, `NetworkSpeed`
 
-### [ ] 1.3 Tạo Collector Service (`src-tauri/src/telemetry/collector.rs`)
-- [ ] Khởi tạo `sysinfo::System`.
-- [ ] Vòng lặp thu thập 1Hz (dùng `tokio::time::interval(Duration::from_secs(1))`).
-- [ ] Gọi `app_handle.emit("telemetry-data", &payload)`.
-
+### [x] 1.3 Tạo Collector Service (`src/telemetry/collector.rs`)
+- [x] Khởi tạo `sysinfo::System` và `Networks`.
+- [x] Vòng lặp thu thập 1Hz cập nhật CPU per-core, RAM, I/O mạng.
 ---
 
 ## Phase 2: Cross-Platform GPU Abstraction
@@ -68,13 +54,13 @@
 
 ---
 
-## Phase 4: Thu dọn Dependencies & Build
+## Phase 4: Thu dọn Dependencies & Hoàn tất chuyển dịch Slint
 
-### [ ] 4.1 Dọn dẹp Code cũ
-- [ ] Xoá bỏ `app.py`.
-- [ ] Xoá `environment.yml` và các ghi chú về Conda / Python.
-- [ ] Xoá `src-tauri/binaries/` khỏi `tauri.conf.json` (`externalBin`).
+### [x] 4.1 Dọn dẹp Code cũ
+- [x] Xoá bỏ `app.py`.
+- [x] Xoá `environment.yml` và các ghi chú về Conda / Python.
+- [x] Xoá toàn bộ hệ sinh thái Node.js/Web (`package.json`, `style.css`, `index.html`, `rollup.config.js`).
 
-### [ ] 4.2 Kiểm thử Build Đa nền tảng
-- [ ] Chạy local: `npm run build && cargo check --manifest-path src-tauri/Cargo.toml`.
-- [ ] Kích hoạt GitHub Actions test build trên Ubuntu, Windows và macOS.
+### [x] 4.2 Tích hợp Slint Native GUI (`ui/appwindow.slint`)
+- [x] Thiết kế layout 3 cột bằng ngôn ngữ Slint.
+- [x] Kết nối dữ liệu `sysinfo` vào Slint Timer 1Hz trong `src/main.rs`.

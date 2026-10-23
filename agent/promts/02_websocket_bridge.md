@@ -1,8 +1,8 @@
 # Network Protocol & Data Bridge Specification
 
-## 1. Protocol Definition
+> ⚠️ **ARCHIVE NOTE (v2.0):** Cơ chế WebSocket server cục bộ đã được thay thế bằng **Slint Native Event Loop Timer** trực tiếp trong bộ nhớ. Không còn sử dụng giao thức WebSocket TCP hay mở cổng mạng `8080`.
 
-Hệ thống sử dụng giao thức **WebSockets (WS)** chạy trên tầng TCP cục bộ (`ws://127.0.0.1:8080`) để đảm bảo truyền tải dữ liệu dạng luồng (streaming) có độ trễ thấp nhất, thay thế cho cơ chế HTTP Polling truyền thống vốn gây tốn tài nguyên.
+## 1. Protocol Definition
 
 ## 2. Data Contract (JSON Schema)
 

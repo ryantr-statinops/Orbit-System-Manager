@@ -1,8 +1,8 @@
-# 3D Time-Series Visualization Engine (Three.js)
+# 3D Time-Series Visualization Engine
+
+> ⚠️ **ARCHIVE NOTE (v2.0):** Mô hình dựng hình Three.js/WebGL trên trình duyệt đã được chuyển đổi sang **Slint GPU Hardware Pipeline / Native 3D Viewport** trong `ui/appwindow.slint`.
 
 ## 1. Visual Concept: 3D Terrain Grid / Ribbon Plot
-
-Biến chuỗi thời gian của dữ liệu CPU/RAM thành một dải lụa hoặc lưới địa hình 3D (Terrain).
 
 - **Trục X:** Đại diện cho các mốc thời gian (ví dụ: 60 giây gần nhất).
 - **Trục Y:** Độ cao của lưới, tỷ lệ thuận với mức độ % sử dụng (0 - 100%).

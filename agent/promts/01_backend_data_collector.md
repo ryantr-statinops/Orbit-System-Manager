@@ -1,8 +1,8 @@
 # Backend System Monitor Service: Specifications
 
-## 1. Objective
+> ⚠️ **ARCHIVE NOTE (v2.0):** Tài liệu này thuộc giai đoạn thử nghiệm (PoC/Python). Dự án hiện đã chuyển sang **100% Rust Native Collector (`src/telemetry/collector.rs`)** dùng crate `sysinfo`, không còn sử dụng Python hoặc `psutil`.
 
-Xây dựng một dịch vụ chạy ngầm (Background Service) gọn nhẹ trên Windows để thu thập dữ liệu hiệu năng phần cứng theo thời gian thực (Real-time) và phân phối qua giao thức WebSockets.
+## 1. Objective
 
 ## 2. Hardware Targets (Dell Precision Workstation Target)
 
