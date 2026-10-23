@@ -759,14 +759,15 @@ export function initSidebarToggles() {
     const hide = !colLeft.classList.contains('collapsed');
     applyState(hide, colRight.classList.contains('collapsed'));
     saveSidebarState(hide, colRight.classList.contains('collapsed'));
+    handleResize();
   });
 
   btnRight.addEventListener('click', () => {
     const hide = !colRight.classList.contains('collapsed');
     applyState(colLeft.classList.contains('collapsed'), hide);
     saveSidebarState(colLeft.classList.contains('collapsed'), hide);
+    handleResize();
   });
-
   function saveSidebarState(leftHidden, rightHidden) {
     localStorage.setItem(SIDEBAR_KEY, JSON.stringify({ left: !leftHidden, right: !rightHidden }));
   }
