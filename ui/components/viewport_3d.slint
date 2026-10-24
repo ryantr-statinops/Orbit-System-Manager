@@ -59,24 +59,6 @@ export component Viewport3D inherits Rectangle {
                 spacing: 6px;
                 alignment: center;
                 Rectangle {
-                    background: Theme.card_bg;
-                    border-radius: Theme.radius_sm;
-                    border-width: 1px;
-                    border-color: Theme.border;
-                    HorizontalLayout {
-                        padding-left: 8px;
-                        padding-right: 8px;
-                        padding-top: 3px;
-                        padding-bottom: 3px;
-                        Text {
-                            text: "" + root.history_samples + "/30 samples • " + root.history_seconds + "s";
-                            font-size: 10px;
-                            font-weight: 600;
-                            color: Theme.teal_primary;
-                        }
-                    }
-                }
-                Rectangle {
                     background: Theme.hover_bg;
                     border-radius: Theme.radius_sm;
                     border-width: 1px;
@@ -88,7 +70,11 @@ export component Viewport3D inherits Rectangle {
                         padding-bottom: 4px;
                         Text { text: "Reset view"; font-size: 10px; font-weight: 600; color: Theme.text_primary; }
                     }
-                    TouchArea { clicked => { root.reset_view(); } }
+                    TouchArea {
+                        width: parent.width;
+                        height: parent.height;
+                        clicked => { root.reset_view(); }
+                    }
                 }
                 Rectangle {
                     background: Theme.card_bg;
@@ -210,6 +196,12 @@ export component Viewport3D inherits Rectangle {
             Text { text: "0%"; font-size: 9px; color: #440154; }
             Rectangle { width: 180px; height: 5px; border-radius: 2px; background: Theme.gradient_viridis; }
             Text { text: "100%"; font-size: 9px; color: #fde725; }
+        }
+        Text {
+            text: "Left drag to rotate • Right drag to pan • Scroll to zoom";
+            font-size: 9px;
+            color: Theme.text_muted;
+            horizontal-alignment: center;
         }
     }
 }
