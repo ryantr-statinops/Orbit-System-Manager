@@ -1,5 +1,7 @@
 # Orbit System Manager
 
+[![Release](https://img.shields.io/badge/Release-v2.1.2-blue?style=for-the-badge&logo=rust)](https://github.com/ryantr-statinops/Orbit-System-Manager/releases)
+
 A native desktop dashboard for live CPU, memory, and network telemetry, built with Rust and Slint.
 
 ## Dashboard

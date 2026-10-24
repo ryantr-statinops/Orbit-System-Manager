@@ -1,6 +1,6 @@
 [package]
 name = "orbit-system-manager"
-version = "2.1.0"
+version = "2.1.2"
 description = "Orbit System Manager - Real-time System Monitoring & 3D Topology"
 authors = ["ryantr-statinops"]
 license = "MIT"

@@ -1,5 +1,7 @@
 # Release and distribution
 
+Current target version: `v2.1.2`.
+
 Orbit System Manager releases are built and published by `.github/workflows/release.yml`. A pushed Git tag matching `v*` starts the four-platform build matrix:
 
 | Platform | Rust target | Archive |
