@@ -23,7 +23,7 @@ export component CoreBar inherits Rectangle {
         y: 0;
         width: Math.min(parent.width, Math.max(0px, parent.width * (root.load / 100.0)));
         height: parent.height;
-        background: root.load > 85.0 ? Theme.danger : (root.load > 55.0 ? Theme.warning : Theme.teal_primary);
+        background: Theme.gradient_viridis;
         animate width { duration: 250ms; easing: ease-out; }
     }
 
@@ -41,7 +41,7 @@ export component CoreBar inherits Rectangle {
             text: Math.round(root.load) + "%";
             font-size: 11px;
             font-weight: 600;
-            color: root.load > 60.0 ? Theme.text_on_accent : Theme.text_secondary;
+            color: Theme.viridis_color_for_load(root.load);
             horizontal-alignment: right;
             vertical-alignment: center;
         }

@@ -1,4 +1,4 @@
-// ResourceCard Component — Task Manager Performance Tab Selector Item
+// ResourceCard Component — Task Manager Performance Tab Selector Item with Gradient Meter
 import { Theme } from "../theme.slint";
 
 export component ResourceCard inherits Rectangle {
@@ -7,7 +7,8 @@ export component ResourceCard inherits Rectangle {
     in property <string> sub_text: "";
     in property <float> percent: 0.0;
     in property <bool> is_selected: false;
-    in property <color> meter_color: Theme.accent;
+    in property <brush> meter_brush: Theme.gradient_cpu;
+    in property <color> accent_color: Theme.accent;
 
     callback clicked;
 
@@ -22,7 +23,7 @@ export component ResourceCard inherits Rectangle {
         y: 6px;
         width: 3px;
         height: parent.height - 12px;
-        background: Theme.border_focus;
+        background: root.accent_color;
         border-radius: 1px;
     }
 
@@ -49,7 +50,7 @@ export component ResourceCard inherits Rectangle {
                 text: root.value_text;
                 font-size: 12px;
                 font-weight: 600;
-                color: root.is_selected ? root.meter_color : Theme.text_secondary;
+                color: root.is_selected ? root.accent_color : Theme.text_secondary;
             }
         }
 
@@ -59,7 +60,7 @@ export component ResourceCard inherits Rectangle {
             color: Theme.text_muted;
         }
 
-        // Mini meter line
+        // Gradient meter line
         Rectangle {
             height: 3px;
             background: Theme.progress_track;
@@ -70,7 +71,7 @@ export component ResourceCard inherits Rectangle {
                 y: 0;
                 width: Math.min(parent.width, Math.max(0px, parent.width * (root.percent / 100.0)));
                 height: parent.height;
-                background: root.meter_color;
+                background: root.meter_brush;
                 animate width { duration: 250ms; easing: ease-out; }
             }
         }

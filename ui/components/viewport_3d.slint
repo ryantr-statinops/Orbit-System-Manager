@@ -154,5 +154,31 @@ export component Viewport3D inherits Rectangle {
                 }
             }
         }
+
+        // Synchronized Viridis Gradient Legend Strip
+        HorizontalLayout {
+            spacing: 8px;
+            alignment: center;
+            Text {
+                text: "0% (Idle)";
+                font-size: 9px;
+                font-weight: 600;
+                color: #3b528b;
+                vertical-alignment: center;
+            }
+            Rectangle {
+                width: 260px;
+                height: 4px;
+                border-radius: 2px;
+                background: Theme.gradient_viridis;
+            }
+            Text {
+                text: "100% (Peak)";
+                font-size: 9px;
+                font-weight: 700;
+                color: #fde725;
+                vertical-alignment: center;
+            }
+        }
     }
 }

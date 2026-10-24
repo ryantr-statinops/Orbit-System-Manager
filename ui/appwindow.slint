@@ -140,7 +140,8 @@ export component AppWindow inherits Window {
                         sub_text: Math.round(root.cpu_avg * 10.0) / 10.0 + " GHz • 16 Cores";
                         percent: root.cpu_avg;
                         is_selected: true;
-                        meter_color: Theme.accent;
+                        meter_brush: Theme.gradient_cpu;
+                        accent_color: Theme.accent;
                     }
 
                     // Memory Item
@@ -150,7 +151,8 @@ export component AppWindow inherits Window {
                         sub_text: Math.round(root.ram_used_gb * 10.0) / 10.0 + " / " + Math.round(root.ram_total_gb * 10.0) / 10.0 + " GB";
                         percent: root.ram_percent;
                         is_selected: false;
-                        meter_color: Theme.teal_primary;
+                        meter_brush: Theme.gradient_ram;
+                        accent_color: Theme.accent_cyan;
                     }
 
                     // GPU Item
@@ -160,7 +162,8 @@ export component AppWindow inherits Window {
                         sub_text: root.gpu_name + " • " + Math.round(root.gpu_temp) + "°C";
                         percent: root.gpu_load;
                         is_selected: false;
-                        meter_color: Theme.warning;
+                        meter_brush: Theme.gradient_gpu;
+                        accent_color: Theme.warning;
                     }
 
                     // Network Item
@@ -170,7 +173,8 @@ export component AppWindow inherits Window {
                         sub_text: "R: " + Math.round(root.net_recv_kbps) + " • S: " + Math.round(root.net_sent_kbps) + " KB/s";
                         percent: Math.min(100.0, root.net_recv_kbps / 10.0);
                         is_selected: false;
-                        meter_color: Theme.purple;
+                        meter_brush: Theme.gradient_net;
+                        accent_color: Theme.purple;
                     }
                 }
             }

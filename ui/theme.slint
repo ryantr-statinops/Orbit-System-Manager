@@ -1,5 +1,5 @@
 // Orbit System Manager — VS Code Minimalist Dark Theme
-// Design Tokens matching VS Code's Dark+ & Modern Flat UI Architecture
+// Design Tokens & Synchronized Gradient Palettes
 
 export global Theme {
     // Base Surfaces (VS Code editor & sidebar colors)
@@ -26,12 +26,22 @@ export global Theme {
 
     // VS Code Semantic Syntax Accents
     in-out property <color> accent: #0078d4;          // VS Code standard blue
-    in-out property <color> accent_cyan: #4fc1ff;     // VS Code light blue (variables)
-    in-out property <color> teal_primary: #4ec9b0;    // VS Code teal (classes/types)
-    in-out property <color> success: #89d185;         // VS Code green (strings/success)
+    in-out property <color> accent_cyan: #4fc1ff;     // VS Code light blue
+    in-out property <color> teal_primary: #4ec9b0;    // VS Code teal
+    in-out property <color> success: #89d185;         // VS Code green
     in-out property <color> warning: #cca700;         // VS Code warning yellow
     in-out property <color> danger: #f14c4c;          // VS Code error red
     in-out property <color> purple: #c586c0;          // VS Code keyword purple
+
+    // -------------------------------------------------------------
+    // Synchronized Gradient Spectrum Brushes
+    // -------------------------------------------------------------
+    // Canonical 3D Viridis spectrum matching the 3D mesh shader
+    in-out property <brush> gradient_viridis: @linear-gradient(90deg, #3b528b 0%, #21918c 45%, #5ec962 75%, #fde725 100%);
+    in-out property <brush> gradient_cpu: @linear-gradient(90deg, #3b528b 0%, #21918c 50%, #fde725 100%);
+    in-out property <brush> gradient_ram: @linear-gradient(90deg, #0969da 0%, #58a6ff 60%, #79c0ff 100%);
+    in-out property <brush> gradient_gpu: @linear-gradient(90deg, #9e6a03 0%, #d29922 60%, #fde725 100%);
+    in-out property <brush> gradient_net: @linear-gradient(90deg, #8957e5 0%, #bc8cff 60%, #e2c5ff 100%);
 
     // 3D Viewport Colors
     in-out property <color> viewport_bg: #141414;
@@ -39,4 +49,21 @@ export global Theme {
 
     // Font family
     in-out property <string> default_font: "Consolas, 'Segoe UI', Inter, system-ui, monospace";
+
+    // Synchronized Viridis Color Calculator (Maps 0.0 - 100.0 load to Viridis Palette)
+    public pure function viridis_color_for_load(load: float) -> color {
+        if (load > 85.0) {
+            return #fde725; // Bright neon yellow at peak
+        }
+        if (load > 60.0) {
+            return #5ec962; // Vibrant green
+        }
+        if (load > 35.0) {
+            return #21918c; // Viridis teal
+        }
+        if (load > 15.0) {
+            return #3b528b; // Cool deep blue
+        }
+        return #4ec9b0;     // Soft teal minimum
+    }
 }
