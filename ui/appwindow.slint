@@ -1,86 +1,11 @@
-// Orbit System Manager — Slint UI Definition
-// Modern, Native, High-Performance System Monitoring Dashboard
+// Orbit System Manager — Slint Master Window Layout
+// Modular Architecture & Dark Theme Design Tokens
 
-export struct CoreItem {
-    id: int,
-    load: float, // 0.0 - 100.0
-}
-
-export component CoreBar inherits Rectangle {
-    in property <int> core_id: 0;
-    in property <float> load: 0.0;
-
-    height: 22px;
-    background: #f1f3f5;
-    border-radius: 4px;
-    border-width: 1px;
-    border-color: #dee2e6;
-    clip: true;
-
-    // Fill bar with dynamic color transitions
-    Rectangle {
-        x: 0;
-        y: 0;
-        width: Math.min(parent.width, Math.max(0px, parent.width * (root.load / 100.0)));
-        height: parent.height;
-        background: root.load > 85.0 ? #fa5252 : (root.load > 55.0 ? #fab005 : #21918c);
-        animate width { duration: 300ms; easing: ease-out; }
-    }
-
-    HorizontalLayout {
-        padding-left: 8px;
-        padding-right: 8px;
-        Text {
-            text: "C" + root.core_id;
-            font-size: 11px;
-            font-weight: 700;
-            color: root.load > 60.0 ? #ffffff : #343a40;
-            vertical-alignment: center;
-        }
-        Text {
-            text: Math.round(root.load) + "%";
-            font-size: 11px;
-            font-weight: 600;
-            color: root.load > 60.0 ? #ffffff : #495057;
-            horizontal-alignment: right;
-            vertical-alignment: center;
-        }
-    }
-}
-
-export component StatCard inherits Rectangle {
-    in property <string> title: "";
-    in property <string> value: "";
-    in property <string> subtitle: "";
-
-    background: #ffffff;
-    border-radius: 6px;
-    border-width: 1px;
-    border-color: #e9ecef;
-    padding: 10px;
-
-    VerticalLayout {
-        spacing: 4px;
-        Text {
-            text: root.title;
-            font-size: 11px;
-            font-weight: 600;
-            color: #868e96;
-            letter-spacing: 0.5px;
-        }
-        Text {
-            text: root.value;
-            font-size: 18px;
-            font-weight: 700;
-            color: #212529;
-        }
-        if root.subtitle != "": Text {
-            text: root.subtitle;
-            font-size: 11px;
-            color: #495057;
-        }
-    }
-}
+import { Theme } from "theme.slint";
+import { CoreItem } from "components/core_bar.slint";
+import { LeftPanel } from "components/left_panel.slint";
+import { Viewport3D } from "components/viewport_3d.slint";
+import { RightPanel } from "components/right_panel.slint";
 
 export component AppWindow inherits Window {
     title: "Orbit System Manager — Pure Native Rust & Slint";
@@ -88,10 +13,10 @@ export component AppWindow inherits Window {
     min-height: 720px;
     preferred-width: 1280px;
     preferred-height: 800px;
-    background: #f8f9fa;
-    default-font-family: "Segoe UI, Inter, system-ui, sans-serif";
+    background: Theme.app_bg;
+    default-font-family: Theme.default_font;
 
-    // Bindings from Rust telemetry collector
+    // Hardware Telemetry Properties (Bound to Rust sysinfo)
     in property <float> cpu_avg: 0.0;
     in property <float> cpu_std: 0.0;
     in property <float> cpu_var: 0.0;
@@ -110,6 +35,13 @@ export component AppWindow inherits Window {
         { id: 12, load: 19.0 }, { id: 13, load: 41.0 }, { id: 14, load: 60.0 }, { id: 15, load: 22.0 }
     ];
 
+    // 3D Viewport Bindings
+    in property <image> viewport_3d_frame;
+    in property <bool> has_3d_frame: true;
+    callback rotate_3d(length, length);
+    callback pan_3d(length, length);
+    callback zoom_3d(float);
+
     VerticalLayout {
         padding: 12px;
         spacing: 12px;
@@ -117,10 +49,10 @@ export component AppWindow inherits Window {
         // ---------- TOP BAR ----------
         Rectangle {
             height: 48px;
-            background: #ffffff;
-            border-radius: 8px;
+            background: Theme.card_bg;
+            border-radius: Theme.radius_md;
             border-width: 1px;
-            border-color: #dee2e6;
+            border-color: Theme.border;
             padding: 8px;
 
             HorizontalLayout {
@@ -130,7 +62,7 @@ export component AppWindow inherits Window {
 
                 // Branding
                 HorizontalLayout {
-                    spacing: 8px;
+                    spacing: 10px;
                     Text {
                         text: "🛸";
                         font-size: 18px;
@@ -140,7 +72,7 @@ export component AppWindow inherits Window {
                         text: "ORBIT SYSTEM MANAGER";
                         font-size: 14px;
                         font-weight: 800;
-                        color: #212529;
+                        color: Theme.text_primary;
                         vertical-alignment: center;
                         letter-spacing: 0.8px;
                     }
@@ -150,30 +82,30 @@ export component AppWindow inherits Window {
                 HorizontalLayout {
                     spacing: 10px;
                     Rectangle {
-                        background: #e6fcf5;
-                        border-radius: 4px;
+                        background: #0f2d1e;
+                        border-radius: Theme.radius_sm;
                         border-width: 1px;
-                        border-color: #20c997;
+                        border-color: Theme.success;
                         padding-left: 10px;
                         padding-right: 10px;
                         Text {
                             text: "● NATIVE SLINT ENGINE";
                             font-size: 11px;
                             font-weight: 700;
-                            color: #0ca678;
+                            color: Theme.success;
                             vertical-alignment: center;
                         }
                     }
                     Rectangle {
-                        background: #f1f3f5;
-                        border-radius: 4px;
+                        background: Theme.sub_card_bg;
+                        border-radius: Theme.radius_sm;
                         padding-left: 8px;
                         padding-right: 8px;
                         Text {
                             text: "1 HZ SAMPLING";
                             font-size: 11px;
                             font-weight: 600;
-                            color: #495057;
+                            color: Theme.text_secondary;
                             vertical-alignment: center;
                         }
                     }
@@ -185,284 +117,33 @@ export component AppWindow inherits Window {
         HorizontalLayout {
             spacing: 12px;
 
-            // ===== COLUMN 1: CPU CORES & RAM (LEFT) =====
-            Rectangle {
-                width: 310px;
-                background: #ffffff;
-                border-radius: 8px;
-                border-width: 1px;
-                border-color: #dee2e6;
-                padding: 14px;
-
-                VerticalLayout {
-                    spacing: 10px;
-
-                    // Memory Header
-                    Text {
-                        text: "SYSTEM MEMORY";
-                        font-size: 12px;
-                        font-weight: 800;
-                        color: #212529;
-                        letter-spacing: 0.5px;
-                    }
-
-                    // RAM Progress Track
-                    Rectangle {
-                        height: 14px;
-                        background: #e9ecef;
-                        border-radius: 3px;
-                        clip: true;
-                        Rectangle {
-                            x: 0;
-                            y: 0;
-                            width: Math.min(parent.width, Math.max(0px, parent.width * (root.ram_percent / 100.0)));
-                            height: parent.height;
-                            background: #21918c;
-                            animate width { duration: 300ms; easing: ease-out; }
-                        }
-                    }
-
-                    Text {
-                        text: Math.round(root.ram_used_gb * 10.0) / 10.0 + " / " + Math.round(root.ram_total_gb * 10.0) / 10.0 + " GB (" + Math.round(root.ram_percent) + "%)";
-                        font-size: 11px;
-                        font-weight: 600;
-                        color: #495057;
-                    }
-
-                    Rectangle { height: 1px; background: #e9ecef; }
-
-                    // CPU Cores Header
-                    HorizontalLayout {
-                        alignment: space-between;
-                        Text {
-                            text: "CPU CORES (16)";
-                            font-size: 12px;
-                            font-weight: 800;
-                            color: #212529;
-                            letter-spacing: 0.5px;
-                        }
-                        Text {
-                            text: "AVG: " + Math.round(root.cpu_avg * 10.0) / 10.0 + "%";
-                            font-size: 11px;
-                            font-weight: 700;
-                            color: #21918c;
-                        }
-                    }
-
-                    // 16 Core Bars
-                    for item[index] in root.cores: CoreBar {
-                        core_id: item.id;
-                        load: item.load;
-                    }
-
-                    Rectangle { height: 1px; background: #e9ecef; }
-
-                    // HUD stats
-                    HorizontalLayout {
-                        spacing: 8px;
-                        StatCard {
-                            title: "AVG UTIL";
-                            value: Math.round(root.cpu_avg) + "%";
-                        }
-                        StatCard {
-                            title: "STD DEV";
-                            value: Math.round(root.cpu_std * 100.0) / 100.0 + "";
-                        }
-                        StatCard {
-                            title: "VARIANCE";
-                            value: Math.round(root.cpu_var * 10.0) / 10.0 + "";
-                        }
-                    }
-                }
+            // ===== Left Column =====
+            LeftPanel {
+                ram_percent: root.ram_percent;
+                ram_used_gb: root.ram_used_gb;
+                ram_total_gb: root.ram_total_gb;
+                cpu_avg: root.cpu_avg;
+                cpu_std: root.cpu_std;
+                cpu_var: root.cpu_var;
+                cores: root.cores;
             }
 
-            // ===== COLUMN 2: 3D TOPOLOGY VIEWPORT (CENTER) =====
-            Rectangle {
-                background: #ffffff;
-                border-radius: 8px;
-                border-width: 1px;
-                border-color: #dee2e6;
-                padding: 14px;
-
-                VerticalLayout {
-                    spacing: 12px;
-
-                    // Header
-                    HorizontalLayout {
-                        alignment: space-between;
-                        Text {
-                            text: "CPU TOPOLOGY & 3D TERRAIN VIEWPORT";
-                            font-size: 12px;
-                            font-weight: 800;
-                            color: #212529;
-                            letter-spacing: 0.5px;
-                        }
-                        HorizontalLayout {
-                            spacing: 6px;
-                            Rectangle {
-                                background: #e7f5ff;
-                                border-radius: 4px;
-                                padding-left: 6px;
-                                padding-right: 6px;
-                                Text {
-                                    text: "16 CORES × 30S";
-                                    font-size: 10px;
-                                    font-weight: 700;
-                                    color: #1971c2;
-                                    vertical-alignment: center;
-                                }
-                            }
-                            Rectangle {
-                                background: #e6fcf5;
-                                border-radius: 4px;
-                                padding-left: 6px;
-                                padding-right: 6px;
-                                Text {
-                                    text: "VIRIDIS THERMAL";
-                                    font-size: 10px;
-                                    font-weight: 700;
-                                    color: #0ca678;
-                                    vertical-alignment: center;
-                                }
-                            }
-                        }
-                    }
-
-                    // 3D Canvas / Viewport Container
-                    Rectangle {
-                        background: #1a1a24;
-                        border-radius: 6px;
-                        clip: true;
-
-                        VerticalLayout {
-                            alignment: center;
-                            spacing: 8px;
-                            Text {
-                                text: "🌐";
-                                font-size: 42px;
-                                horizontal-alignment: center;
-                            }
-                            Text {
-                                text: "NATIVE 3D GPU TOPOLOGY MESH";
-                                font-size: 13px;
-                                font-weight: 800;
-                                color: #21918c;
-                                horizontal-alignment: center;
-                                letter-spacing: 1px;
-                            }
-                            Text {
-                                text: "Hardware Accelerated • 144 FPS VSync • Zero Webview Overhead";
-                                font-size: 11px;
-                                color: #868e96;
-                                horizontal-alignment: center;
-                            }
-                        }
-                    }
-
-                    // Bottom distribution summary bar
-                    Rectangle {
-                        height: 50px;
-                        background: #f8f9fa;
-                        border-radius: 6px;
-                        border-width: 1px;
-                        border-color: #e9ecef;
-                        padding: 8px;
-
-                        HorizontalLayout {
-                            alignment: space-between;
-                            VerticalLayout {
-                                Text { text: "LOAD DISTRIBUTION"; font-size: 10px; font-weight: 700; color: #868e96; }
-                                Text { text: "Normal Gaussian Profile"; font-size: 12px; font-weight: 600; color: #212529; }
-                            }
-                            VerticalLayout {
-                                Text { text: "MAX LOAD CORE"; font-size: 10px; font-weight: 700; color: #868e96; }
-                                Text { text: "Core 6 (82%)"; font-size: 12px; font-weight: 700; color: #fa5252; }
-                            }
-                            VerticalLayout {
-                                Text { text: "IDLE CORES"; font-size: 10px; font-weight: 700; color: #868e96; }
-                                Text { text: "5 Cores < 20%"; font-size: 12px; font-weight: 600; color: #21918c; }
-                            }
-                        }
-                    }
-                }
+            // ===== Center Column (3D Viewport) =====
+            Viewport3D {
+                frame: root.viewport_3d_frame;
+                has_frame: root.has_3d_frame;
+                rotate_drag(dx, dy) => { root.rotate_3d(dx, dy); }
+                pan_drag(dx, dy) => { root.pan_3d(dx, dy); }
+                zoom_scroll(delta) => { root.zoom_3d(delta); }
             }
 
-            // ===== COLUMN 3: GPU & NETWORK (RIGHT) =====
-            Rectangle {
-                width: 290px;
-                background: #ffffff;
-                border-radius: 8px;
-                border-width: 1px;
-                border-color: #dee2e6;
-                padding: 14px;
-
-                VerticalLayout {
-                    spacing: 12px;
-
-                    // GPU Telemetry
-                    Text {
-                        text: "GPU TELEMETRY";
-                        font-size: 12px;
-                        font-weight: 800;
-                        color: #212529;
-                        letter-spacing: 0.5px;
-                    }
-
-                    StatCard {
-                        title: root.gpu_name;
-                        value: Math.round(root.gpu_load) + "%";
-                        subtitle: "Temperature: " + Math.round(root.gpu_temp) + "°C";
-                    }
-
-                    // GPU Load Progress Track
-                    Rectangle {
-                        height: 8px;
-                        background: #e9ecef;
-                        border-radius: 2px;
-                        clip: true;
-                        Rectangle {
-                            x: 0;
-                            y: 0;
-                            width: Math.min(parent.width, Math.max(0px, parent.width * (root.gpu_load / 100.0)));
-                            height: parent.height;
-                            background: #fab005;
-                            animate width { duration: 300ms; easing: ease-out; }
-                        }
-                    }
-
-                    Rectangle { height: 1px; background: #e9ecef; }
-
-                    // Network Speeds
-                    Text {
-                        text: "NETWORK SPEED";
-                        font-size: 12px;
-                        font-weight: 800;
-                        color: #212529;
-                        letter-spacing: 0.5px;
-                    }
-
-                    StatCard {
-                        title: "DOWNLOAD (RECV)";
-                        value: Math.round(root.net_recv_kbps * 10.0) / 10.0 + " KB/s";
-                        subtitle: "Interface: Active NIC";
-                    }
-
-                    StatCard {
-                        title: "UPLOAD (SENT)";
-                        value: Math.round(root.net_sent_kbps * 10.0) / 10.0 + " KB/s";
-                        subtitle: "Interface: Active NIC";
-                    }
-
-                    Rectangle { height: 1px; background: #e9ecef; }
-
-                    // System Info
-                    VerticalLayout {
-                        spacing: 4px;
-                        Text { text: "ARCHITECTURE: x86_64 / Native"; font-size: 10px; font-weight: 600; color: #868e96; }
-                        Text { text: "RENDERER: Slint GPU Hardware VSync"; font-size: 10px; font-weight: 600; color: #868e96; }
-                        Text { text: "RUNTIME: Pure Rust (Zero Webview)"; font-size: 10px; font-weight: 600; color: #0ca678; }
-                    }
-                }
+            // ===== Right Column =====
+            RightPanel {
+                gpu_name: root.gpu_name;
+                gpu_load: root.gpu_load;
+                gpu_temp: root.gpu_temp;
+                net_sent_kbps: root.net_sent_kbps;
+                net_recv_kbps: root.net_recv_kbps;
             }
         }
     }
