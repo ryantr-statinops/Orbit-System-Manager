@@ -52,8 +52,9 @@ impl OffscreenRenderer {
             };
         }
 
-        let row_count = self.mesh.render_grid.len();
-        let core_count = self.mesh.render_grid.first().map_or(0, Vec::len);
+        let render_grid = self.mesh.smoothed_grid(3);
+        let row_count = render_grid.len();
+        let core_count = render_grid.first().map_or(0, Vec::len);
         if row_count == 0 || core_count == 0 {
             return Image::from_rgba8(self.buffer.clone());
         }
@@ -66,7 +67,7 @@ impl OffscreenRenderer {
             for (x, point) in row.iter_mut().enumerate() {
                 let wx = ((x as f32 / core_count.saturating_sub(1).max(1) as f32) - 0.5) * span_x;
                 let wz = ((z as f32 / row_count.saturating_sub(1).max(1) as f32) - 0.5) * span_z;
-                let wy = (self.mesh.render_grid[z][x] / 100.0) * 12.0;
+                let wy = (render_grid[z][x] / 100.0) * 12.0;
 
                 if let Some((sx, sy, _depth)) = self.camera.project(wx, wy, wz, w, h) {
                     *point = Some((sx, sy));
@@ -79,9 +80,7 @@ impl OffscreenRenderer {
         for x in 0..core_count {
             for z in 0..row_count.saturating_sub(1) {
                 if let (Some(p1), Some(p2)) = (projected[z][x], projected[z + 1][x]) {
-                    let avg_load = (self.mesh.render_grid[z][x] + self.mesh.render_grid[z + 1][x])
-                        * 0.5
-                        / 100.0;
+                    let avg_load = (render_grid[z][x] + render_grid[z + 1][x]) * 0.5 / 100.0;
                     let color = viridis_color(avg_load);
                     draw_line(pixels, w, h, p1.0, p1.1, p2.0, p2.1, color);
                 }
@@ -93,9 +92,7 @@ impl OffscreenRenderer {
         for z in 0..row_count {
             for x in 0..core_count.saturating_sub(1) {
                 if let (Some(p1), Some(p2)) = (projected[z][x], projected[z][x + 1]) {
-                    let avg_load = (self.mesh.render_grid[z][x] + self.mesh.render_grid[z][x + 1])
-                        * 0.5
-                        / 100.0;
+                    let avg_load = (render_grid[z][x] + render_grid[z][x + 1]) * 0.5 / 100.0;
                     let color = viridis_color(avg_load);
                     draw_line(pixels, w, h, p1.0, p1.1, p2.0, p2.1, color);
                 }

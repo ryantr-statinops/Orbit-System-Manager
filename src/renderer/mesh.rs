@@ -74,6 +74,97 @@ impl TerrainMesh {
             .map(|(first, last)| last.duration_since(*first).as_secs())
             .unwrap_or_default()
     }
+
+    /// Creates a denser display-only grid. Recorded telemetry remains in `grid`;
+    /// Catmull-Rom interpolation is used only to soften the rendered surface.
+    pub fn smoothed_grid(&self, subdivisions: usize) -> Vec<Vec<f32>> {
+        let rows = &self.render_grid;
+        let row_count = rows.len();
+        let Some(first_row) = rows.first() else {
+            return Vec::new();
+        };
+        let column_count = first_row.len();
+        if column_count == 0 {
+            return vec![Vec::new(); row_count];
+        }
+
+        let steps = subdivisions.max(1);
+        let output_rows = if row_count > 1 {
+            (row_count - 1) * steps + 1
+        } else {
+            1
+        };
+        let output_columns = if column_count > 1 {
+            (column_count - 1) * steps + 1
+        } else {
+            1
+        };
+
+        (0..output_rows)
+            .map(|row_index| {
+                let row_segment = row_index / steps;
+                let row_t = if row_count > 1 && row_index < output_rows - 1 {
+                    (row_index % steps) as f32 / steps as f32
+                } else {
+                    0.0
+                };
+                (0..output_columns)
+                    .map(|column_index| {
+                        let column_segment = column_index / steps;
+                        let column_t = if column_count > 1 && column_index < output_columns - 1 {
+                            (column_index % steps) as f32 / steps as f32
+                        } else {
+                            0.0
+                        };
+                        let sample_row = |offset: isize| {
+                            (row_segment as isize + offset).clamp(0, row_count as isize - 1)
+                                as usize
+                        };
+                        let sample_column = |offset: isize| {
+                            (column_segment as isize + offset).clamp(0, column_count as isize - 1)
+                                as usize
+                        };
+                        let row_values = [-1, 0, 1, 2].map(|offset| {
+                            let source_row = &rows[sample_row(offset)];
+                            let value = if column_count == 1 {
+                                source_row[0]
+                            } else {
+                                catmull_rom(
+                                    source_row[sample_column(-1)],
+                                    source_row[sample_column(0)],
+                                    source_row[sample_column(1)],
+                                    source_row[sample_column(2)],
+                                    column_t,
+                                )
+                            };
+                            value
+                        });
+                        if row_count == 1 {
+                            row_values[1].clamp(0.0, 100.0)
+                        } else {
+                            catmull_rom(
+                                row_values[0],
+                                row_values[1],
+                                row_values[2],
+                                row_values[3],
+                                row_t,
+                            )
+                            .clamp(0.0, 100.0)
+                        }
+                    })
+                    .collect()
+            })
+            .collect()
+    }
+}
+
+fn catmull_rom(p0: f32, p1: f32, p2: f32, p3: f32, t: f32) -> f32 {
+    let t2 = t * t;
+    let t3 = t2 * t;
+    0.5 * ((2.0 * p1)
+        + (-p0 + p2) * t
+        + (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * t2
+        + (-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3)
 }
 
 impl Default for TerrainMesh {
@@ -132,6 +223,37 @@ mod tests {
         assert_eq!(viridis_color(0.5), [33, 145, 140, 255]);
         assert_eq!(viridis_color(0.75), [94, 201, 98, 255]);
         assert_eq!(viridis_color(1.0), [253, 231, 37, 255]);
+    }
+
+    #[test]
+    fn smoothed_display_grid_preserves_samples_and_bounds_interpolation() {
+        let mut mesh = TerrainMesh::new();
+        mesh.push_sample(&[0.0, 100.0]);
+        mesh.push_sample(&[100.0, 0.0]);
+        let dense = mesh.smoothed_grid(3);
+        assert_eq!(dense.len(), 4);
+        assert_eq!(dense[0].len(), 4);
+        assert_eq!(dense[0][0], 0.0);
+        assert_eq!(dense[0][3], 100.0);
+        assert_eq!(dense[3][0], 100.0);
+        assert_eq!(dense[3][3], 0.0);
+        assert!(dense
+            .iter()
+            .flatten()
+            .all(|value| (0.0..=100.0).contains(value)));
+        assert_eq!(mesh.grid, vec![vec![0.0, 100.0], vec![100.0, 0.0]]);
+    }
+
+    #[test]
+    fn smoothed_grid_handles_empty_and_single_dimension_history() {
+        let empty = TerrainMesh::new();
+        assert!(empty.smoothed_grid(3).is_empty());
+        let mut one = TerrainMesh::new();
+        one.push_sample(&[42.0]);
+        assert_eq!(one.smoothed_grid(3), vec![vec![42.0]]);
+        one.push_sample(&[64.0]);
+        assert_eq!(one.smoothed_grid(3).len(), 4);
+        assert!(one.smoothed_grid(3).iter().all(|row| row.len() == 1));
     }
 }
 
