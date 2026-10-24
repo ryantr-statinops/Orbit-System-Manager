@@ -1,39 +1,42 @@
-// Orbit System Manager — Slint Theme Definition
-// Design Tokens & Customizable Palette (Dark Theme Default)
+// Orbit System Manager — VS Code Minimalist Dark Theme
+// Design Tokens matching VS Code's Dark+ & Modern Flat UI Architecture
 
 export global Theme {
-    // Base Backgrounds
-    in-out property <color> app_bg: #0d1117;
-    in-out property <color> card_bg: #161b22;
-    in-out property <color> card_header_bg: #1c2128;
-    in-out property <color> sub_card_bg: #21262d;
-    in-out property <color> progress_track: #21262d;
+    // Base Surfaces (VS Code editor & sidebar colors)
+    in-out property <color> app_bg: #181818;          // VS Code sidebar & shell background
+    in-out property <color> editor_bg: #1e1e1e;       // VS Code main editor background
+    in-out property <color> card_bg: #222222;         // Minimalist card surface
+    in-out property <color> hover_bg: #2a2d2e;        // VS Code list hover background
+    in-out property <color> active_bg: #04395e;       // VS Code active selection background
+    in-out property <color> sub_card_bg: #252526;     // Sub-panel background
+    in-out property <color> progress_track: #2a2a2a;  // Meter track background
 
-    // Borders & Dividers
-    in-out property <color> border: #30363d;
-    in-out property <color> border_highlight: #388bfd;
-    in-out property <length> radius_sm: 4px;
-    in-out property <length> radius_md: 8px;
-    in-out property <length> radius_lg: 12px;
+    // Borders & Dividers (Subtle 1px flat borders)
+    in-out property <color> border: #2d2d2d;
+    in-out property <color> border_focus: #0078d4;
+    in-out property <color> divider: #282828;
+    in-out property <length> radius_sm: 3px;
+    in-out property <length> radius_md: 6px;
 
-    // Typography Colors
-    in-out property <color> text_primary: #f0f6fc;
-    in-out property <color> text_secondary: #8b949e;
+    // Typography (VS Code text colors)
+    in-out property <color> text_primary: #d4d4d4;
+    in-out property <color> text_secondary: #9da5b4;
     in-out property <color> text_muted: #6e7681;
     in-out property <color> text_on_accent: #ffffff;
 
-    // Status & Telemetry Semantic Colors
-    in-out property <color> accent: #58a6ff;
-    in-out property <color> teal_primary: #21918c;
-    in-out property <color> success: #3fb950;
-    in-out property <color> warning: #d29922;
-    in-out property <color> danger: #f85149;
-    in-out property <color> purple: #a371f7;
+    // VS Code Semantic Syntax Accents
+    in-out property <color> accent: #0078d4;          // VS Code standard blue
+    in-out property <color> accent_cyan: #4fc1ff;     // VS Code light blue (variables)
+    in-out property <color> teal_primary: #4ec9b0;    // VS Code teal (classes/types)
+    in-out property <color> success: #89d185;         // VS Code green (strings/success)
+    in-out property <color> warning: #cca700;         // VS Code warning yellow
+    in-out property <color> danger: #f14c4c;          // VS Code error red
+    in-out property <color> purple: #c586c0;          // VS Code keyword purple
 
     // 3D Viewport Colors
-    in-out property <color> viewport_bg: #090d13;
-    in-out property <color> viewport_border: #30363d;
+    in-out property <color> viewport_bg: #141414;
+    in-out property <color> viewport_border: #282828;
 
-    // Typography
-    in-out property <string> default_font: "Segoe UI, Inter, system-ui, -apple-system, sans-serif";
+    // Font family
+    in-out property <string> default_font: "Consolas, 'Segoe UI', Inter, system-ui, monospace";
 }

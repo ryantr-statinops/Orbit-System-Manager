@@ -1,0 +1,74 @@
+// CoreMatrix Component — 16 CPU Logical Processors 8x2 Matrix (Task Manager style)
+import { Theme } from "../theme.slint";
+import { CoreItem } from "core_bar.slint";
+
+export component CoreCell inherits Rectangle {
+    in property <int> id: 0;
+    in property <float> load: 0.0;
+
+    height: 42px;
+    background: Theme.card_bg;
+    border-radius: Theme.radius_sm;
+    border-width: 1px;
+    border-color: Theme.border;
+    padding: 6px;
+
+    VerticalLayout {
+        alignment: space-between;
+
+        HorizontalLayout {
+            alignment: space-between;
+            Text {
+                text: root.id < 10 ? "0" + root.id : "" + root.id;
+                font-size: 10px;
+                font-weight: 700;
+                color: Theme.text_muted;
+                vertical-alignment: center;
+            }
+            Text {
+                text: Math.round(root.load) + "%";
+                font-size: 11px;
+                font-weight: 600;
+                color: root.load > 85.0 ? Theme.danger : (root.load > 55.0 ? Theme.warning : Theme.teal_primary);
+                vertical-alignment: center;
+            }
+        }
+
+        // Mini bottom load meter
+        Rectangle {
+            height: 3px;
+            background: Theme.progress_track;
+            border-radius: 1px;
+            clip: true;
+            Rectangle {
+                x: 0;
+                y: 0;
+                width: Math.min(parent.width, Math.max(0px, parent.width * (root.load / 100.0)));
+                height: parent.height;
+                background: root.load > 85.0 ? Theme.danger : (root.load > 55.0 ? Theme.warning : Theme.teal_primary);
+                animate width { duration: 250ms; easing: ease-out; }
+            }
+        }
+    }
+}
+
+export component CoreMatrix inherits VerticalLayout {
+    in property <[CoreItem]> cores;
+    spacing: 6px;
+
+    HorizontalLayout {
+        spacing: 6px;
+        for i in 8: CoreCell {
+            id: i;
+            load: root.cores[i].load;
+        }
+    }
+
+    HorizontalLayout {
+        spacing: 6px;
+        for i in 8: CoreCell {
+            id: i + 8;
+            load: root.cores[i + 8].load;
+        }
+    }
+}

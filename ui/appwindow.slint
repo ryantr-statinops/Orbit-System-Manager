@@ -1,15 +1,15 @@
-// Orbit System Manager — Slint Master Window Layout
-// Modular Architecture & Dark Theme Design Tokens
+// Orbit System Manager — VS Code Minimalist Task Manager Interface
+// Complete Revamp: Left Resource Navigation + Center 3D Viewport + 16-Core Matrix + Hardware Specs Grid
 
 import { Theme } from "theme.slint";
 import { CoreItem } from "components/core_bar.slint";
-import { LeftPanel } from "components/left_panel.slint";
+import { ResourceCard } from "components/resource_card.slint";
+import { CoreMatrix } from "components/core_matrix.slint";
 import { Viewport3D } from "components/viewport_3d.slint";
-import { RightPanel } from "components/right_panel.slint";
 
 export component AppWindow inherits Window {
-    title: "Orbit System Manager — Pure Native Rust & Slint";
-    min-width: 1024px;
+    title: "Orbit System Manager — Task Manager Performance Dashboard";
+    min-width: 1080px;
     min-height: 720px;
     preferred-width: 1280px;
     preferred-height: 800px;
@@ -29,13 +29,13 @@ export component AppWindow inherits Window {
     in property <float> gpu_temp: 0.0;
     in property <string> gpu_name: "Primary GPU";
     in property <[CoreItem]> cores: [
-        { id: 0, load: 12.0 }, { id: 1, load: 24.0 }, { id: 2, load: 45.0 }, { id: 3, load: 18.0 },
-        { id: 4, load: 65.0 }, { id: 5, load: 30.0 }, { id: 6, load: 82.0 }, { id: 7, load: 14.0 },
-        { id: 8, load: 28.0 }, { id: 9, load: 50.0 }, { id: 10, load: 38.0 }, { id: 11, load: 72.0 },
-        { id: 12, load: 19.0 }, { id: 13, load: 41.0 }, { id: 14, load: 60.0 }, { id: 15, load: 22.0 }
+        { id: 0, load: 18.0 }, { id: 1, load: 36.0 }, { id: 2, load: 65.0 }, { id: 3, load: 24.0 },
+        { id: 4, load: 84.0 }, { id: 5, load: 30.0 }, { id: 6, load: 72.0 }, { id: 7, load: 16.0 },
+        { id: 8, load: 42.0 }, { id: 9, load: 52.0 }, { id: 10, load: 22.0 }, { id: 11, load: 38.0 },
+        { id: 12, load: 28.0 }, { id: 13, load: 60.0 }, { id: 14, load: 46.0 }, { id: 15, load: 19.0 }
     ];
 
-    // 3D Viewport Bindings
+    // 3D Viewport Frame & Callbacks
     in property <image> viewport_3d_frame;
     in property <bool> has_3d_frame: true;
     callback rotate_3d(length, length);
@@ -43,107 +43,228 @@ export component AppWindow inherits Window {
     callback zoom_3d(length);
 
     VerticalLayout {
-        padding: 12px;
-        spacing: 12px;
+        padding: 0px;
+        spacing: 0px;
 
-        // ---------- TOP BAR ----------
+        // ---------- VS CODE STYLE COMPACT HEADER ----------
         Rectangle {
-            height: 48px;
-            background: Theme.card_bg;
-            border-radius: Theme.radius_md;
-            border-width: 1px;
+            height: 38px;
+            background: Theme.app_bg;
+            border-bottom-width: 1px;
             border-color: Theme.border;
-            padding: 8px;
 
             HorizontalLayout {
-                padding-left: 12px;
-                padding-right: 12px;
+                padding-left: 14px;
+                padding-right: 14px;
                 alignment: space-between;
 
-                // Branding
                 HorizontalLayout {
-                    spacing: 10px;
+                    spacing: 8px;
+                    alignment: center;
+                    Text { text: "🛸"; font-size: 14px; vertical-alignment: center; }
                     Text {
-                        text: "🛸";
-                        font-size: 18px;
+                        text: "Orbit System Manager";
+                        font-size: 12px;
+                        font-weight: 700;
+                        color: Theme.text_primary;
                         vertical-alignment: center;
                     }
                     Text {
-                        text: "ORBIT SYSTEM MANAGER";
-                        font-size: 14px;
-                        font-weight: 800;
-                        color: Theme.text_primary;
+                        text: "— Performance";
+                        font-size: 12px;
+                        color: Theme.text_muted;
                         vertical-alignment: center;
-                        letter-spacing: 0.8px;
                     }
                 }
 
-                // Status Pills
                 HorizontalLayout {
-                    spacing: 10px;
+                    spacing: 8px;
+                    alignment: center;
                     Rectangle {
-                        background: #0f2d1e;
+                        background: #14281e;
                         border-radius: Theme.radius_sm;
                         border-width: 1px;
                         border-color: Theme.success;
-                        padding-left: 10px;
-                        padding-right: 10px;
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        padding-top: 2px;
+                        padding-bottom: 2px;
                         Text {
-                            text: "● NATIVE SLINT ENGINE";
-                            font-size: 11px;
+                            text: "● NATIVE RUST";
+                            font-size: 10px;
                             font-weight: 700;
                             color: Theme.success;
                             vertical-alignment: center;
                         }
                     }
-                    Rectangle {
-                        background: Theme.sub_card_bg;
-                        border-radius: Theme.radius_sm;
-                        padding-left: 8px;
-                        padding-right: 8px;
-                        Text {
-                            text: "1 HZ SAMPLING";
-                            font-size: 11px;
-                            font-weight: 600;
-                            color: Theme.text_secondary;
-                            vertical-alignment: center;
-                        }
+                    Text {
+                        text: "1 Hz Sampling • Pure Slint";
+                        font-size: 11px;
+                        color: Theme.text_muted;
+                        vertical-alignment: center;
                     }
                 }
             }
         }
 
-        // ---------- MAIN 3-COLUMN DASHBOARD ----------
+        // ---------- MAIN BODY (TASK MANAGER 2-PANE LAYOUT) ----------
         HorizontalLayout {
-            spacing: 12px;
+            spacing: 0px;
 
-            // ===== Left Column =====
-            LeftPanel {
-                ram_percent: root.ram_percent;
-                ram_used_gb: root.ram_used_gb;
-                ram_total_gb: root.ram_total_gb;
-                cpu_avg: root.cpu_avg;
-                cpu_std: root.cpu_std;
-                cpu_var: root.cpu_var;
-                cores: root.cores;
+            // ===== LEFT PANE: RESOURCE SELECTOR LIST (~230px) =====
+            Rectangle {
+                width: 230px;
+                background: Theme.app_bg;
+                border-right-width: 1px;
+                border-color: Theme.border;
+
+                VerticalLayout {
+                    padding: 8px;
+                    spacing: 4px;
+                    alignment: start;
+
+                    Text {
+                        text: "RESOURCES";
+                        font-size: 10px;
+                        font-weight: 800;
+                        color: Theme.text_muted;
+                        letter-spacing: 0.5px;
+                        padding-left: 6px;
+                        padding-bottom: 4px;
+                    }
+
+                    // CPU Item (Selected Hero)
+                    ResourceCard {
+                        title: "CPU";
+                        value_text: Math.round(root.cpu_avg) + "%";
+                        sub_text: Math.round(root.cpu_avg * 10.0) / 10.0 + " GHz • 16 Cores";
+                        percent: root.cpu_avg;
+                        is_selected: true;
+                        meter_color: Theme.accent;
+                    }
+
+                    // Memory Item
+                    ResourceCard {
+                        title: "Memory";
+                        value_text: Math.round(root.ram_percent) + "%";
+                        sub_text: Math.round(root.ram_used_gb * 10.0) / 10.0 + " / " + Math.round(root.ram_total_gb * 10.0) / 10.0 + " GB";
+                        percent: root.ram_percent;
+                        is_selected: false;
+                        meter_color: Theme.teal_primary;
+                    }
+
+                    // GPU Item
+                    ResourceCard {
+                        title: "GPU";
+                        value_text: Math.round(root.gpu_load) + "%";
+                        sub_text: root.gpu_name + " • " + Math.round(root.gpu_temp) + "°C";
+                        percent: root.gpu_load;
+                        is_selected: false;
+                        meter_color: Theme.warning;
+                    }
+
+                    // Network Item
+                    ResourceCard {
+                        title: "Network";
+                        value_text: Math.round(root.net_recv_kbps) + " KB/s";
+                        sub_text: "R: " + Math.round(root.net_recv_kbps) + " • S: " + Math.round(root.net_sent_kbps) + " KB/s";
+                        percent: Math.min(100.0, root.net_recv_kbps / 10.0);
+                        is_selected: false;
+                        meter_color: Theme.purple;
+                    }
+                }
             }
 
-            // ===== Center Column (3D Viewport) =====
-            Viewport3D {
-                frame: root.viewport_3d_frame;
-                has_frame: root.has_3d_frame;
-                rotate_drag(dx, dy) => { root.rotate_3d(dx, dy); }
-                pan_drag(dx, dy) => { root.pan_3d(dx, dy); }
-                zoom_scroll(delta) => { root.zoom_3d(delta); }
-            }
+            // ===== RIGHT PANE: DETAIL PERFORMANCE VIEW (FLEX 1) =====
+            Rectangle {
+                background: Theme.editor_bg;
 
-            // ===== Right Column =====
-            RightPanel {
-                gpu_name: root.gpu_name;
-                gpu_load: root.gpu_load;
-                gpu_temp: root.gpu_temp;
-                net_sent_kbps: root.net_sent_kbps;
-                net_recv_kbps: root.net_recv_kbps;
+                VerticalLayout {
+                    padding: 16px;
+                    spacing: 12px;
+
+                    // 1. Hero 3D Viewport Frame
+                    Viewport3D {
+                        frame: root.viewport_3d_frame;
+                        has_frame: root.has_3d_frame;
+                        cpu_avg: root.cpu_avg;
+                        cpu_std: root.cpu_std;
+                        cpu_var: root.cpu_var;
+                        rotate_drag(dx, dy) => { root.rotate_3d(dx, dy); }
+                        pan_drag(dx, dy) => { root.pan_3d(dx, dy); }
+                        zoom_scroll(delta) => { root.zoom_3d(delta); }
+                    }
+
+                    // 2. 16-Core Matrix (8x2 Logical Processors Grid)
+                    VerticalLayout {
+                        spacing: 6px;
+                        HorizontalLayout {
+                            alignment: space-between;
+                            Text {
+                                text: "LOGICAL PROCESSORS (16 CORES)";
+                                font-size: 11px;
+                                font-weight: 700;
+                                color: Theme.text_secondary;
+                                letter-spacing: 0.5px;
+                            }
+                            Text {
+                                text: "Std Dev: " + (Math.round(root.cpu_std * 100.0) / 100.0) + " • Variance: " + (Math.round(root.cpu_var * 10.0) / 10.0);
+                                font-size: 10px;
+                                color: Theme.text_muted;
+                            }
+                        }
+
+                        CoreMatrix {
+                            cores: root.cores;
+                        }
+                    }
+
+                    // 3. Task Manager Style Bottom Specs Grid (4 Columns)
+                    Rectangle {
+                        height: 72px;
+                        background: Theme.card_bg;
+                        border-radius: Theme.radius_sm;
+                        border-width: 1px;
+                        border-color: Theme.border;
+                        padding: 10px;
+
+                        HorizontalLayout {
+                            alignment: space-between;
+
+                            // Column 1
+                            VerticalLayout {
+                                spacing: 2px;
+                                Text { text: "Utilization"; font-size: 10px; color: Theme.text_muted; }
+                                Text { text: Math.round(root.cpu_avg * 10.0) / 10.0 + "%"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
+                                Text { text: "Normal Profile"; font-size: 10px; color: Theme.teal_primary; }
+                            }
+
+                            // Column 2
+                            VerticalLayout {
+                                spacing: 2px;
+                                Text { text: "Speed"; font-size: 10px; color: Theme.text_muted; }
+                                Text { text: "3.42 GHz"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
+                                Text { text: "Base: 2.30 GHz"; font-size: 10px; color: Theme.text_muted; }
+                            }
+
+                            // Column 3
+                            VerticalLayout {
+                                spacing: 2px;
+                                Text { text: "Sockets / Cores"; font-size: 10px; color: Theme.text_muted; }
+                                Text { text: "1 / 8 Cores"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
+                                Text { text: "16 Logical Processors"; font-size: 10px; color: Theme.text_muted; }
+                            }
+
+                            // Column 4
+                            VerticalLayout {
+                                spacing: 2px;
+                                Text { text: "L1 / L2 / L3 Cache"; font-size: 10px; color: Theme.text_muted; }
+                                Text { text: "512K / 2M / 16M"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
+                                Text { text: "Virtualization: Enabled"; font-size: 10px; color: Theme.success; }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

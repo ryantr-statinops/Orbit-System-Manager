@@ -1,68 +1,87 @@
-// Viewport3D Component — Native 3D GPU Viewport with Interactive TouchArea
+// Viewport3D Component — VS Code Minimalist 3D Topology Viewport Frame
 import { Theme } from "../theme.slint";
 
 export component Viewport3D inherits Rectangle {
     in property <image> frame;
     in property <bool> has_frame: false;
-    in property <string> profile_summary: "Gaussian Load Profile";
-    in property <string> max_core_label: "Core 6 (82%)";
-    in property <string> idle_core_label: "5 Cores < 20%";
+    in property <float> cpu_avg: 0.0;
+    in property <float> cpu_std: 0.0;
+    in property <float> cpu_var: 0.0;
 
     // Callbacks to Rust 3D Camera OrbitControls
-    callback rotate_drag(length, length); // delta_x, delta_y
-    callback pan_drag(length, length);    // delta_x, delta_y
-    callback zoom_scroll(length);         // delta_y
+    callback rotate_drag(length, length);
+    callback pan_drag(length, length);
+    callback zoom_scroll(length);
 
-    background: Theme.card_bg;
-    border-radius: Theme.radius_md;
-    border-width: 1px;
-    border-color: Theme.border;
-    padding: 14px;
+    background: Theme.editor_bg;
+    border-radius: Theme.radius_sm;
+    clip: true;
 
     VerticalLayout {
-        spacing: 12px;
+        spacing: 8px;
 
-        // Viewport Header
+        // Header: Task Manager Title & Real-time KPIs
         HorizontalLayout {
             alignment: space-between;
-            Text {
-                text: "CPU 3D TOPOLOGY & TERRAIN VIEWPORT";
-                font-size: 12px;
-                font-weight: 800;
-                color: Theme.text_primary;
-                letter-spacing: 0.5px;
-                vertical-alignment: center;
-            }
-            HorizontalLayout {
-                spacing: 8px;
-                Rectangle {
-                    background: #1c2128;
-                    border-radius: Theme.radius_sm;
-                    border-width: 1px;
-                    border-color: Theme.border;
-                    padding-left: 8px;
-                    padding-right: 8px;
+            VerticalLayout {
+                spacing: 2px;
+                HorizontalLayout {
+                    spacing: 12px;
                     Text {
-                        text: "16 CORES × 30S";
-                        font-size: 10px;
+                        text: "CPU";
+                        font-size: 18px;
+                        font-weight: 800;
+                        color: Theme.text_primary;
+                    }
+                    Text {
+                        text: Math.round(root.cpu_avg * 10.0) / 10.0 + "% Utilization";
+                        font-size: 15px;
                         font-weight: 700;
                         color: Theme.accent;
                         vertical-alignment: center;
                     }
                 }
+                Text {
+                    text: "16 Logical Processors • 60s Window • Real-time Hardware Sampling";
+                    font-size: 11px;
+                    color: Theme.text_muted;
+                }
+            }
+
+            // Top-right status tags
+            HorizontalLayout {
+                spacing: 6px;
+                alignment: center;
                 Rectangle {
-                    background: #1c2128;
+                    background: Theme.card_bg;
                     border-radius: Theme.radius_sm;
                     border-width: 1px;
                     border-color: Theme.border;
                     padding-left: 8px;
                     padding-right: 8px;
+                    padding-top: 3px;
+                    padding-bottom: 3px;
                     Text {
-                        text: "VIRIDIS NEON";
+                        text: "16C × 30S VIRIDIS";
                         font-size: 10px;
-                        font-weight: 700;
+                        font-weight: 600;
+                        color: Theme.teal_primary;
+                    }
+                }
+                Rectangle {
+                    background: Theme.card_bg;
+                    border-radius: Theme.radius_sm;
+                    border-width: 1px;
+                    border-color: Theme.border;
+                    padding-left: 8px;
+                    padding-right: 8px;
+                    padding-top: 3px;
+                    padding-bottom: 3px;
+                    Text {
+                        text: "VSYNC 60 FPS";
+                        font-size: 10px;
+                        font-weight: 600;
                         color: Theme.success;
-                        vertical-alignment: center;
                     }
                 }
             }
@@ -71,7 +90,7 @@ export component Viewport3D inherits Rectangle {
         // 3D Canvas Container
         Rectangle {
             background: Theme.viewport_bg;
-            border-radius: Theme.radius_md;
+            border-radius: Theme.radius_sm;
             border-width: 1px;
             border-color: Theme.viewport_border;
             clip: true;
@@ -87,24 +106,24 @@ export component Viewport3D inherits Rectangle {
             // Fallback placeholder when frame buffer is loading
             if !root.has_frame: VerticalLayout {
                 alignment: center;
-                spacing: 8px;
+                spacing: 6px;
                 Text {
                     text: "🌐";
-                    font-size: 46px;
+                    font-size: 38px;
                     horizontal-alignment: center;
                 }
                 Text {
                     text: "NATIVE 3D GPU TOPOLOGY MESH";
-                    font-size: 14px;
-                    font-weight: 800;
+                    font-size: 12px;
+                    font-weight: 700;
                     color: Theme.teal_primary;
                     horizontal-alignment: center;
-                    letter-spacing: 1.2px;
+                    letter-spacing: 1px;
                 }
                 Text {
                     text: "Drag left-click to Orbit • Scroll to Zoom • Drag right-click to Pan";
-                    font-size: 11px;
-                    color: Theme.text_secondary;
+                    font-size: 10px;
+                    color: Theme.text_muted;
                     horizontal-alignment: center;
                 }
             }
@@ -132,32 +151,6 @@ export component Viewport3D inherits Rectangle {
                 scroll-event(event) => {
                     root.zoom_scroll(event.delta-y);
                     return EventResult.accept;
-                }
-            }
-        }
-
-        // Bottom Load Distribution Bar
-        Rectangle {
-            height: 52px;
-            background: Theme.sub_card_bg;
-            border-radius: Theme.radius_sm;
-            border-width: 1px;
-            border-color: Theme.border;
-            padding: 8px;
-
-            HorizontalLayout {
-                alignment: space-between;
-                VerticalLayout {
-                    Text { text: "LOAD DISTRIBUTION"; font-size: 10px; font-weight: 700; color: Theme.text_muted; }
-                    Text { text: root.profile_summary; font-size: 12px; font-weight: 600; color: Theme.text_primary; }
-                }
-                VerticalLayout {
-                    Text { text: "MAX LOAD CORE"; font-size: 10px; font-weight: 700; color: Theme.text_muted; }
-                    Text { text: root.max_core_label; font-size: 12px; font-weight: 700; color: Theme.danger; }
-                }
-                VerticalLayout {
-                    Text { text: "IDLE CORES"; font-size: 10px; font-weight: 700; color: Theme.text_muted; }
-                    Text { text: root.idle_core_label; font-size: 12px; font-weight: 600; color: Theme.success; }
                 }
             }
         }

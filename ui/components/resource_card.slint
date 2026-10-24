@@ -1,0 +1,78 @@
+// ResourceCard Component — Task Manager Performance Tab Selector Item
+import { Theme } from "../theme.slint";
+
+export component ResourceCard inherits Rectangle {
+    in property <string> title: "CPU";
+    in property <string> value_text: "0%";
+    in property <string> sub_text: "";
+    in property <float> percent: 0.0;
+    in property <bool> is_selected: false;
+    in property <color> meter_color: Theme.accent;
+
+    callback clicked;
+
+    height: 62px;
+    background: root.is_selected ? Theme.card_bg : (touch.has-hover ? Theme.hover_bg : #00000000);
+    border-radius: Theme.radius_sm;
+    clip: true;
+
+    // Active vertical indicator bar on left (VS Code / Windows 11 style)
+    if root.is_selected: Rectangle {
+        x: 0;
+        y: 6px;
+        width: 3px;
+        height: parent.height - 12px;
+        background: Theme.border_focus;
+        border-radius: 1px;
+    }
+
+    touch := TouchArea {
+        clicked => { root.clicked(); }
+    }
+
+    VerticalLayout {
+        padding-left: 14px;
+        padding-right: 14px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        spacing: 4px;
+
+        HorizontalLayout {
+            alignment: space-between;
+            Text {
+                text: root.title;
+                font-size: 13px;
+                font-weight: 700;
+                color: root.is_selected ? Theme.text_primary : Theme.text_secondary;
+            }
+            Text {
+                text: root.value_text;
+                font-size: 12px;
+                font-weight: 600;
+                color: root.is_selected ? root.meter_color : Theme.text_secondary;
+            }
+        }
+
+        if root.sub_text != "": Text {
+            text: root.sub_text;
+            font-size: 10px;
+            color: Theme.text_muted;
+        }
+
+        // Mini meter line
+        Rectangle {
+            height: 3px;
+            background: Theme.progress_track;
+            border-radius: 1px;
+            clip: true;
+            Rectangle {
+                x: 0;
+                y: 0;
+                width: Math.min(parent.width, Math.max(0px, parent.width * (root.percent / 100.0)));
+                height: parent.height;
+                background: root.meter_color;
+                animate width { duration: 250ms; easing: ease-out; }
+            }
+        }
+    }
+}
