@@ -1,109 +1,47 @@
-# 🛸 Orbit System Manager
+# Orbit System Manager
 
-[![Release](https://img.shields.io/badge/Release-v2.1.0_Slint_Native-blue?style=for-the-badge&logo=rust)](https://github.com/ryantr-statinops/Orbit-System-Manager/releases)
+A native desktop dashboard for live CPU, memory, and network telemetry, built with Rust and Slint.
 
-**Ứng dụng desktop giám sát CPU, RAM và lưu lượng mạng bằng Rust và Slint.**
+## Dashboard
 
-![Orbit System Manager](assets/images/example.png)
+- CPU utilization history displayed as a smoothed, shaded 3D surface. The surface interpolates only for presentation; reported samples remain the collected measurements.
+- A responsive view of every logical processor.
+- Memory usage and aggregate network receive/send rates with explicit units.
+- GPU telemetry marked unavailable until GPU collection is implemented.
+- Rotate with left drag, pan with right drag, zoom with the scroll wheel, and reset the camera from the chart controls.
 
-Orbit System Manager thu thập CPU, RAM và lưu lượng mạng theo thời gian thực. Collector chạy trên worker riêng; biểu đồ history CPU được rasterize bằng CPU và hiển thị trong Slint. GPU chưa được hỗ trợ và được ghi là N/A.
+CPU history retains up to 30 samples. System telemetry is collected once per second. Renderer frame rate is limited by the application redraw timer.
 
----
+## Requirements
 
-## ⚡ Điểm nổi bật (Highlights)
+- Rust and Cargo 1.99.1 or later.
+- Platform build dependencies required by Slint. On Windows, install Visual Studio Build Tools with the MSVC C++ workload.
 
-* **🦀 Ứng dụng native:** Không dùng Node.js hoặc WebView.
-* **🎨 Giao diện Slint:** Dashboard native với history được vẽ bằng CPU.
-* **📊 Trực quan hoá toàn diện:**
-  * **System Memory:** Đo dung lượng RAM đã dùng, tổng RAM và thanh phần trăm động.
-  * **CPU Cores:** Hiển thị tất cả logical processors của máy.
-  * **HUD Stats:** Tính toán trực tiếp Average Utilization, Standard Deviation và Variance.
-  * **Network:** Theo dõi tốc độ gửi/nhận theo KiB/s, tổng hợp trên mọi interface. GPU hiện N/A.
+## Development
 
----
+Run the application:
 
-## 🏗️ Kiến trúc kỹ thuật (Rust & Slint)
-
-```mermaid
-graph LR
-    subgraph Hardware_Layer [TẦNG THU THẬP PHẦN CỨNG]
-        Sysinfo[sysinfo crate - 1Hz Worker]
-    end
-
-    subgraph Core_Engine [RUST NATIVE ENGINE]
-        MainLoop[src/main.rs - Slint Event Loop]
-        Collector[src/telemetry/collector.rs]
-        Sysinfo --> Collector
-        Collector -->|Latest snapshot| MainLoop
-    end
-
-    subgraph UI_Surface [SLINT NATIVE GUI]
-        SlintView[ui/appwindow.slint - Native Slint UI]
-        MainLoop -->|Snapshot Update| SlintView
-    end
-```
-
-### Công nghệ sử dụng
-
-| Thành phần | Công nghệ |
-| :--- | :--- |
-| **Ngôn ngữ cốt lõi** | Rust (Edition 2021) |
-| **GUI Framework** | [Slint](https://slint.dev) (v1.18.1) |
-| **System Telemetry** | [sysinfo](https://crates.io/crates/sysinfo) (v0.33) |
-| **Serialization** | `serde` + `serde_json` |
-| **CI / CD Container** | Docker (Ubuntu 22.04 Native Build) |
-
----
-
-## ⚙️ Hướng dẫn phát triển (Development)
-
-### Yêu cầu
-* [Rust & Cargo](https://www.rust-lang.org) (≥ 1.99.1)
-
-### 1. Chạy ở chế độ Development
-
-```bash
+```sh
 cargo run --locked
 ```
 
-### 2. Build bản phát hành (Release Binary)
+Check and test:
 
-```bash
+```sh
+cargo fmt --all -- --check
+cargo check --locked
+cargo test --locked
+cargo clippy --locked --all-targets -- -D warnings
+```
+
+Build an optimized binary:
+
+```sh
 cargo build --locked --release
 ```
 
-Tệp nhị phân độc lập sau khi build sẽ nằm tại:
-* **Windows:** `target/release/orbit-system-manager.exe`
-* **Linux:** `target/release/orbit-system-manager`
-* **macOS:** `target/release/orbit-system-manager`
+The binary is written to `target/release/`.
 
----
+## Release artifacts
 
-## 📁 Cấu trúc thư mục
-
-```
-Orbit-System-Manager/
-├── Cargo.toml          # Rust package manifest & dependencies (Slint, sysinfo)
-├── Cargo.lock          # Locked dependency versions
-├── build.rs            # Slint UI build script (compiles appwindow.slint)
-├── src/
-│   ├── main.rs         # Entry point, worker snapshots and Slint bindings
-│   ├── lib.rs          # Export telemetry module
-│   └── telemetry/      # Module thu thập số liệu phần cứng bằng sysinfo
-│       ├── mod.rs
-│       ├── models.rs   # CPU, memory, GPU availability and network data
-│       └── collector.rs # Logic đọc CPU, RAM, Network
-├── ui/
-│   └── appwindow.slint # Giao diện dashboard hai vùng, có thể cuộn
-├── assets/
-│   ├── icons/          # App icons (.ico, .png, .icns)
-│   └── images/         # Screenshots
-├── .github/workflows/  # CI kiểm tra Linux, Windows, macOS và build release
-└── Dockerfile.build-linux # Container build độc lập cho Linux
-```
-
----
-
-## 📄 Giấy phép
-
-MIT License.
+Pushing a version tag such as `v2.1.2` starts `.github/workflows/release.yml`. The workflow builds Windows x86_64, Linux x86_64, macOS Intel, and macOS Apple Silicon archives, then attaches them and `SHA256SUMS.txt` to the GitHub Release.
