@@ -48,7 +48,7 @@ export component CoreCell inherits Rectangle {
                 y: 0;
                 width: Math.min(parent.width, Math.max(0px, parent.width * (root.load / 100.0)));
                 height: parent.height;
-                background: Theme.gradient_viridis;
+                background: Theme.viridis_color_for_load(root.load);
                 animate width { duration: 250ms; easing: ease-out; }
             }
         }
