@@ -255,6 +255,18 @@ mod tests {
         assert_eq!(one.smoothed_grid(3).len(), 4);
         assert!(one.smoothed_grid(3).iter().all(|row| row.len() == 1));
     }
+
+    #[test]
+    fn invalid_loads_are_clamped_without_creating_extra_samples() {
+        let mut mesh = TerrainMesh::new();
+        assert_eq!(mesh.sample_count(), 0);
+        assert!(mesh.smoothed_grid(4).is_empty());
+        mesh.push_sample(&[-10.0, 140.0]);
+        assert_eq!(mesh.sample_count(), 1);
+        assert_eq!(mesh.grid, vec![vec![0.0, 100.0]]);
+        let display = mesh.smoothed_grid(4);
+        assert_eq!(display, vec![vec![0.0, 100.0]]);
+    }
 }
 
 // Convert height factor (0.0 - 1.0) to Viridis Palette [R, G, B, A]
