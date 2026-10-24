@@ -28,9 +28,11 @@ export component AppWindow inherits Window {
     in property <float> gpu_load: 0.0;
     in property <float> gpu_temp: 0.0;
     in property <string> gpu_name: "Primary GPU";
-    in property <[CoreItem]> cores: [
+    in property <[CoreItem]> cores_row1: [
         { id: 0, load: 18.0 }, { id: 1, load: 36.0 }, { id: 2, load: 65.0 }, { id: 3, load: 24.0 },
-        { id: 4, load: 84.0 }, { id: 5, load: 30.0 }, { id: 6, load: 72.0 }, { id: 7, load: 16.0 },
+        { id: 4, load: 84.0 }, { id: 5, load: 30.0 }, { id: 6, load: 72.0 }, { id: 7, load: 16.0 }
+    ];
+    in property <[CoreItem]> cores_row2: [
         { id: 8, load: 42.0 }, { id: 9, load: 52.0 }, { id: 10, load: 22.0 }, { id: 11, load: 38.0 },
         { id: 12, load: 28.0 }, { id: 13, load: 60.0 }, { id: 14, load: 46.0 }, { id: 15, load: 19.0 }
     ];
@@ -219,7 +221,8 @@ export component AppWindow inherits Window {
                         }
 
                         CoreMatrix {
-                            cores: root.cores;
+                            cores_row1: root.cores_row1;
+                            cores_row2: root.cores_row2;
                         }
                     }
 

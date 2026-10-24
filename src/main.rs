@@ -83,9 +83,9 @@ fn main() -> Result<(), slint::PlatformError> {
                 app.set_cpu_std(payload.cpu_detail.std_dev);
                 app.set_cpu_var(payload.cpu_detail.variance);
 
-                let core_items: Vec<CoreItem> = payload
-                    .cpu_detail
-                    .cores
+                let cores = &payload.cpu_detail.cores;
+                let len = cores.len();
+                let row1_items: Vec<CoreItem> = cores[..8.min(len)]
                     .iter()
                     .enumerate()
                     .map(|(idx, &load)| CoreItem {
@@ -93,8 +93,20 @@ fn main() -> Result<(), slint::PlatformError> {
                         load,
                     })
                     .collect();
-                let cores_model = Rc::new(VecModel::from(core_items));
-                app.set_cores(cores_model.into());
+                let row2_items: Vec<CoreItem> = if len > 8 {
+                    cores[8..16.min(len)]
+                        .iter()
+                        .enumerate()
+                        .map(|(idx, &load)| CoreItem {
+                            id: (idx + 8) as i32,
+                            load,
+                        })
+                        .collect()
+                } else {
+                    vec![]
+                };
+                app.set_cores_row1(Rc::new(VecModel::from(row1_items)).into());
+                app.set_cores_row2(Rc::new(VecModel::from(row2_items)).into());
 
                 // Push cores to 3D terrain heightmap
                 renderer_ref

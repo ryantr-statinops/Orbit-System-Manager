@@ -53,22 +53,23 @@ export component CoreCell inherits Rectangle {
 }
 
 export component CoreMatrix inherits VerticalLayout {
-    in property <[CoreItem]> cores;
+    in property <[CoreItem]> cores_row1;
+    in property <[CoreItem]> cores_row2;
     spacing: 6px;
 
     HorizontalLayout {
         spacing: 6px;
-        for i in 8: CoreCell {
-            id: i;
-            load: root.cores[i].load;
+        for item in root.cores_row1: CoreCell {
+            id: item.id;
+            load: item.load;
         }
     }
 
     HorizontalLayout {
         spacing: 6px;
-        for i in 8: CoreCell {
-            id: i + 8;
-            load: root.cores[i + 8].load;
+        for item in root.cores_row2: CoreCell {
+            id: item.id;
+            load: item.load;
         }
     }
 }
