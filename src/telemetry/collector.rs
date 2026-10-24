@@ -91,7 +91,7 @@ impl TelemetryCollector {
                     .map(|cpu| cpu.brand().trim().to_owned())
                     .filter(|name| !name.is_empty()),
                 frequency_ghz,
-                physical_core_count: System::physical_core_count(),
+                physical_core_count: self.sys.physical_core_count(),
                 status: if cores.is_empty() {
                     MetricStatus::Unavailable
                 } else {
