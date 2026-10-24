@@ -263,31 +263,6 @@ fn build_core_rows(cores: &[f32], columns: usize) -> Vec<CoreRow> {
         .collect()
 }
 
-#[cfg(test)]
-mod tests {
-    use super::{build_core_rows, columns_for_width};
-    use slint::Model;
-
-    #[test]
-    fn processor_columns_adapt_to_window_width() {
-        assert_eq!(columns_for_width(720.0), 6);
-        assert_eq!(columns_for_width(1280.0), 8);
-        assert_eq!(columns_for_width(1600.0), 8);
-    }
-
-    #[test]
-    fn processor_rows_cover_all_supported_core_counts() {
-        for count in [0, 1, 4, 16, 32, 64] {
-            let cores = vec![42.0; count];
-            let rows = build_core_rows(&cores, 6);
-            assert_eq!(
-                rows.iter().map(|row| row.cells.row_count()).sum::<usize>(),
-                count
-            );
-        }
-    }
-}
-
 fn schedule_animation(
     app_weak: slint::Weak<AppWindow>,
     renderer: Rc<RefCell<OffscreenRenderer>>,
@@ -319,4 +294,29 @@ fn schedule_animation(
             }
         },
     );
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{build_core_rows, columns_for_width};
+    use slint::Model;
+
+    #[test]
+    fn processor_columns_adapt_to_window_width() {
+        assert_eq!(columns_for_width(720.0), 6);
+        assert_eq!(columns_for_width(1280.0), 8);
+        assert_eq!(columns_for_width(1600.0), 8);
+    }
+
+    #[test]
+    fn processor_rows_cover_all_supported_core_counts() {
+        for count in [0, 1, 4, 16, 32, 64] {
+            let cores = vec![42.0; count];
+            let rows = build_core_rows(&cores, 6);
+            assert_eq!(
+                rows.iter().map(|row| row.cells.row_count()).sum::<usize>(),
+                count
+            );
+        }
+    }
 }
