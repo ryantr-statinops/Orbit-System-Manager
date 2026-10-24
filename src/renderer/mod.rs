@@ -148,10 +148,21 @@ fn raster_triangle(
     if area.abs() < f32::EPSILON || width == 0 || height == 0 {
         return;
     }
-    let min_x = a.0.min(b.0).min(c.0).max(0) as u32;
-    let max_x = a.0.max(b.0).max(c.0).min(width as i32 - 1) as u32;
-    let min_y = a.1.min(b.1).min(c.1).max(0) as u32;
-    let max_y = a.1.max(b.1).max(c.1).min(height as i32 - 1) as u32;
+    let min_x_signed = a.0.min(b.0).min(c.0);
+    let max_x_signed = a.0.max(b.0).max(c.0);
+    let min_y_signed = a.1.min(b.1).min(c.1);
+    let max_y_signed = a.1.max(b.1).max(c.1);
+    if max_x_signed < 0
+        || max_y_signed < 0
+        || min_x_signed >= width as i32
+        || min_y_signed >= height as i32
+    {
+        return;
+    }
+    let min_x = min_x_signed.max(0) as u32;
+    let max_x = max_x_signed.min(width as i32 - 1) as u32;
+    let min_y = min_y_signed.max(0) as u32;
+    let max_y = max_y_signed.min(height as i32 - 1) as u32;
     if min_x > max_x || min_y > max_y {
         return;
     }
@@ -303,6 +314,16 @@ mod tests {
             [90, 120, 160, 255],
         );
         assert!(pixels.iter().any(|pixel| pixel.r == 90));
+        raster_triangle(
+            &mut pixels,
+            &mut depth,
+            width,
+            height,
+            (-8, 1, 5.0),
+            (-2, 2, 5.0),
+            (-4, 6, 5.0),
+            [1, 2, 3, 255],
+        );
     }
 
     #[test]
