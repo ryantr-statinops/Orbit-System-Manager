@@ -8,7 +8,7 @@ import { Viewport3D } from "components/viewport_3d.slint";
 import { ScrollView } from "std-widgets.slint";
 
 export component AppWindow inherits Window {
-    title: "Orbit System Manager — Task Manager Performance Dashboard";
+    title: "Orbit System Manager | System Performance";
     min-width: 720px;
     min-height: 520px;
     preferred-width: 1280px;
@@ -49,7 +49,7 @@ export component AppWindow inherits Window {
         padding: 0px;
         spacing: 0px;
 
-        // ---------- VS CODE STYLE COMPACT HEADER ----------
+        // Application header
         Rectangle {
             height: 38px;
             background: Theme.app_bg;
@@ -62,17 +62,17 @@ export component AppWindow inherits Window {
                 HorizontalLayout {
                     spacing: 8px;
                     alignment: center;
-                    Text { text: "🛸"; font-size: 14px; vertical-alignment: center; }
                     Text {
                         text: "Orbit System Manager";
-                        font-size: 12px;
+                        font-size: 14px;
                         font-weight: 700;
                         color: Theme.text_primary;
                         vertical-alignment: center;
                     }
                     Text {
-                        text: "— Performance";
-                        font-size: 12px;
+                        text: "SYSTEM PERFORMANCE";
+                        font-size: 10px;
+                        font-weight: 600;
                         color: Theme.text_muted;
                         vertical-alignment: center;
                     }
@@ -82,7 +82,7 @@ export component AppWindow inherits Window {
                     spacing: 8px;
                     alignment: center;
                     Rectangle {
-                        background: #14281e;
+                        background: Theme.sub_card_bg;
                         border-radius: Theme.radius_sm;
                         border-width: 1px;
                         border-color: Theme.success;
@@ -92,7 +92,7 @@ export component AppWindow inherits Window {
                             padding-top: 2px;
                             padding-bottom: 2px;
                             Text {
-                                text: "● NATIVE RUST";
+                                text: "● LIVE";
                                 font-size: 10px;
                                 font-weight: 700;
                                 color: Theme.success;
@@ -101,7 +101,7 @@ export component AppWindow inherits Window {
                         }
                     }
                     Text {
-                        text: "1 Hz Sampling • Pure Slint";
+                        text: "Updates every second";
                         font-size: 11px;
                         color: Theme.text_muted;
                         vertical-alignment: center;
