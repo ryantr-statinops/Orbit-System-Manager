@@ -205,6 +205,7 @@ mod tests {
     #[test]
     fn changing_core_count_resets_history_and_interpolation_converges() {
         let mut mesh = TerrainMesh::new();
+        mesh.push_sample(&[0.0; 16]);
         mesh.push_sample(&[100.0; 16]);
         assert!(mesh.update_interpolation(0.5));
         mesh.push_sample(&[50.0; 32]);
@@ -230,6 +231,7 @@ mod tests {
         let mut mesh = TerrainMesh::new();
         mesh.push_sample(&[0.0, 100.0]);
         mesh.push_sample(&[100.0, 0.0]);
+        mesh.update_interpolation(1.0);
         let dense = mesh.smoothed_grid(3);
         assert_eq!(dense.len(), 4);
         assert_eq!(dense[0].len(), 4);
