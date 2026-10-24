@@ -13,7 +13,6 @@ Desktop.ini
 
 # Rust build artifacts
 target/
-Cargo.lock
 
 # Cache artifacts
 __pycache__/
