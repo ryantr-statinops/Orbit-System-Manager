@@ -113,7 +113,7 @@ export component Viewport3D inherits Rectangle {
 
         // 3D Canvas Container
         canvas := Rectangle {
-            height: 318px;
+            height: Math.max(210px, root.height - 120px);
             background: Theme.viewport_bg;
             border-radius: Theme.radius_sm;
             border-width: 1px;

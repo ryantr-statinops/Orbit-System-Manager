@@ -98,7 +98,7 @@ export component AppWindow inherits Window {
 
         ScrollView {
             VerticalLayout {
-                padding: 20px;
+                        padding: 20px;
                 spacing: 16px;
 
                 HorizontalLayout {
@@ -134,7 +134,7 @@ export component AppWindow inherits Window {
                 }
 
                 Viewport3D {
-                    height: 440px;
+                    height: Math.min(440px, Math.max(340px, root.height * 0.46));
                     frame: root.viewport_3d_frame;
                     has_frame: root.has_3d_frame;
                     cpu_avg: root.cpu_avg;
