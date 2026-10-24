@@ -1,0 +1,49 @@
+import { Theme } from "../theme.slint";
+
+export component KpiCard inherits Rectangle {
+    in property <string> title: "Metric";
+    in property <string> value_text: "N/A";
+    in property <string> detail_text: "";
+    in property <float> percent: 0.0;
+    in property <bool> show_meter: false;
+    in property <color> accent: Theme.accent;
+
+    height: 104px;
+    background: Theme.card_bg;
+    border-radius: Theme.radius_md;
+    border-width: 1px;
+    border-color: Theme.border;
+
+    VerticalLayout {
+        padding: 14px;
+        spacing: 6px;
+        Text {
+            text: root.title;
+            font-size: 11px;
+            font-weight: 700;
+            color: Theme.text_secondary;
+        }
+        Text {
+            text: root.value_text;
+            font-size: 20px;
+            font-weight: 700;
+            color: root.accent;
+        }
+        Text {
+            text: root.detail_text;
+            font-size: 10px;
+            color: Theme.text_muted;
+        }
+        if root.show_meter: Rectangle {
+            height: 4px;
+            background: Theme.progress_track;
+            border-radius: 2px;
+            clip: true;
+            Rectangle {
+                width: parent.width * Math.max(0.0, Math.min(100.0, root.percent)) / 100.0;
+                height: parent.height;
+                background: root.accent;
+            }
+        }
+    }
+}

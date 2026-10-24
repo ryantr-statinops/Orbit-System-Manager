@@ -1,10 +1,7 @@
-// Orbit System Manager — VS Code Minimalist Task Manager Interface
-// Complete Revamp: Left Resource Navigation + Center 3D Viewport + 16-Core Matrix + Hardware Specs Grid
-
 import { Theme } from "theme.slint";
-import { ResourceCard } from "components/resource_card.slint";
 import { CoreMatrix, CoreRow } from "components/core_matrix.slint";
 import { Viewport3D } from "components/viewport_3d.slint";
+import { KpiCard } from "components/kpi_card.slint";
 import { ScrollView } from "std-widgets.slint";
 
 export component AppWindow inherits Window {
@@ -16,7 +13,6 @@ export component AppWindow inherits Window {
     background: Theme.app_bg;
     default-font-family: Theme.default_font;
 
-    // Hardware Telemetry Properties (Bound to Rust sysinfo)
     in property <float> cpu_avg: 0.0;
     in property <float> cpu_std: 0.0;
     in property <float> cpu_var: 0.0;
@@ -37,7 +33,6 @@ export component AppWindow inherits Window {
     in property <int> history_samples: 0;
     in property <int> history_seconds: 0;
 
-    // 3D Viewport Frame & Callbacks
     in property <image> viewport_3d_frame;
     in property <bool> has_3d_frame: true;
     callback rotate_3d(length, length);
@@ -49,241 +44,162 @@ export component AppWindow inherits Window {
         padding: 0px;
         spacing: 0px;
 
-        // Application header
         Rectangle {
-            height: 38px;
+            height: 58px;
             background: Theme.app_bg;
-
             HorizontalLayout {
-                padding-left: 14px;
-                padding-right: 14px;
+                padding-left: 24px;
+                padding-right: 24px;
                 alignment: space-between;
-
                 HorizontalLayout {
-                    spacing: 8px;
+                    spacing: 12px;
                     alignment: center;
                     Text {
                         text: "Orbit System Manager";
-                        font-size: 14px;
+                        font-size: 15px;
                         font-weight: 700;
                         color: Theme.text_primary;
-                        vertical-alignment: center;
                     }
                     Text {
                         text: "SYSTEM PERFORMANCE";
                         font-size: 10px;
                         font-weight: 600;
                         color: Theme.text_muted;
-                        vertical-alignment: center;
                     }
                 }
-
                 HorizontalLayout {
                     spacing: 8px;
                     alignment: center;
                     Rectangle {
-                        background: Theme.sub_card_bg;
-                        border-radius: Theme.radius_sm;
-                        border-width: 1px;
-                        border-color: Theme.success;
-                        HorizontalLayout {
-                            padding-left: 8px;
-                            padding-right: 8px;
-                            padding-top: 2px;
-                            padding-bottom: 2px;
-                            Text {
-                                text: "● LIVE";
-                                font-size: 10px;
-                                font-weight: 700;
-                                color: Theme.success;
-                                vertical-alignment: center;
-                            }
-                        }
+                        width: 7px;
+                        height: 7px;
+                        border-radius: 4px;
+                        background: Theme.success;
                     }
                     Text {
-                        text: "Updates every second";
+                        text: "LIVE";
+                        font-size: 10px;
+                        font-weight: 700;
+                        color: Theme.success;
+                    }
+                    Text {
+                        text: "1 second updates";
                         font-size: 11px;
                         color: Theme.text_muted;
-                        vertical-alignment: center;
                     }
                 }
             }
         }
+        Rectangle { height: 1px; background: Theme.border; }
 
-        // Header 1px divider
-        Rectangle {
-            height: 1px;
-            background: Theme.border;
-        }
+        ScrollView {
+            VerticalLayout {
+                padding: 20px;
+                spacing: 16px;
 
-        // ---------- MAIN BODY (TASK MANAGER 2-PANE LAYOUT) ----------
-        HorizontalLayout {
-            spacing: 0px;
-
-            // ===== LEFT PANE: RESOURCE SUMMARY =====
-            Rectangle {
-                width: 230px;
-                background: Theme.app_bg;
-
-                VerticalLayout {
-                    padding: 8px;
-                    spacing: 4px;
-                    alignment: start;
-
-                    HorizontalLayout {
-                        padding-left: 6px;
-                        padding-bottom: 4px;
-                        Text {
-                            text: "RESOURCES";
-                            font-size: 10px;
-                            font-weight: 800;
-                            color: Theme.text_muted;
-                            letter-spacing: 0.5px;
-                        }
-                    }
-
-                    // CPU summary
-                    ResourceCard {
+                HorizontalLayout {
+                    spacing: 12px;
+                    KpiCard {
                         title: "CPU";
                         value_text: root.cpu_available ? Math.round(root.cpu_avg) + "%" : "N/A";
-                        sub_text: root.cpu_name + " • " + root.cpu_logical_cores + " logical processors";
-                        percent: root.cpu_available ? root.cpu_avg : 0.0;
-                        meter_brush: Theme.gradient_cpu;
+                        detail_text: root.cpu_available ? root.cpu_logical_cores + " logical processors" : "Waiting for telemetry";
+                        percent: root.cpu_avg;
                         show_meter: root.cpu_available;
+                        accent: Theme.accent;
                     }
-
-                    // Memory Item
-                    ResourceCard {
-                        title: "Memory";
+                    KpiCard {
+                        title: "MEMORY";
                         value_text: root.ram_available ? Math.round(root.ram_percent) + "%" : "N/A";
-                        sub_text: root.ram_available ? Math.round(root.ram_used_gb * 10.0) / 10.0 + " / " + Math.round(root.ram_total_gb * 10.0) / 10.0 + " GiB" : "N/A";
+                        detail_text: root.ram_available ? Math.round(root.ram_used_gb * 10.0) / 10.0 + " / " + Math.round(root.ram_total_gb * 10.0) / 10.0 + " GiB" : "Unavailable";
                         percent: root.ram_percent;
                         show_meter: root.ram_available;
-                        meter_brush: Theme.gradient_ram;
+                        accent: Theme.teal_primary;
                     }
-
-                    // GPU Item
-                    ResourceCard {
+                    KpiCard {
+                        title: "NETWORK";
+                        value_text: root.network_available ? "Receive " + Math.round(root.net_recv_kib) + " KiB/s" : "N/A";
+                        detail_text: root.network_available ? "Send " + Math.round(root.net_sent_kib) + " KiB/s • all interfaces" : root.network_status_text;
+                        accent: Theme.purple;
+                    }
+                    KpiCard {
                         title: "GPU";
-                        value_text: "N/A";
-                        sub_text: "Not supported";
-                        show_meter: false;
-                        meter_brush: Theme.gradient_gpu;
-                    }
-
-                    // Network Item
-                    ResourceCard {
-                        title: "Network";
-                        value_text: root.network_available ? Math.round(root.net_recv_kib) + " KiB/s" : "N/A";
-                        sub_text: root.network_available ? "All interfaces • Send " + Math.round(root.net_sent_kib) + " KiB/s" : root.network_status_text;
-                        show_meter: false;
-                        meter_brush: Theme.gradient_net;
+                        value_text: "Unavailable";
+                        detail_text: "GPU telemetry is not supported";
+                        accent: Theme.warning;
                     }
                 }
-            }
 
-            // Left / Right Pane 1px Vertical Divider
-            Rectangle {
-                width: 1px;
-                background: Theme.border;
-            }
-
-            // ===== RIGHT PANE: DETAIL PERFORMANCE VIEW (FLEX 1) =====
-            Rectangle {
-                background: Theme.editor_bg;
-
-                ScrollView {
-                    VerticalLayout {
-                    padding: 16px;
-                    spacing: 12px;
-
-                    // 1. Hero 3D Viewport Frame
-                    Viewport3D {
-                        frame: root.viewport_3d_frame;
-                        has_frame: root.has_3d_frame;
-                        cpu_avg: root.cpu_avg;
-                        cpu_std: root.cpu_std;
-                        cpu_var: root.cpu_var;
-                        cpu_available: root.cpu_available;
-                        cpu_logical_count: root.cpu_logical_cores;
-                        history_samples: root.history_samples;
-                        history_seconds: root.history_seconds;
-                        rotate_drag(dx, dy) => { root.rotate_3d(dx, dy); }
-                        pan_drag(dx, dy) => { root.pan_3d(dx, dy); }
-                        zoom_scroll(delta) => { root.zoom_3d(delta); }
-                        resize_viewport(width, height) => { root.resize_viewport(width, height); }
-                    }
-
-                    // 2. Logical processor matrix (8 columns)
-                    VerticalLayout {
-                        spacing: 6px;
-                        HorizontalLayout {
-                            alignment: space-between;
-                            Text {
-                                text: "LOGICAL PROCESSORS (" + root.cpu_logical_cores + ")";
-                                font-size: 11px;
-                                font-weight: 700;
-                                color: Theme.text_secondary;
-                                letter-spacing: 0.5px;
-                            }
-                            Text {
-                                text: root.cpu_available ? "Std Dev: " + (Math.round(root.cpu_std * 100.0) / 100.0) + " • Variance: " + (Math.round(root.cpu_var * 10.0) / 10.0) : "CPU data unavailable";
-                                font-size: 10px;
-                                color: Theme.text_muted;
-                            }
-                        }
-
-                        CoreMatrix {
-                            rows: root.core_rows;
-                        }
-                    }
-
-                    // 3. Task Manager Style Bottom Specs Grid (4 Columns)
-                    Rectangle {
-                        height: 72px;
-                        background: Theme.card_bg;
-                        border-radius: Theme.radius_sm;
-                        border-width: 1px;
-                        border-color: Theme.border;
-
-                        HorizontalLayout {
-                            padding: 10px;
-                            alignment: space-between;
-
-                            // Column 1
-                            VerticalLayout {
-                                spacing: 2px;
-                                Text { text: "Utilization"; font-size: 10px; color: Theme.text_muted; }
-                                Text { text: root.cpu_available ? Math.round(root.cpu_avg * 10.0) / 10.0 + "%" : "N/A"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
-                                Text { text: "Current utilization"; font-size: 10px; color: Theme.teal_primary; }
-                            }
-
-                            // Column 2
-                            VerticalLayout {
-                                spacing: 2px;
-                                Text { text: "Speed"; font-size: 10px; color: Theme.text_muted; }
-                                Text { text: root.cpu_frequency; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
-                                Text { text: "Current frequency"; font-size: 10px; color: Theme.text_muted; }
-                            }
-
-                            // Column 3
-                            VerticalLayout {
-                                spacing: 2px;
-                                Text { text: "Physical / logical"; font-size: 10px; color: Theme.text_muted; }
-                                Text { text: root.cpu_physical_cores + " / " + root.cpu_logical_cores + " cores"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
-                                Text { text: "Physical / logical"; font-size: 10px; color: Theme.text_muted; }
-                            }
-
-                            // Column 4
-                            VerticalLayout {
-                                spacing: 2px;
-                                Text { text: "CPU model"; font-size: 10px; color: Theme.text_muted; }
-                                Text { text: root.cpu_name; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
-                                Text { text: "Model CPU"; font-size: 10px; color: Theme.text_muted; }
-                            }
-                        }
-                    }
+                Viewport3D {
+                    height: 440px;
+                    frame: root.viewport_3d_frame;
+                    has_frame: root.has_3d_frame;
+                    cpu_avg: root.cpu_avg;
+                    cpu_std: root.cpu_std;
+                    cpu_var: root.cpu_var;
+                    cpu_available: root.cpu_available;
+                    cpu_logical_count: root.cpu_logical_cores;
+                    history_samples: root.history_samples;
+                    history_seconds: root.history_seconds;
+                    rotate_drag(dx, dy) => { root.rotate_3d(dx, dy); }
+                    pan_drag(dx, dy) => { root.pan_3d(dx, dy); }
+                    zoom_scroll(delta) => { root.zoom_3d(delta); }
+                    resize_viewport(width, height) => { root.resize_viewport(width, height); }
                 }
+
+                VerticalLayout {
+                    spacing: 10px;
+                    HorizontalLayout {
+                        alignment: space-between;
+                        Text {
+                            text: "LOGICAL PROCESSORS (" + root.cpu_logical_cores + ")";
+                            font-size: 12px;
+                            font-weight: 700;
+                            color: Theme.text_primary;
+                        }
+                        Text {
+                            text: root.cpu_available ? "Avg " + Math.round(root.cpu_avg * 10.0) / 10.0 + "%" : "Waiting for CPU data";
+                            font-size: 11px;
+                            color: Theme.text_secondary;
+                        }
+                    }
+                    if root.cpu_logical_cores == 0: Text {
+                        text: "Processor telemetry is not available yet.";
+                        font-size: 12px;
+                        color: Theme.text_muted;
+                    }
+                    CoreMatrix { rows: root.core_rows; }
+                }
+
+                Rectangle {
+                    height: 84px;
+                    background: Theme.card_bg;
+                    border-radius: Theme.radius_md;
+                    border-width: 1px;
+                    border-color: Theme.border;
+                    HorizontalLayout {
+                        padding: 14px;
+                        alignment: space-between;
+                        VerticalLayout {
+                            spacing: 4px;
+                            Text { text: "CPU MODEL"; font-size: 10px; color: Theme.text_muted; }
+                            Text { text: root.cpu_name; font-size: 13px; font-weight: 700; color: Theme.text_primary; }
+                        }
+                        VerticalLayout {
+                            spacing: 4px;
+                            Text { text: "CURRENT SPEED"; font-size: 10px; color: Theme.text_muted; }
+                            Text { text: root.cpu_frequency; font-size: 13px; font-weight: 700; color: Theme.text_primary; }
+                        }
+                        VerticalLayout {
+                            spacing: 4px;
+                            Text { text: "PHYSICAL / LOGICAL"; font-size: 10px; color: Theme.text_muted; }
+                            Text { text: root.cpu_physical_cores + " / " + root.cpu_logical_cores; font-size: 13px; font-weight: 700; color: Theme.text_primary; }
+                        }
+                        VerticalLayout {
+                            spacing: 4px;
+                            Text { text: "UTILIZATION VARIANCE"; font-size: 10px; color: Theme.text_muted; }
+                            Text { text: root.cpu_available ? Math.round(root.cpu_std * 100.0) / 100.0 + " std dev" : "N/A"; font-size: 13px; font-weight: 700; color: Theme.text_primary; }
+                        }
+                    }
                 }
             }
         }
