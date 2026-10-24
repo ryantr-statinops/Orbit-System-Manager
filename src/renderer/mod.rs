@@ -62,19 +62,20 @@ impl OffscreenRenderer {
         let span_x = 34.0;
         let span_z = 38.0;
 
-        for z in 0..row_count {
-            for x in 0..core_count {
+        for (z, row) in projected.iter_mut().enumerate() {
+            for (x, point) in row.iter_mut().enumerate() {
                 let wx = ((x as f32 / core_count.saturating_sub(1).max(1) as f32) - 0.5) * span_x;
                 let wz = ((z as f32 / row_count.saturating_sub(1).max(1) as f32) - 0.5) * span_z;
                 let wy = (self.mesh.render_grid[z][x] / 100.0) * 12.0;
 
                 if let Some((sx, sy, _depth)) = self.camera.project(wx, wy, wz, w, h) {
-                    projected[z][x] = Some((sx, sy));
+                    *point = Some((sx, sy));
                 }
             }
         }
 
         // 3. Draw Z-lines (time-series ribbon lines)
+        #[allow(clippy::needless_range_loop)]
         for x in 0..core_count {
             for z in 0..row_count.saturating_sub(1) {
                 if let (Some(p1), Some(p2)) = (projected[z][x], projected[z + 1][x]) {
@@ -88,6 +89,7 @@ impl OffscreenRenderer {
         }
 
         // 4. Draw X-lines (cross-core ribbons)
+        #[allow(clippy::needless_range_loop)]
         for z in 0..row_count {
             for x in 0..core_count.saturating_sub(1) {
                 if let (Some(p1), Some(p2)) = (projected[z][x], projected[z][x + 1]) {
@@ -109,8 +111,8 @@ fn draw_line(
     pixels: &mut [Rgba8Pixel],
     w: u32,
     h: u32,
-    mut x0: i32,
-    mut y0: i32,
+    x0: i32,
+    y0: i32,
     x1: i32,
     y1: i32,
     color: [u8; 4],
@@ -129,16 +131,14 @@ fn draw_line(
     let h_i32 = h as i32;
 
     loop {
-        if x0 >= 0 && x0 < w_i32 && y0 >= 0 && y0 < h_i32 {
+        if (0..w_i32).contains(&x0) && (0..h_i32).contains(&y0) {
             let idx = (y0 as u32 * w + x0 as u32) as usize;
-            if idx < pixels.len() {
-                pixels[idx] = Rgba8Pixel {
-                    r: color[0],
-                    g: color[1],
-                    b: color[2],
-                    a: color[3],
-                };
-            }
+            pixels[idx] = Rgba8Pixel {
+                r: color[0],
+                g: color[1],
+                b: color[2],
+                a: color[3],
+            };
         }
 
         if x0 == x1 && y0 == y1 {

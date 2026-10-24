@@ -74,3 +74,9 @@ impl OrbitCamera {
         Some((screen_x as i32, screen_y as i32, z2))
     }
 }
+
+impl Default for OrbitCamera {
+    fn default() -> Self {
+        Self::new()
+    }
+}

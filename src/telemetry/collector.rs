@@ -113,6 +113,12 @@ impl TelemetryCollector {
     }
 }
 
+impl Default for TelemetryCollector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Default)]
 struct NetworkRateTracker {
     last_sample: Option<(Instant, HashSet<String>)>,
@@ -214,7 +220,9 @@ mod tests {
             2048,
         );
         assert_eq!(state, MetricStatus::Available);
-        assert_eq!(rate, Some((2.0, 1.0)));
+        let (sent, received) = rate.unwrap();
+        assert!((sent - 2.0).abs() < 0.001);
+        assert!((received - 1.0).abs() < 0.001);
     }
 
     #[test]
