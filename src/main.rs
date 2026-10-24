@@ -116,6 +116,23 @@ fn main() -> Result<(), slint::PlatformError> {
         });
     }
 
+    {
+        let renderer_ref = renderer.clone();
+        let dirty = frame_dirty.clone();
+        let timer = animation_timer.clone();
+        let app_weak = app_weak.clone();
+        app.on_reset_3d_view(move || {
+            renderer_ref.borrow_mut().camera.reset();
+            dirty.set(true);
+            schedule_animation(
+                app_weak.clone(),
+                renderer_ref.clone(),
+                dirty.clone(),
+                timer.clone(),
+            );
+        });
+    }
+
     // 4. Initial 3D frame render
     {
         let frame = renderer.borrow_mut().render_frame();

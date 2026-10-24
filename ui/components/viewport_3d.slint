@@ -17,6 +17,7 @@ export component Viewport3D inherits Rectangle {
     callback pan_drag(length, length);
     callback zoom_scroll(length);
     callback resize_viewport(length, length);
+    callback reset_view();
 
     background: Theme.editor_bg;
     border-radius: Theme.radius_sm;
@@ -74,6 +75,20 @@ export component Viewport3D inherits Rectangle {
                             color: Theme.teal_primary;
                         }
                     }
+                }
+                Rectangle {
+                    background: Theme.hover_bg;
+                    border-radius: Theme.radius_sm;
+                    border-width: 1px;
+                    border-color: Theme.border;
+                    HorizontalLayout {
+                        padding-left: 10px;
+                        padding-right: 10px;
+                        padding-top: 4px;
+                        padding-bottom: 4px;
+                        Text { text: "Reset view"; font-size: 10px; font-weight: 600; color: Theme.text_primary; }
+                    }
+                    TouchArea { clicked => { root.reset_view(); } }
                 }
                 Rectangle {
                     background: Theme.card_bg;

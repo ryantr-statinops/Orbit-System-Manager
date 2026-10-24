@@ -40,6 +40,7 @@ export component AppWindow inherits Window {
     callback pan_3d(length, length);
     callback zoom_3d(length);
     callback resize_viewport(length, length);
+    callback reset_3d_view();
 
     VerticalLayout {
         padding: 0px;
@@ -145,6 +146,7 @@ export component AppWindow inherits Window {
                     pan_drag(dx, dy) => { root.pan_3d(dx, dy); }
                     zoom_scroll(delta) => { root.zoom_3d(delta); }
                     resize_viewport(width, height) => { root.resize_viewport(width, height); }
+                    reset_view() => { root.reset_3d_view(); }
                 }
 
                 VerticalLayout {

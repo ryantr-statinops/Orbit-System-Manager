@@ -35,6 +35,10 @@ impl OrbitCamera {
         self.pan_y += delta_y * 0.05;
     }
 
+    pub fn reset(&mut self) {
+        *self = Self::new();
+    }
+
     // Projects 3D world coordinate (x, y, z) into 2D viewport space (screen_x, screen_y)
     pub fn project(
         &self,
