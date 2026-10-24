@@ -11,7 +11,7 @@ export component Viewport3D inherits Rectangle {
     // Callbacks to Rust 3D Camera OrbitControls
     callback rotate_drag(length, length); // delta_x, delta_y
     callback pan_drag(length, length);    // delta_x, delta_y
-    callback zoom_scroll(float);          // delta_y
+    callback zoom_scroll(length);         // delta_y
 
     background: Theme.card_bg;
     border-radius: Theme.radius_md;
@@ -131,7 +131,7 @@ export component Viewport3D inherits Rectangle {
 
                 scroll-event(event) => {
                     root.zoom_scroll(event.delta-y);
-                    return accept;
+                    return EventResult.accept;
                 }
             }
         }
