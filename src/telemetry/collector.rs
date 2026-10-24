@@ -41,11 +41,8 @@ impl TelemetryCollector {
             None
         };
 
-        let variance: Option<f32> = if let Some(avg) = avg {
-            Some(cores.iter().map(|c| (c - avg).powi(2)).sum::<f32>() / cores.len() as f32)
-        } else {
-            None
-        };
+        let variance = avg
+            .map(|avg| cores.iter().map(|c| (c - avg).powi(2)).sum::<f32>() / cores.len() as f32);
         let std_dev = variance.map(f32::sqrt);
 
         let frequencies: Vec<u64> = cpus

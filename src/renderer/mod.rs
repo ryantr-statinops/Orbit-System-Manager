@@ -95,8 +95,8 @@ impl OffscreenRenderer {
                         / 400.0;
                     let shade = 0.68 + (row as f32 / row_count as f32) * 0.16;
                     let color = shade_color(viridis_color(load), shade);
-                    raster_triangle(pixels, &mut depth_buffer, w, h, a, b, c, color);
-                    raster_triangle(pixels, &mut depth_buffer, w, h, b, d, c, color);
+                    raster_triangle(pixels, &mut depth_buffer, (w, h), a, b, c, color);
+                    raster_triangle(pixels, &mut depth_buffer, (w, h), b, d, c, color);
                 }
             }
         }
@@ -106,7 +106,13 @@ impl OffscreenRenderer {
         for x in (0..core_count).step_by(3) {
             for z in 0..row_count.saturating_sub(1) {
                 if let (Some(p1), Some(p2)) = (projected[z][x], projected[z + 1][x]) {
-                    draw_line(pixels, w, h, p1.0, p1.1, p2.0, p2.1, [75, 104, 128, 255]);
+                    draw_line(
+                        pixels,
+                        (w, h),
+                        (p1.0, p1.1),
+                        (p2.0, p2.1),
+                        [75, 104, 128, 255],
+                    );
                 }
             }
         }
@@ -115,7 +121,13 @@ impl OffscreenRenderer {
         for z in (0..row_count).step_by(3) {
             for x in 0..core_count.saturating_sub(1) {
                 if let (Some(p1), Some(p2)) = (projected[z][x], projected[z][x + 1]) {
-                    draw_line(pixels, w, h, p1.0, p1.1, p2.0, p2.1, [75, 104, 128, 255]);
+                    draw_line(
+                        pixels,
+                        (w, h),
+                        (p1.0, p1.1),
+                        (p2.0, p2.1),
+                        [75, 104, 128, 255],
+                    );
                 }
             }
         }
@@ -134,13 +146,13 @@ fn shade_color(mut color: [u8; 4], factor: f32) -> [u8; 4] {
 fn raster_triangle(
     pixels: &mut [Rgba8Pixel],
     depth_buffer: &mut [f32],
-    width: u32,
-    height: u32,
+    viewport: (u32, u32),
     a: (i32, i32, f32),
     b: (i32, i32, f32),
     c: (i32, i32, f32),
     color: [u8; 4],
 ) {
+    let (width, height) = viewport;
     let edge = |p: (i32, i32, f32), q: (i32, i32, f32), x: f32, y: f32| {
         (q.0 - p.0) as f32 * (y - p.1 as f32) - (q.1 - p.1) as f32 * (x - p.0 as f32)
     };
@@ -194,14 +206,14 @@ fn raster_triangle(
 // Fast integer Bresenham line drawer with boundary clipping
 fn draw_line(
     pixels: &mut [Rgba8Pixel],
-    w: u32,
-    h: u32,
-    x0: i32,
-    y0: i32,
-    x1: i32,
-    y1: i32,
+    viewport: (u32, u32),
+    start: (i32, i32),
+    end: (i32, i32),
     color: [u8; 4],
 ) {
+    let (w, h) = viewport;
+    let (x0, y0) = start;
+    let (x1, y1) = end;
     let Some((x0, y0, x1, y1)) = clip_line(x0, y0, x1, y1, w as i32, h as i32) else {
         return;
     };
@@ -287,8 +299,8 @@ fn clip_line(
 }
 
 #[cfg(test)]
-mod smoke_tests {
-    use super::{raster_triangle, OffscreenRenderer};
+mod tests {
+    use super::{clip_line, raster_triangle, OffscreenRenderer};
     use slint::{Rgba8Pixel, SharedPixelBuffer};
 
     #[test]
@@ -306,8 +318,7 @@ mod smoke_tests {
         raster_triangle(
             &mut pixels,
             &mut depth,
-            width,
-            height,
+            (width, height),
             (1, 1, 5.0),
             (6, 1, 5.0),
             (1, 6, 5.0),
@@ -317,8 +328,7 @@ mod smoke_tests {
         raster_triangle(
             &mut pixels,
             &mut depth,
-            width,
-            height,
+            (width, height),
             (-8, 1, 5.0),
             (-2, 2, 5.0),
             (-4, 6, 5.0),
@@ -343,11 +353,6 @@ mod smoke_tests {
             .iter()
             .any(|pixel| { (pixel.r, pixel.g, pixel.b) != (9, 13, 19) }));
     }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::clip_line;
 
     #[test]
     fn clips_inside_outside_crossing_and_zero_length_lines() {
