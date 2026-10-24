@@ -60,7 +60,8 @@ impl OffscreenRenderer {
         }
         let mut projected = vec![vec![None; core_count]; row_count];
 
-        let span_x = 34.0;
+        let aspect = w as f32 / h.max(1) as f32;
+        let span_x = 34.0 * aspect.sqrt().clamp(1.0, 1.8);
         let span_z = 38.0;
 
         for (z, row) in projected.iter_mut().enumerate() {

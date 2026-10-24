@@ -17,8 +17,6 @@ export component Viewport3D inherits Rectangle {
     callback pan_drag(length, length);
     callback zoom_scroll(length);
     callback resize_viewport(length, length);
-    changed width => { root.resize_viewport(root.width, root.height); }
-    changed height => { root.resize_viewport(root.width, root.height); }
 
     background: Theme.editor_bg;
     border-radius: Theme.radius_sm;
@@ -99,13 +97,15 @@ export component Viewport3D inherits Rectangle {
         }
 
         // 3D Canvas Container
-        Rectangle {
+        canvas := Rectangle {
             height: 318px;
             background: Theme.viewport_bg;
             border-radius: Theme.radius_sm;
             border-width: 1px;
             border-color: Theme.viewport_border;
             clip: true;
+            changed width => { root.resize_viewport(self.width, self.height); }
+            changed height => { root.resize_viewport(self.width, self.height); }
 
             // Rendered Frame Image
             if root.has_frame: Image {
