@@ -277,6 +277,55 @@ fn clip_line(
 
 #[cfg(test)]
 mod tests {
+    use super::{raster_triangle, OffscreenRenderer};
+    use slint::{Rgba8Pixel, SharedPixelBuffer};
+
+    #[test]
+    fn rasterizer_fills_a_triangle_inside_the_viewport() {
+        let width = 8;
+        let height = 8;
+        let background = Rgba8Pixel {
+            r: 9,
+            g: 13,
+            b: 19,
+            a: 255,
+        };
+        let mut pixels = vec![background; (width * height) as usize];
+        let mut depth = vec![f32::INFINITY; pixels.len()];
+        raster_triangle(
+            &mut pixels,
+            &mut depth,
+            width,
+            height,
+            (1, 1, 5.0),
+            (6, 1, 5.0),
+            (1, 6, 5.0),
+            [90, 120, 160, 255],
+        );
+        assert!(pixels.iter().any(|pixel| pixel.r == 90));
+    }
+
+    #[test]
+    fn headless_renderer_handles_empty_and_synthetic_telemetry() {
+        let mut renderer = OffscreenRenderer::new(320, 180);
+        let empty = renderer.render_frame();
+        assert_eq!(empty.size().width, 320);
+        assert_eq!(empty.size().height, 180);
+
+        for values in [[10.0, 35.0, 70.0], [20.0, 60.0, 90.0], [5.0, 42.0, 80.0]] {
+            renderer.mesh.push_sample(&values);
+        }
+        let frame = renderer.render_frame();
+        let pixels: SharedPixelBuffer<Rgba8Pixel> = frame.to_rgba8().unwrap();
+        assert!(pixels
+            .as_slice()
+            .iter()
+            .any(|pixel| { (pixel.r, pixel.g, pixel.b) != (9, 13, 19) }));
+    }
+}
+
+#[cfg(test)]
+mod tests {
     use super::clip_line;
 
     #[test]
