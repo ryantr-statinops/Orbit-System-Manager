@@ -197,8 +197,8 @@ fn main() -> Result<(), slint::PlatformError> {
                 );
                 let network_status_text = match network.status {
                     telemetry::models::MetricStatus::Available => "Available",
-                    telemetry::models::MetricStatus::WarmingUp => "Đang lấy mẫu",
-                    telemetry::models::MetricStatus::Unavailable => "Không có interface",
+                    telemetry::models::MetricStatus::WarmingUp => "Collecting first sample",
+                    telemetry::models::MetricStatus::Unavailable => "No network interface",
                 };
                 app.set_network_status_text(network_status_text.into());
                 app.set_net_sent_kib(network.sent_kib_per_sec.unwrap_or_default() as f32);

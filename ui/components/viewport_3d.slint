@@ -49,7 +49,7 @@ export component Viewport3D inherits Rectangle {
                     }
                 }
                 Text {
-                    text: root.history_samples > 0 ? "" + root.history_samples + "/30 mẫu • " + root.history_seconds + "s • " + root.cpu_logical_count + " processors" : "Đang chờ dữ liệu CPU";
+                    text: root.history_samples > 0 ? "" + root.history_samples + "/30 samples • " + root.history_seconds + "s • " + root.cpu_logical_count + " processors" : "Waiting for CPU data";
                     font-size: 11px;
                     color: Theme.text_muted;
                 }
@@ -70,7 +70,7 @@ export component Viewport3D inherits Rectangle {
                         padding-top: 3px;
                         padding-bottom: 3px;
                         Text {
-                            text: "" + root.history_samples + "/30 mẫu • " + root.history_seconds + "s";
+                            text: "" + root.history_samples + "/30 samples • " + root.history_seconds + "s";
                             font-size: 10px;
                             font-weight: 600;
                             color: Theme.teal_primary;
@@ -88,7 +88,7 @@ export component Viewport3D inherits Rectangle {
                         padding-top: 3px;
                         padding-bottom: 3px;
                         Text {
-                            text: "CPU raster • tối đa 30 FPS";
+                        text: "CPU-rendered • up to 30 FPS";
                             font-size: 10px;
                             font-weight: 600;
                             color: Theme.success;
@@ -132,7 +132,7 @@ export component Viewport3D inherits Rectangle {
                     letter-spacing: 1px;
                 }
                 Text {
-                    text: "Kéo trái để xoay • Kéo phải để pan • Cuộn để zoom";
+                    text: "Left drag to rotate • Right drag to pan • Scroll to zoom";
                     font-size: 10px;
                     color: Theme.text_muted;
                     horizontal-alignment: center;

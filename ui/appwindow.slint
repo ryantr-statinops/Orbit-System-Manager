@@ -32,7 +32,7 @@ export component AppWindow inherits Window {
     in property <float> net_sent_kib: 0.0;
     in property <float> net_recv_kib: 0.0;
     in property <bool> network_available: false;
-    in property <string> network_status_text: "Đang lấy mẫu";
+    in property <string> network_status_text: "Collecting first sample";
     in property <[CoreRow]> core_rows: [];
     in property <int> history_samples: 0;
     in property <int> history_seconds: 0;
@@ -166,7 +166,7 @@ export component AppWindow inherits Window {
                     ResourceCard {
                         title: "GPU";
                         value_text: "N/A";
-                        sub_text: "Chưa hỗ trợ";
+                        sub_text: "Not supported";
                         show_meter: false;
                         meter_brush: Theme.gradient_gpu;
                     }
@@ -175,7 +175,7 @@ export component AppWindow inherits Window {
                     ResourceCard {
                         title: "Network";
                         value_text: root.network_available ? Math.round(root.net_recv_kib) + " KiB/s" : "N/A";
-                        sub_text: root.network_available ? "Tổng mọi interface • Gửi " + Math.round(root.net_sent_kib) + " KiB/s" : root.network_status_text;
+                        sub_text: root.network_available ? "All interfaces • Send " + Math.round(root.net_sent_kib) + " KiB/s" : root.network_status_text;
                         show_meter: false;
                         meter_brush: Theme.gradient_net;
                     }
@@ -255,7 +255,7 @@ export component AppWindow inherits Window {
                                 spacing: 2px;
                                 Text { text: "Utilization"; font-size: 10px; color: Theme.text_muted; }
                                 Text { text: root.cpu_available ? Math.round(root.cpu_avg * 10.0) / 10.0 + "%" : "N/A"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
-                                Text { text: "Mức sử dụng"; font-size: 10px; color: Theme.teal_primary; }
+                                Text { text: "Current utilization"; font-size: 10px; color: Theme.teal_primary; }
                             }
 
                             // Column 2
@@ -263,7 +263,7 @@ export component AppWindow inherits Window {
                                 spacing: 2px;
                                 Text { text: "Speed"; font-size: 10px; color: Theme.text_muted; }
                                 Text { text: root.cpu_frequency; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
-                                Text { text: "Tần số hiện tại"; font-size: 10px; color: Theme.text_muted; }
+                                Text { text: "Current frequency"; font-size: 10px; color: Theme.text_muted; }
                             }
 
                             // Column 3
