@@ -143,6 +143,12 @@ fn main() -> Result<(), slint::PlatformError> {
                 // CPU metrics
                 let cpu = &payload.cpu_detail;
                 app.set_cpu_available(cpu.status == telemetry::models::MetricStatus::Available);
+                let cpu_status_text = match cpu.status {
+                    telemetry::models::MetricStatus::Available => "Available",
+                    telemetry::models::MetricStatus::WarmingUp => "Collecting first sample",
+                    telemetry::models::MetricStatus::Unavailable => "CPU telemetry unavailable",
+                };
+                app.set_cpu_status_text(cpu_status_text.into());
                 app.set_cpu_avg(cpu.avg_utilization.unwrap_or_default());
                 app.set_cpu_std(cpu.std_dev.unwrap_or_default());
                 app.set_cpu_var(cpu.variance.unwrap_or_default());

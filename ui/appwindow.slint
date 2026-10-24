@@ -17,6 +17,7 @@ export component AppWindow inherits Window {
     in property <float> cpu_std: 0.0;
     in property <float> cpu_var: 0.0;
     in property <bool> cpu_available: false;
+    in property <string> cpu_status_text: "Waiting for telemetry";
     in property <string> cpu_name: "N/A";
     in property <string> cpu_frequency: "N/A";
     in property <string> cpu_physical_cores: "N/A";
@@ -102,7 +103,7 @@ export component AppWindow inherits Window {
                     KpiCard {
                         title: "CPU";
                         value_text: root.cpu_available ? Math.round(root.cpu_avg) + "%" : "N/A";
-                        detail_text: root.cpu_available ? root.cpu_logical_cores + " logical processors" : "Waiting for telemetry";
+                        detail_text: root.cpu_available ? root.cpu_logical_cores + " logical processors" : root.cpu_status_text;
                         percent: root.cpu_avg;
                         show_meter: root.cpu_available;
                         accent: Theme.accent;
@@ -110,14 +111,14 @@ export component AppWindow inherits Window {
                     KpiCard {
                         title: "MEMORY";
                         value_text: root.ram_available ? Math.round(root.ram_percent) + "%" : "N/A";
-                        detail_text: root.ram_available ? Math.round(root.ram_used_gb * 10.0) / 10.0 + " / " + Math.round(root.ram_total_gb * 10.0) / 10.0 + " GiB" : "Unavailable";
+                        detail_text: root.ram_available ? Math.round(root.ram_used_gb * 10.0) / 10.0 + " / " + Math.round(root.ram_total_gb * 10.0) / 10.0 + " GiB" : "Memory telemetry unavailable";
                         percent: root.ram_percent;
                         show_meter: root.ram_available;
                         accent: Theme.teal_primary;
                     }
                     KpiCard {
                         title: "NETWORK";
-                        value_text: root.network_available ? "Receive " + Math.round(root.net_recv_kib) + " KiB/s" : "N/A";
+                        value_text: root.network_available ? "Receive " + Math.round(root.net_recv_kib) + " KiB/s" : "Unavailable";
                         detail_text: root.network_available ? "Send " + Math.round(root.net_sent_kib) + " KiB/s • all interfaces" : root.network_status_text;
                         accent: Theme.purple;
                     }
