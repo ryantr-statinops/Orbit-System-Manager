@@ -149,28 +149,35 @@ export component AppWindow inherits Window {
                     reset_view() => { root.reset_3d_view(); }
                 }
 
-                VerticalLayout {
-                    spacing: 10px;
-                    HorizontalLayout {
-                        alignment: space-between;
-                        Text {
-                            text: "LOGICAL PROCESSORS (" + root.cpu_logical_cores + ")";
+                Rectangle {
+                    background: Theme.sub_card_bg;
+                    border-radius: Theme.radius_md;
+                    border-width: 1px;
+                    border-color: Theme.border;
+                    VerticalLayout {
+                        padding: 16px;
+                        spacing: 12px;
+                        HorizontalLayout {
+                            alignment: space-between;
+                            Text {
+                                text: "LOGICAL PROCESSORS (" + root.cpu_logical_cores + ")";
+                                font-size: 12px;
+                                font-weight: 700;
+                                color: Theme.text_primary;
+                            }
+                            Text {
+                                text: root.cpu_available ? "Avg " + Math.round(root.cpu_avg * 10.0) / 10.0 + "%" : "Waiting for CPU data";
+                                font-size: 11px;
+                                color: Theme.text_secondary;
+                            }
+                        }
+                        if root.cpu_logical_cores == 0: Text {
+                            text: "Processor telemetry is not available yet.";
                             font-size: 12px;
-                            font-weight: 700;
-                            color: Theme.text_primary;
+                            color: Theme.text_muted;
                         }
-                        Text {
-                            text: root.cpu_available ? "Avg " + Math.round(root.cpu_avg * 10.0) / 10.0 + "%" : "Waiting for CPU data";
-                            font-size: 11px;
-                            color: Theme.text_secondary;
-                        }
+                        CoreMatrix { rows: root.core_rows; }
                     }
-                    if root.cpu_logical_cores == 0: Text {
-                        text: "Processor telemetry is not available yet.";
-                        font-size: 12px;
-                        color: Theme.text_muted;
-                    }
-                    CoreMatrix { rows: root.core_rows; }
                 }
 
                 Rectangle {
