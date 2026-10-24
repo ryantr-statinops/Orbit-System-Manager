@@ -1,0 +1,89 @@
+// RightPanel Component — GPU Telemetry & Network Speeds
+import { Theme } from "../theme.slint";
+import { StatCard } from "stat_card.slint";
+
+export component RightPanel inherits Rectangle {
+    in property <string> gpu_name: "Primary GPU";
+    in property <float> gpu_load: 0.0;
+    in property <float> gpu_temp: 0.0;
+    in property <float> net_sent_kbps: 0.0;
+    in property <float> net_recv_kbps: 0.0;
+
+    width: 290px;
+    background: Theme.card_bg;
+    border-radius: Theme.radius_md;
+    border-width: 1px;
+    border-color: Theme.border;
+    padding: 14px;
+
+    VerticalLayout {
+        spacing: 12px;
+
+        // GPU Telemetry Header
+        Text {
+            text: "GPU TELEMETRY";
+            font-size: 12px;
+            font-weight: 800;
+            color: Theme.text_primary;
+            letter-spacing: 0.5px;
+        }
+
+        StatCard {
+            title: root.gpu_name;
+            value: Math.round(root.gpu_load) + "%";
+            subtitle: "Temperature: " + Math.round(root.gpu_temp) + "°C";
+            value_color: Theme.warning;
+        }
+
+        // GPU Load Progress Bar
+        Rectangle {
+            height: 8px;
+            background: Theme.progress_track;
+            border-radius: Theme.radius_sm;
+            clip: true;
+            Rectangle {
+                x: 0;
+                y: 0;
+                width: Math.min(parent.width, Math.max(0px, parent.width * (root.gpu_load / 100.0)));
+                height: parent.height;
+                background: Theme.warning;
+                animate width { duration: 250ms; easing: ease-out; }
+            }
+        }
+
+        Rectangle { height: 1px; background: Theme.border; }
+
+        // Network Speed Header
+        Text {
+            text: "NETWORK SPEED";
+            font-size: 12px;
+            font-weight: 800;
+            color: Theme.text_primary;
+            letter-spacing: 0.5px;
+        }
+
+        StatCard {
+            title: "DOWNLOAD (RECV)";
+            value: Math.round(root.net_recv_kbps * 10.0) / 10.0 + " KB/s";
+            subtitle: "Interface: Active NIC";
+            value_color: Theme.accent;
+        }
+
+        StatCard {
+            title: "UPLOAD (SENT)";
+            value: Math.round(root.net_sent_kbps * 10.0) / 10.0 + " KB/s";
+            subtitle: "Interface: Active NIC";
+            value_color: Theme.teal_primary;
+        }
+
+        Rectangle { height: 1px; background: Theme.border; }
+
+        // Architecture Metadata
+        VerticalLayout {
+            spacing: 5px;
+            Text { text: "RENDERER: Slint Native GPU Hardware"; font-size: 10px; font-weight: 600; color: Theme.text_muted; }
+            Text { text: "REFRESH: 60 - 144 FPS Hardware VSync"; font-size: 10px; font-weight: 600; color: Theme.text_muted; }
+            Text { text: "ENGINE: Pure Rust (Zero Webview / No JS)"; font-size: 10px; font-weight: 700; color: Theme.success; }
+        }
+    }
+}

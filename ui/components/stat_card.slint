@@ -1,0 +1,37 @@
+// StatCard Component — Dark Theme HUD Metric Card
+import { Theme } from "../theme.slint";
+
+export component StatCard inherits Rectangle {
+    in property <string> title: "";
+    in property <string> value: "";
+    in property <string> subtitle: "";
+    in property <color> value_color: Theme.text_primary;
+
+    background: Theme.card_bg;
+    border-radius: Theme.radius_md;
+    border-width: 1px;
+    border-color: Theme.border;
+    padding: 10px;
+
+    VerticalLayout {
+        spacing: 4px;
+        Text {
+            text: root.title;
+            font-size: 11px;
+            font-weight: 600;
+            color: Theme.text_muted;
+            letter-spacing: 0.5px;
+        }
+        Text {
+            text: root.value;
+            font-size: 18px;
+            font-weight: 700;
+            color: root.value_color;
+        }
+        if root.subtitle != "": Text {
+            text: root.subtitle;
+            font-size: 11px;
+            color: Theme.text_secondary;
+        }
+    }
+}
