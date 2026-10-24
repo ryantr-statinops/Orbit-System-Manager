@@ -79,6 +79,11 @@ impl TelemetryCollector {
         let (rates, network_status) =
             self.network_rates
                 .update(now, interface_names, received_bytes, sent_bytes);
+        let cpu_status = if cores.is_empty() {
+            MetricStatus::Unavailable
+        } else {
+            MetricStatus::Available
+        };
 
         TelemetryPayload {
             cpu_detail: CpuDetail {
@@ -92,11 +97,7 @@ impl TelemetryCollector {
                     .filter(|name| !name.is_empty()),
                 frequency_ghz,
                 physical_core_count: self.sys.physical_core_count(),
-                status: if cores.is_empty() {
-                    MetricStatus::Unavailable
-                } else {
-                    MetricStatus::Available
-                },
+                status: cpu_status,
             },
             memory_detail: MemoryDetail {
                 total_gib,
