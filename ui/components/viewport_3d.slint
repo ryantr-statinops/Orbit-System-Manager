@@ -57,15 +57,17 @@ export component Viewport3D inherits Rectangle {
                     border-radius: Theme.radius_sm;
                     border-width: 1px;
                     border-color: Theme.border;
-                    padding-left: 8px;
-                    padding-right: 8px;
-                    padding-top: 3px;
-                    padding-bottom: 3px;
-                    Text {
-                        text: "16C × 30S VIRIDIS";
-                        font-size: 10px;
-                        font-weight: 600;
-                        color: Theme.teal_primary;
+                    HorizontalLayout {
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        padding-top: 3px;
+                        padding-bottom: 3px;
+                        Text {
+                            text: "16C × 30S VIRIDIS";
+                            font-size: 10px;
+                            font-weight: 600;
+                            color: Theme.teal_primary;
+                        }
                     }
                 }
                 Rectangle {
@@ -73,18 +75,19 @@ export component Viewport3D inherits Rectangle {
                     border-radius: Theme.radius_sm;
                     border-width: 1px;
                     border-color: Theme.border;
-                    padding-left: 8px;
-                    padding-right: 8px;
-                    padding-top: 3px;
-                    padding-bottom: 3px;
-                    Text {
-                        text: "VSYNC 60 FPS";
-                        font-size: 10px;
-                        font-weight: 600;
-                        color: Theme.success;
+                    HorizontalLayout {
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        padding-top: 3px;
+                        padding-bottom: 3px;
+                        Text {
+                            text: "VSYNC 60 FPS";
+                            font-size: 10px;
+                            font-weight: 600;
+                            color: Theme.success;
+                        }
                     }
                 }
-            }
         }
 
         // 3D Canvas Container

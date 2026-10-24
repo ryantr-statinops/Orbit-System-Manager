@@ -52,8 +52,6 @@ export component AppWindow inherits Window {
         Rectangle {
             height: 38px;
             background: Theme.app_bg;
-            border-bottom-width: 1px;
-            border-color: Theme.border;
 
             HorizontalLayout {
                 padding-left: 14px;
@@ -87,16 +85,18 @@ export component AppWindow inherits Window {
                         border-radius: Theme.radius_sm;
                         border-width: 1px;
                         border-color: Theme.success;
-                        padding-left: 8px;
-                        padding-right: 8px;
-                        padding-top: 2px;
-                        padding-bottom: 2px;
-                        Text {
-                            text: "● NATIVE RUST";
-                            font-size: 10px;
-                            font-weight: 700;
-                            color: Theme.success;
-                            vertical-alignment: center;
+                        HorizontalLayout {
+                            padding-left: 8px;
+                            padding-right: 8px;
+                            padding-top: 2px;
+                            padding-bottom: 2px;
+                            Text {
+                                text: "● NATIVE RUST";
+                                font-size: 10px;
+                                font-weight: 700;
+                                color: Theme.success;
+                                vertical-alignment: center;
+                            }
                         }
                     }
                     Text {
@@ -109,6 +109,12 @@ export component AppWindow inherits Window {
             }
         }
 
+        // Header 1px divider
+        Rectangle {
+            height: 1px;
+            background: Theme.border;
+        }
+
         // ---------- MAIN BODY (TASK MANAGER 2-PANE LAYOUT) ----------
         HorizontalLayout {
             spacing: 0px;
@@ -117,22 +123,22 @@ export component AppWindow inherits Window {
             Rectangle {
                 width: 230px;
                 background: Theme.app_bg;
-                border-right-width: 1px;
-                border-color: Theme.border;
 
                 VerticalLayout {
                     padding: 8px;
                     spacing: 4px;
                     alignment: start;
 
-                    Text {
-                        text: "RESOURCES";
-                        font-size: 10px;
-                        font-weight: 800;
-                        color: Theme.text_muted;
-                        letter-spacing: 0.5px;
+                    HorizontalLayout {
                         padding-left: 6px;
                         padding-bottom: 4px;
+                        Text {
+                            text: "RESOURCES";
+                            font-size: 10px;
+                            font-weight: 800;
+                            color: Theme.text_muted;
+                            letter-spacing: 0.5px;
+                        }
                     }
 
                     // CPU Item (Selected Hero)
@@ -179,6 +185,12 @@ export component AppWindow inherits Window {
                         accent_color: Theme.purple;
                     }
                 }
+            }
+
+            // Left / Right Pane 1px Vertical Divider
+            Rectangle {
+                width: 1px;
+                background: Theme.border;
             }
 
             // ===== RIGHT PANE: DETAIL PERFORMANCE VIEW (FLEX 1) =====
@@ -233,9 +245,9 @@ export component AppWindow inherits Window {
                         border-radius: Theme.radius_sm;
                         border-width: 1px;
                         border-color: Theme.border;
-                        padding: 10px;
 
                         HorizontalLayout {
+                            padding: 10px;
                             alignment: space-between;
 
                             // Column 1
