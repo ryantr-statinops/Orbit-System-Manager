@@ -41,6 +41,8 @@ export component AppWindow inherits Window {
     callback zoom_3d(length);
     callback resize_viewport(length, length);
     callback reset_3d_view();
+    callback resize_core_grid(length);
+    changed width => { root.resize_core_grid(root.width); }
 
     VerticalLayout {
         padding: 0px;

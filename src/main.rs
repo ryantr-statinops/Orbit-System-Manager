@@ -20,6 +20,14 @@ use renderer::OffscreenRenderer;
 fn main() -> Result<(), slint::PlatformError> {
     let app = AppWindow::new()?;
     let app_weak = app.as_weak();
+    let core_columns = Rc::new(Cell::new(8usize));
+
+    {
+        let columns = core_columns.clone();
+        app.on_resize_core_grid(move |width| {
+            columns.set(columns_for_width(width));
+        });
+    }
 
     // 1. Initialize hardware telemetry collector
     let latest_payload = Arc::new(Mutex::new(None));
@@ -149,6 +157,7 @@ fn main() -> Result<(), slint::PlatformError> {
         let renderer_ref = renderer.clone();
         let dirty = frame_dirty.clone();
         let animation_timer = animation_timer.clone();
+        let core_columns = core_columns.clone();
 
         telemetry_timer.start(TimerMode::Repeated, Duration::from_millis(100), move || {
             if let Some(app) = app_weak_ref.upgrade() {
@@ -184,23 +193,7 @@ fn main() -> Result<(), slint::PlatformError> {
                 );
                 app.set_cpu_logical_cores(cpu.cores.len() as i32);
 
-                let rows = cpu
-                    .cores
-                    .chunks(8)
-                    .enumerate()
-                    .map(|(row, values)| CoreRow {
-                        cells: ModelRc::from(Rc::new(VecModel::from(
-                            values
-                                .iter()
-                                .enumerate()
-                                .map(|(i, &load)| CoreItem {
-                                    id: (row * 8 + i) as i32,
-                                    load,
-                                })
-                                .collect::<Vec<_>>(),
-                        ))),
-                    })
-                    .collect::<Vec<_>>();
+                let rows = build_core_rows(&cpu.cores, core_columns.get());
                 app.set_core_rows(Rc::new(VecModel::from(rows)).into());
 
                 // Push cores to 3D terrain heightmap
@@ -244,6 +237,54 @@ fn main() -> Result<(), slint::PlatformError> {
     stop_worker.store(true, Ordering::Relaxed);
     let _ = telemetry_worker.join();
     result
+}
+
+fn columns_for_width(width: f32) -> usize {
+    ((width - 48.0) / 108.0).floor().clamp(2.0, 8.0) as usize
+}
+
+fn build_core_rows(cores: &[f32], columns: usize) -> Vec<CoreRow> {
+    let columns = columns.max(1);
+    cores
+        .chunks(columns)
+        .enumerate()
+        .map(|(row, values)| CoreRow {
+            cells: ModelRc::from(Rc::new(VecModel::from(
+                values
+                    .iter()
+                    .enumerate()
+                    .map(|(column, &load)| CoreItem {
+                        id: (row * columns + column) as i32,
+                        load,
+                    })
+                    .collect::<Vec<_>>(),
+            ))),
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{build_core_rows, columns_for_width};
+
+    #[test]
+    fn processor_columns_adapt_to_window_width() {
+        assert_eq!(columns_for_width(720.0), 6);
+        assert_eq!(columns_for_width(1280.0), 8);
+        assert_eq!(columns_for_width(1600.0), 8);
+    }
+
+    #[test]
+    fn processor_rows_cover_all_supported_core_counts() {
+        for count in [0, 1, 4, 16, 32, 64] {
+            let cores = vec![42.0; count];
+            let rows = build_core_rows(&cores, 6);
+            assert_eq!(
+                rows.iter().map(|row| row.cells.row_count()).sum::<usize>(),
+                count
+            );
+        }
+    }
 }
 
 fn schedule_animation(
