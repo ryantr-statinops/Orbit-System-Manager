@@ -183,7 +183,7 @@ export component AppWindow inherits Window {
                 }
 
                 Rectangle {
-                    height: 84px;
+                    height: 76px;
                     background: Theme.card_bg;
                     border-radius: Theme.radius_md;
                     border-width: 1px;
@@ -192,24 +192,22 @@ export component AppWindow inherits Window {
                         padding: 14px;
                         alignment: space-between;
                         VerticalLayout {
+                            width: 50%;
                             spacing: 4px;
                             Text { text: "CPU MODEL"; font-size: 10px; color: Theme.text_muted; }
-                            Text { text: root.cpu_name; font-size: 13px; font-weight: 700; color: Theme.text_primary; }
+                            Text { text: root.cpu_name; overflow: elide; font-size: 13px; font-weight: 700; color: Theme.text_primary; }
                         }
                         VerticalLayout {
+                            width: 25%;
                             spacing: 4px;
                             Text { text: "CURRENT SPEED"; font-size: 10px; color: Theme.text_muted; }
                             Text { text: root.cpu_frequency; font-size: 13px; font-weight: 700; color: Theme.text_primary; }
                         }
                         VerticalLayout {
+                            width: 25%;
                             spacing: 4px;
                             Text { text: "PHYSICAL / LOGICAL"; font-size: 10px; color: Theme.text_muted; }
                             Text { text: root.cpu_physical_cores + " / " + root.cpu_logical_cores; font-size: 13px; font-weight: 700; color: Theme.text_primary; }
-                        }
-                        VerticalLayout {
-                            spacing: 4px;
-                            Text { text: "UTILIZATION VARIANCE"; font-size: 10px; color: Theme.text_muted; }
-                            Text { text: root.cpu_available ? Math.round(root.cpu_std * 100.0) / 100.0 + " std dev" : "N/A"; font-size: 13px; font-weight: 700; color: Theme.text_primary; }
                         }
                     }
                 }
