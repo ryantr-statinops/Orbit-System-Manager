@@ -1,0 +1,165 @@
+// Viewport3D Component — Native 3D GPU Viewport with Interactive TouchArea
+import { Theme } from "../theme.slint";
+
+export component Viewport3D inherits Rectangle {
+    in property <image> frame;
+    in property <bool> has_frame: false;
+    in property <string> profile_summary: "Gaussian Load Profile";
+    in property <string> max_core_label: "Core 6 (82%)";
+    in property <string> idle_core_label: "5 Cores < 20%";
+
+    // Callbacks to Rust 3D Camera OrbitControls
+    callback rotate_drag(length, length); // delta_x, delta_y
+    callback pan_drag(length, length);    // delta_x, delta_y
+    callback zoom_scroll(float);          // delta_y
+
+    background: Theme.card_bg;
+    border-radius: Theme.radius_md;
+    border-width: 1px;
+    border-color: Theme.border;
+    padding: 14px;
+
+    VerticalLayout {
+        spacing: 12px;
+
+        // Viewport Header
+        HorizontalLayout {
+            alignment: space-between;
+            Text {
+                text: "CPU 3D TOPOLOGY & TERRAIN VIEWPORT";
+                font-size: 12px;
+                font-weight: 800;
+                color: Theme.text_primary;
+                letter-spacing: 0.5px;
+                vertical-alignment: center;
+            }
+            HorizontalLayout {
+                spacing: 8px;
+                Rectangle {
+                    background: #1c2128;
+                    border-radius: Theme.radius_sm;
+                    border-width: 1px;
+                    border-color: Theme.border;
+                    padding-left: 8px;
+                    padding-right: 8px;
+                    Text {
+                        text: "16 CORES × 30S";
+                        font-size: 10px;
+                        font-weight: 700;
+                        color: Theme.accent;
+                        vertical-alignment: center;
+                    }
+                }
+                Rectangle {
+                    background: #1c2128;
+                    border-radius: Theme.radius_sm;
+                    border-width: 1px;
+                    border-color: Theme.border;
+                    padding-left: 8px;
+                    padding-right: 8px;
+                    Text {
+                        text: "VIRIDIS NEON";
+                        font-size: 10px;
+                        font-weight: 700;
+                        color: Theme.success;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+        }
+
+        // 3D Canvas Container
+        Rectangle {
+            background: Theme.viewport_bg;
+            border-radius: Theme.radius_md;
+            border-width: 1px;
+            border-color: Theme.viewport_border;
+            clip: true;
+
+            // Rendered Frame Image
+            if root.has_frame: Image {
+                source: root.frame;
+                width: 100%;
+                height: 100%;
+                image-fit: contain;
+            }
+
+            // Fallback placeholder when frame buffer is loading
+            if !root.has_frame: VerticalLayout {
+                alignment: center;
+                spacing: 8px;
+                Text {
+                    text: "🌐";
+                    font-size: 46px;
+                    horizontal-alignment: center;
+                }
+                Text {
+                    text: "NATIVE 3D GPU TOPOLOGY MESH";
+                    font-size: 14px;
+                    font-weight: 800;
+                    color: Theme.teal_primary;
+                    horizontal-alignment: center;
+                    letter-spacing: 1.2px;
+                }
+                Text {
+                    text: "Drag left-click to Orbit • Scroll to Zoom • Drag right-click to Pan";
+                    font-size: 11px;
+                    color: Theme.text_secondary;
+                    horizontal-alignment: center;
+                }
+            }
+
+            // Interactive TouchArea capturing Orbit Controls
+            touch_area := TouchArea {
+                property <length> last_x: 0px;
+                property <length> last_y: 0px;
+
+                pointer-event(event) => {
+                    if (event.kind == PointerEventKind.down) {
+                        self.last_x = self.mouse-x;
+                        self.last_y = self.mouse-y;
+                    }
+                }
+
+                moved => {
+                    if (self.pressed) {
+                        root.rotate_drag(self.mouse-x - self.last_x, self.mouse-y - self.last_y);
+                        self.last_x = self.mouse-x;
+                        self.last_y = self.mouse-y;
+                    }
+                }
+
+                scroll-event(event) => {
+                    root.zoom_scroll(event.delta-y);
+                    return accept;
+                }
+            }
+        }
+
+        // Bottom Load Distribution Bar
+        Rectangle {
+            height: 52px;
+            background: Theme.sub_card_bg;
+            border-radius: Theme.radius_sm;
+            border-width: 1px;
+            border-color: Theme.border;
+            padding: 8px;
+
+            HorizontalLayout {
+                alignment: space-between;
+                VerticalLayout {
+                    Text { text: "LOAD DISTRIBUTION"; font-size: 10px; font-weight: 700; color: Theme.text_muted; }
+                    Text { text: root.profile_summary; font-size: 12px; font-weight: 600; color: Theme.text_primary; }
+                }
+                VerticalLayout {
+                    Text { text: "MAX LOAD CORE"; font-size: 10px; font-weight: 700; color: Theme.text_muted; }
+                    Text { text: root.max_core_label; font-size: 12px; font-weight: 700; color: Theme.danger; }
+                }
+                VerticalLayout {
+                    Text { text: "IDLE CORES"; font-size: 10px; font-weight: 700; color: Theme.text_muted; }
+                    Text { text: root.idle_core_label; font-size: 12px; font-weight: 600; color: Theme.success; }
+                }
+            }
+        }
+    }
+}
