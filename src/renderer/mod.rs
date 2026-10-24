@@ -287,7 +287,7 @@ fn clip_line(
 }
 
 #[cfg(test)]
-mod tests {
+mod smoke_tests {
     use super::{raster_triangle, OffscreenRenderer};
     use slint::{Rgba8Pixel, SharedPixelBuffer};
 

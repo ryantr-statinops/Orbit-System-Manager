@@ -266,6 +266,7 @@ fn build_core_rows(cores: &[f32], columns: usize) -> Vec<CoreRow> {
 #[cfg(test)]
 mod tests {
     use super::{build_core_rows, columns_for_width};
+    use slint::Model;
 
     #[test]
     fn processor_columns_adapt_to_window_width() {
