@@ -2,45 +2,44 @@
 
 [![Release](https://img.shields.io/badge/Release-v2.0_Slint_Native-blue?style=for-the-badge&logo=rust)](https://github.com/ryantr-statinops/Orbit-System-Manager/releases)
 
-**Phần mềm giám sát hệ thống thời gian thực siêu nhẹ — 100% Pure Native Rust & Slint UI**
+**Ứng dụng desktop giám sát CPU, RAM và lưu lượng mạng bằng Rust và Slint.**
 
 ![Orbit System Manager](assets/images/example.png)
 
-Orbit System Manager là desktop app giám sát hiệu năng hệ thống theo thời gian thực được xây dựng hoàn toàn bằng **Rust** và **Slint GUI Framework**. Ứng dụng hoạt động trực tiếp với phần cứng, không sử dụng WebView, không phụ thuộc Chromium/Node.js, đem lại hiệu năng vượt trội với mức tiêu thụ tài nguyên tối thiểu.
+Orbit System Manager thu thập CPU, RAM và lưu lượng mạng theo thời gian thực. Collector chạy trên worker riêng; biểu đồ history CPU được rasterize bằng CPU và hiển thị trong Slint. GPU chưa được hỗ trợ và được ghi là N/A.
 
 ---
 
 ## ⚡ Điểm nổi bật (Highlights)
 
-* **🚀 Siêu nhẹ (Ultralight):** Tiêu thụ chỉ **~15 – 25 MB RAM**, khởi động tức thì trong **< 30 mili-giây**.
-* **🦀 100% Pure Rust:** Không Node.js, không Python, không WebView2/WebKit. Toàn bộ logic hệ thống và render đồ hoạ chạy trên mã máy native.
-* **🎨 Giao diện Slint hiện đại:** Thiết kế 3 cột trực quan với animation mượt mà, hỗ trợ render tăng tốc phần cứng bằng GPU (OpenGL / Vulkan).
+* **🦀 Ứng dụng native:** Không dùng Node.js hoặc WebView.
+* **🎨 Giao diện Slint:** Dashboard native với history được vẽ bằng CPU.
 * **📊 Trực quan hoá toàn diện:**
   * **System Memory:** Đo dung lượng RAM đã dùng, tổng RAM và thanh phần trăm động.
-  * **CPU Cores:** Hiển thị 16 lõi CPU kèm thanh tiến trình đổi màu theo mức tải (xanh $\rightarrow$ vàng $\rightarrow$ đỏ).
+  * **CPU Cores:** Hiển thị tất cả logical processors của máy.
   * **HUD Stats:** Tính toán trực tiếp Average Utilization, Standard Deviation và Variance.
-  * **GPU & Network:** Theo dõi tải GPU, nhiệt độ, cùng tốc độ Download/Upload theo thời gian thực.
+  * **Network:** Theo dõi tốc độ gửi/nhận theo KiB/s, tổng hợp trên mọi interface. GPU hiện N/A.
 
 ---
 
-## 🏗️ Kiến trúc kỹ thuật (Pure Rust & Slint)
+## 🏗️ Kiến trúc kỹ thuật (Rust & Slint)
 
 ```mermaid
 graph LR
     subgraph Hardware_Layer [TẦNG THU THẬP PHẦN CỨNG]
-        Sysinfo[sysinfo crate - 1Hz Timer]
+        Sysinfo[sysinfo crate - 1Hz Worker]
     end
 
     subgraph Core_Engine [RUST NATIVE ENGINE]
         MainLoop[src/main.rs - Slint Event Loop]
         Collector[src/telemetry/collector.rs]
         Sysinfo --> Collector
-        Collector --> MainLoop
+        Collector -->|Latest snapshot| MainLoop
     end
 
     subgraph UI_Surface [SLINT NATIVE GUI]
-        SlintView[ui/appwindow.slint - GPU Canvas]
-        MainLoop -->|Zero-Copy Model Update| SlintView
+        SlintView[ui/appwindow.slint - Native Slint UI]
+        MainLoop -->|Snapshot Update| SlintView
     end
 ```
 
@@ -49,7 +48,7 @@ graph LR
 | Thành phần | Công nghệ |
 | :--- | :--- |
 | **Ngôn ngữ cốt lõi** | Rust (Edition 2021) |
-| **GUI Framework** | [Slint](https://slint.dev) (v1.9) |
+| **GUI Framework** | [Slint](https://slint.dev) (v1.18.1) |
 | **System Telemetry** | [sysinfo](https://crates.io/crates/sysinfo) (v0.33) |
 | **Serialization** | `serde` + `serde_json` |
 | **CI / CD Container** | Docker (Ubuntu 22.04 Native Build) |
@@ -59,18 +58,18 @@ graph LR
 ## ⚙️ Hướng dẫn phát triển (Development)
 
 ### Yêu cầu
-* [Rust & Cargo](https://www.rust-lang.org) (≥ 1.77)
+* [Rust & Cargo](https://www.rust-lang.org) (≥ 1.99.1)
 
 ### 1. Chạy ở chế độ Development
 
 ```bash
-cargo run
+cargo run --locked
 ```
 
 ### 2. Build bản phát hành (Release Binary)
 
 ```bash
-cargo build --release
+cargo build --locked --release
 ```
 
 Tệp nhị phân độc lập sau khi build sẽ nằm tại:
@@ -85,20 +84,21 @@ Tệp nhị phân độc lập sau khi build sẽ nằm tại:
 ```
 Orbit-System-Manager/
 ├── Cargo.toml          # Rust package manifest & dependencies (Slint, sysinfo)
+├── Cargo.lock          # Locked dependency versions
 ├── build.rs            # Slint UI build script (compiles appwindow.slint)
 ├── src/
-│   ├── main.rs         # Entry point, Slint models binding, 1Hz timer
+│   ├── main.rs         # Entry point, worker snapshots and Slint bindings
 │   ├── lib.rs          # Export telemetry module
 │   └── telemetry/      # Module thu thập số liệu phần cứng bằng sysinfo
 │       ├── mod.rs
-│       ├── models.rs   # Data structures (CpuDetail, MemoryDetail, GpuMetric)
+│       ├── models.rs   # CPU, memory, GPU availability and network data
 │       └── collector.rs # Logic đọc CPU, RAM, Network
 ├── ui/
-│   └── appwindow.slint # Định nghĩa toàn bộ giao diện Slint (layout 3 cột, HUD)
+│   └── appwindow.slint # Giao diện dashboard hai vùng, có thể cuộn
 ├── assets/
 │   ├── icons/          # App icons (.ico, .png, .icns)
 │   └── images/         # Screenshots
-├── .github/workflows/  # CI / CD tự động build test trên Linux, Windows, macOS
+├── .github/workflows/  # CI kiểm tra Linux, Windows, macOS và build release
 └── Dockerfile.build-linux # Container build độc lập cho Linux
 ```
 
