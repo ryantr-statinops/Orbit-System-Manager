@@ -69,37 +69,113 @@ impl OffscreenRenderer {
                 let wz = ((z as f32 / row_count.saturating_sub(1).max(1) as f32) - 0.5) * span_z;
                 let wy = (render_grid[z][x] / 100.0) * 12.0;
 
-                if let Some((sx, sy, _depth)) = self.camera.project(wx, wy, wz, w, h) {
-                    *point = Some((sx, sy));
+                if let Some((sx, sy, depth)) = self.camera.project(wx, wy, wz, w, h) {
+                    *point = Some((sx, sy, depth));
                 }
             }
         }
 
-        // 3. Draw Z-lines (time-series ribbon lines)
+        let mut depth_buffer = vec![f32::INFINITY; pixels.len()];
+        if row_count > 1 && core_count > 1 {
+            for row in 0..row_count - 1 {
+                for column in 0..core_count - 1 {
+                    let (Some(a), Some(b), Some(c), Some(d)) = (
+                        projected[row][column],
+                        projected[row][column + 1],
+                        projected[row + 1][column],
+                        projected[row + 1][column + 1],
+                    ) else {
+                        continue;
+                    };
+                    let load = (render_grid[row][column]
+                        + render_grid[row][column + 1]
+                        + render_grid[row + 1][column]
+                        + render_grid[row + 1][column + 1])
+                        / 400.0;
+                    let shade = 0.68 + (row as f32 / row_count as f32) * 0.16;
+                    let color = shade_color(viridis_color(load), shade);
+                    raster_triangle(pixels, &mut depth_buffer, w, h, a, b, c, color);
+                    raster_triangle(pixels, &mut depth_buffer, w, h, b, d, c, color);
+                }
+            }
+        }
+
+        // Draw a subtle sample grid over the interpolated surface.
         #[allow(clippy::needless_range_loop)]
-        for x in 0..core_count {
+        for x in (0..core_count).step_by(3) {
             for z in 0..row_count.saturating_sub(1) {
                 if let (Some(p1), Some(p2)) = (projected[z][x], projected[z + 1][x]) {
-                    let avg_load = (render_grid[z][x] + render_grid[z + 1][x]) * 0.5 / 100.0;
-                    let color = viridis_color(avg_load);
-                    draw_line(pixels, w, h, p1.0, p1.1, p2.0, p2.1, color);
+                    draw_line(pixels, w, h, p1.0, p1.1, p2.0, p2.1, [75, 104, 128, 255]);
                 }
             }
         }
 
-        // 4. Draw X-lines (cross-core ribbons)
         #[allow(clippy::needless_range_loop)]
-        for z in 0..row_count {
+        for z in (0..row_count).step_by(3) {
             for x in 0..core_count.saturating_sub(1) {
                 if let (Some(p1), Some(p2)) = (projected[z][x], projected[z][x + 1]) {
-                    let avg_load = (render_grid[z][x] + render_grid[z][x + 1]) * 0.5 / 100.0;
-                    let color = viridis_color(avg_load);
-                    draw_line(pixels, w, h, p1.0, p1.1, p2.0, p2.1, color);
+                    draw_line(pixels, w, h, p1.0, p1.1, p2.0, p2.1, [75, 104, 128, 255]);
                 }
             }
         }
 
         Image::from_rgba8(self.buffer.clone())
+    }
+}
+
+fn shade_color(mut color: [u8; 4], factor: f32) -> [u8; 4] {
+    for channel in &mut color[..3] {
+        *channel = (*channel as f32 * factor.clamp(0.0, 1.0)) as u8;
+    }
+    color
+}
+
+fn raster_triangle(
+    pixels: &mut [Rgba8Pixel],
+    depth_buffer: &mut [f32],
+    width: u32,
+    height: u32,
+    a: (i32, i32, f32),
+    b: (i32, i32, f32),
+    c: (i32, i32, f32),
+    color: [u8; 4],
+) {
+    let edge = |p: (i32, i32, f32), q: (i32, i32, f32), x: f32, y: f32| {
+        (q.0 - p.0) as f32 * (y - p.1 as f32) - (q.1 - p.1) as f32 * (x - p.0 as f32)
+    };
+    let area = edge(a, b, c.0 as f32, c.1 as f32);
+    if area.abs() < f32::EPSILON || width == 0 || height == 0 {
+        return;
+    }
+    let min_x = a.0.min(b.0).min(c.0).max(0) as u32;
+    let max_x = a.0.max(b.0).max(c.0).min(width as i32 - 1) as u32;
+    let min_y = a.1.min(b.1).min(c.1).max(0) as u32;
+    let max_y = a.1.max(b.1).max(c.1).min(height as i32 - 1) as u32;
+    if min_x > max_x || min_y > max_y {
+        return;
+    }
+    for y in min_y..=max_y {
+        for x in min_x..=max_x {
+            let px = x as f32 + 0.5;
+            let py = y as f32 + 0.5;
+            let w0 = edge(b, c, px, py) / area;
+            let w1 = edge(c, a, px, py) / area;
+            let w2 = edge(a, b, px, py) / area;
+            if w0 < 0.0 || w1 < 0.0 || w2 < 0.0 {
+                continue;
+            }
+            let depth = a.2 * w0 + b.2 * w1 + c.2 * w2;
+            let index = (y * width + x) as usize;
+            if depth < depth_buffer[index] {
+                depth_buffer[index] = depth;
+                pixels[index] = Rgba8Pixel {
+                    r: color[0],
+                    g: color[1],
+                    b: color[2],
+                    a: color[3],
+                };
+            }
+        }
     }
 }
 
