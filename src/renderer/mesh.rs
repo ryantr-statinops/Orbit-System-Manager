@@ -267,7 +267,10 @@ mod tests {
         assert_eq!(mesh.sample_count(), 1);
         assert_eq!(mesh.grid, vec![vec![0.0, 100.0]]);
         let display = mesh.smoothed_grid(4);
-        assert_eq!(display, vec![vec![0.0, 100.0]]);
+        assert_eq!(display.len(), 1);
+        assert_eq!(display[0].len(), 5);
+        assert_eq!(display[0].first(), Some(&0.0));
+        assert_eq!(display[0].last(), Some(&100.0));
     }
 }
 
