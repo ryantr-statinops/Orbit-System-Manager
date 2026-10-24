@@ -1,6 +1,6 @@
 # 🛸 Orbit System Manager
 
-[![Release](https://img.shields.io/badge/Release-v2.0_Slint_Native-blue?style=for-the-badge&logo=rust)](https://github.com/ryantr-statinops/Orbit-System-Manager/releases)
+[![Release](https://img.shields.io/badge/Release-v2.1.0_Slint_Native-blue?style=for-the-badge&logo=rust)](https://github.com/ryantr-statinops/Orbit-System-Manager/releases)
 
 **Ứng dụng desktop giám sát CPU, RAM và lưu lượng mạng bằng Rust và Slint.**
 

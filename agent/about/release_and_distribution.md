@@ -2,7 +2,7 @@
 
 Tài liệu này hướng dẫn chi tiết quy trình đóng gói và phát hành tự động đa nền tảng (Windows, Linux, macOS) cho **Orbit System Manager** thông qua **GitHub Actions CI/CD** và cấu hình tối ưu của **Cargo**.
 
-> 📌 **Phiên bản hiện tại:** `v2.0.0` (Pure Native Rust & Slint v1.9)  
+> 📌 **Phiên bản hiện tại:** `v2.1.0` (Pure Native Rust & Slint v1.18.1)
 > **Định vị cốt lõi:** Một công cụ giám sát hệ thống siêu nhẹ (**Lightweight System Monitor**) hiển thị toàn bộ trạng thái phần cứng (16 nhân CPU, RAM, GPU, Network) trực quan gói gọn **trong một màn hình duy nhất (All-in-one Single Screen)** mà không cần cuộn trang hay chuyển tab.
 
 ---
