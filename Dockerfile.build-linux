@@ -33,6 +33,6 @@ WORKDIR /app
 
 # 3. Copy source and build native release binary
 COPY . .
-RUN cargo build --release
+RUN cargo build --locked --release
 
 CMD ["cp", "target/release/orbit-system-manager", "/output/"]
