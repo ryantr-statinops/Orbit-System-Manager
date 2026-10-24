@@ -229,6 +229,7 @@ fn schedule_animation(
     dirty: Rc<Cell<bool>>,
     timer: Rc<Timer>,
 ) {
+    let callback_timer = timer.clone();
     timer.start(
         TimerMode::SingleShot,
         Duration::from_millis(33),
@@ -244,7 +245,12 @@ fn schedule_animation(
             }
             drop(ren);
             if moving {
-                schedule_animation(app_weak, renderer, dirty, timer);
+                schedule_animation(
+                    app_weak.clone(),
+                    renderer.clone(),
+                    dirty.clone(),
+                    callback_timer.clone(),
+                );
             }
         },
     );
