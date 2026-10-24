@@ -7,11 +7,18 @@ export component Viewport3D inherits Rectangle {
     in property <float> cpu_avg: 0.0;
     in property <float> cpu_std: 0.0;
     in property <float> cpu_var: 0.0;
+    in property <bool> cpu_available: false;
+    in property <int> cpu_logical_count: 0;
+    in property <int> history_samples: 0;
+    in property <int> history_seconds: 0;
 
     // Callbacks to Rust 3D Camera OrbitControls
     callback rotate_drag(length, length);
     callback pan_drag(length, length);
     callback zoom_scroll(length);
+    callback resize_viewport(length, length);
+    changed width => { root.resize_viewport(root.width, root.height); }
+    changed height => { root.resize_viewport(root.width, root.height); }
 
     background: Theme.editor_bg;
     border-radius: Theme.radius_sm;
@@ -34,7 +41,7 @@ export component Viewport3D inherits Rectangle {
                         color: Theme.text_primary;
                     }
                     Text {
-                        text: Math.round(root.cpu_avg * 10.0) / 10.0 + "% Utilization";
+                        text: root.cpu_available ? Math.round(root.cpu_avg * 10.0) / 10.0 + "% Utilization" : "N/A";
                         font-size: 15px;
                         font-weight: 700;
                         color: Theme.accent;
@@ -42,7 +49,7 @@ export component Viewport3D inherits Rectangle {
                     }
                 }
                 Text {
-                    text: "16 Logical Processors • 60s Window • Real-time Hardware Sampling";
+                    text: root.history_samples > 0 ? "" + root.history_samples + "/30 mẫu • " + root.history_seconds + "s • " + root.cpu_logical_count + " processors" : "Đang chờ dữ liệu CPU";
                     font-size: 11px;
                     color: Theme.text_muted;
                 }
@@ -63,7 +70,7 @@ export component Viewport3D inherits Rectangle {
                         padding-top: 3px;
                         padding-bottom: 3px;
                         Text {
-                            text: "16C × 30S VIRIDIS";
+                            text: "" + root.history_samples + "/30 mẫu • " + root.history_seconds + "s";
                             font-size: 10px;
                             font-weight: 600;
                             color: Theme.teal_primary;
@@ -81,13 +88,14 @@ export component Viewport3D inherits Rectangle {
                         padding-top: 3px;
                         padding-bottom: 3px;
                         Text {
-                            text: "VSYNC 60 FPS";
+                            text: "CPU raster • tối đa 30 FPS";
                             font-size: 10px;
                             font-weight: 600;
                             color: Theme.success;
                         }
                     }
                 }
+            }
         }
 
         // 3D Canvas Container
@@ -116,7 +124,7 @@ export component Viewport3D inherits Rectangle {
                     horizontal-alignment: center;
                 }
                 Text {
-                    text: "NATIVE 3D GPU TOPOLOGY MESH";
+                    text: "CPU TELEMETRY HISTORY";
                     font-size: 12px;
                     font-weight: 700;
                     color: Theme.teal_primary;
@@ -124,7 +132,7 @@ export component Viewport3D inherits Rectangle {
                     letter-spacing: 1px;
                 }
                 Text {
-                    text: "Drag left-click to Orbit • Scroll to Zoom • Drag right-click to Pan";
+                    text: "Kéo trái để xoay • Kéo phải để pan • Cuộn để zoom";
                     font-size: 10px;
                     color: Theme.text_muted;
                     horizontal-alignment: center;
@@ -135,17 +143,23 @@ export component Viewport3D inherits Rectangle {
             touch_area := TouchArea {
                 property <length> last_x: 0px;
                 property <length> last_y: 0px;
+                property <PointerEventButton> drag_button: PointerEventButton.left;
 
                 pointer-event(event) => {
                     if (event.kind == PointerEventKind.down) {
                         self.last_x = self.mouse-x;
                         self.last_y = self.mouse-y;
+                        self.drag_button = event.button;
                     }
                 }
 
                 moved => {
                     if (self.pressed) {
-                        root.rotate_drag(self.mouse-x - self.last_x, self.mouse-y - self.last_y);
+                        if (self.drag_button == PointerEventButton.left) {
+                            root.rotate_drag(self.mouse-x - self.last_x, self.mouse-y - self.last_y);
+                        } else if (self.drag_button == PointerEventButton.right) {
+                            root.pan_drag(self.mouse-x - self.last_x, self.mouse-y - self.last_y);
+                        }
                         self.last_x = self.mouse-x;
                         self.last_y = self.mouse-y;
                     }
@@ -166,7 +180,7 @@ export component Viewport3D inherits Rectangle {
                 text: "0% (Idle)";
                 font-size: 9px;
                 font-weight: 600;
-                color: #3b528b;
+                color: #440154;
                 vertical-alignment: center;
             }
             Rectangle {

@@ -2,15 +2,15 @@
 // Complete Revamp: Left Resource Navigation + Center 3D Viewport + 16-Core Matrix + Hardware Specs Grid
 
 import { Theme } from "theme.slint";
-import { CoreItem } from "components/core_bar.slint";
 import { ResourceCard } from "components/resource_card.slint";
-import { CoreMatrix } from "components/core_matrix.slint";
+import { CoreMatrix, CoreRow } from "components/core_matrix.slint";
 import { Viewport3D } from "components/viewport_3d.slint";
+import { ScrollView } from "std-widgets.slint";
 
 export component AppWindow inherits Window {
     title: "Orbit System Manager — Task Manager Performance Dashboard";
-    min-width: 1080px;
-    min-height: 720px;
+    min-width: 720px;
+    min-height: 520px;
     preferred-width: 1280px;
     preferred-height: 800px;
     background: Theme.app_bg;
@@ -20,22 +20,22 @@ export component AppWindow inherits Window {
     in property <float> cpu_avg: 0.0;
     in property <float> cpu_std: 0.0;
     in property <float> cpu_var: 0.0;
+    in property <bool> cpu_available: false;
+    in property <string> cpu_name: "N/A";
+    in property <string> cpu_frequency: "N/A";
+    in property <string> cpu_physical_cores: "N/A";
+    in property <int> cpu_logical_cores: 0;
     in property <float> ram_percent: 0.0;
+    in property <bool> ram_available: false;
     in property <float> ram_used_gb: 0.0;
     in property <float> ram_total_gb: 0.0;
-    in property <float> net_sent_kbps: 0.0;
-    in property <float> net_recv_kbps: 0.0;
-    in property <float> gpu_load: 0.0;
-    in property <float> gpu_temp: 0.0;
-    in property <string> gpu_name: "Primary GPU";
-    in property <[CoreItem]> cores_row1: [
-        { id: 0, load: 18.0 }, { id: 1, load: 36.0 }, { id: 2, load: 65.0 }, { id: 3, load: 24.0 },
-        { id: 4, load: 84.0 }, { id: 5, load: 30.0 }, { id: 6, load: 72.0 }, { id: 7, load: 16.0 }
-    ];
-    in property <[CoreItem]> cores_row2: [
-        { id: 8, load: 42.0 }, { id: 9, load: 52.0 }, { id: 10, load: 22.0 }, { id: 11, load: 38.0 },
-        { id: 12, load: 28.0 }, { id: 13, load: 60.0 }, { id: 14, load: 46.0 }, { id: 15, load: 19.0 }
-    ];
+    in property <float> net_sent_kib: 0.0;
+    in property <float> net_recv_kib: 0.0;
+    in property <bool> network_available: false;
+    in property <string> network_status_text: "Đang lấy mẫu";
+    in property <[CoreRow]> core_rows: [];
+    in property <int> history_samples: 0;
+    in property <int> history_seconds: 0;
 
     // 3D Viewport Frame & Callbacks
     in property <image> viewport_3d_frame;
@@ -43,6 +43,7 @@ export component AppWindow inherits Window {
     callback rotate_3d(length, length);
     callback pan_3d(length, length);
     callback zoom_3d(length);
+    callback resize_viewport(length, length);
 
     VerticalLayout {
         padding: 0px;
@@ -119,7 +120,7 @@ export component AppWindow inherits Window {
         HorizontalLayout {
             spacing: 0px;
 
-            // ===== LEFT PANE: RESOURCE SELECTOR LIST (~230px) =====
+            // ===== LEFT PANE: RESOURCE SUMMARY =====
             Rectangle {
                 width: 230px;
                 background: Theme.app_bg;
@@ -141,48 +142,42 @@ export component AppWindow inherits Window {
                         }
                     }
 
-                    // CPU Item (Selected Hero)
+                    // CPU summary
                     ResourceCard {
                         title: "CPU";
-                        value_text: Math.round(root.cpu_avg) + "%";
-                        sub_text: Math.round(root.cpu_avg * 10.0) / 10.0 + " GHz • 16 Cores";
-                        percent: root.cpu_avg;
-                        is_selected: true;
+                        value_text: root.cpu_available ? Math.round(root.cpu_avg) + "%" : "N/A";
+                        sub_text: root.cpu_name + " • " + root.cpu_logical_cores + " logical processors";
+                        percent: root.cpu_available ? root.cpu_avg : 0.0;
                         meter_brush: Theme.gradient_cpu;
-                        accent_color: Theme.accent;
+                        show_meter: root.cpu_available;
                     }
 
                     // Memory Item
                     ResourceCard {
                         title: "Memory";
-                        value_text: Math.round(root.ram_percent) + "%";
-                        sub_text: Math.round(root.ram_used_gb * 10.0) / 10.0 + " / " + Math.round(root.ram_total_gb * 10.0) / 10.0 + " GB";
+                        value_text: root.ram_available ? Math.round(root.ram_percent) + "%" : "N/A";
+                        sub_text: root.ram_available ? Math.round(root.ram_used_gb * 10.0) / 10.0 + " / " + Math.round(root.ram_total_gb * 10.0) / 10.0 + " GiB" : "N/A";
                         percent: root.ram_percent;
-                        is_selected: false;
+                        show_meter: root.ram_available;
                         meter_brush: Theme.gradient_ram;
-                        accent_color: Theme.accent_cyan;
                     }
 
                     // GPU Item
                     ResourceCard {
                         title: "GPU";
-                        value_text: Math.round(root.gpu_load) + "%";
-                        sub_text: root.gpu_name + " • " + Math.round(root.gpu_temp) + "°C";
-                        percent: root.gpu_load;
-                        is_selected: false;
+                        value_text: "N/A";
+                        sub_text: "Chưa hỗ trợ";
+                        show_meter: false;
                         meter_brush: Theme.gradient_gpu;
-                        accent_color: Theme.warning;
                     }
 
                     // Network Item
                     ResourceCard {
                         title: "Network";
-                        value_text: Math.round(root.net_recv_kbps) + " KB/s";
-                        sub_text: "R: " + Math.round(root.net_recv_kbps) + " • S: " + Math.round(root.net_sent_kbps) + " KB/s";
-                        percent: Math.min(100.0, root.net_recv_kbps / 10.0);
-                        is_selected: false;
+                        value_text: root.network_available ? Math.round(root.net_recv_kib) + " KiB/s" : "N/A";
+                        sub_text: root.network_available ? "Tổng mọi interface • Gửi " + Math.round(root.net_sent_kib) + " KiB/s" : root.network_status_text;
+                        show_meter: false;
                         meter_brush: Theme.gradient_net;
-                        accent_color: Theme.purple;
                     }
                 }
             }
@@ -197,7 +192,8 @@ export component AppWindow inherits Window {
             Rectangle {
                 background: Theme.editor_bg;
 
-                VerticalLayout {
+                ScrollView {
+                    VerticalLayout {
                     padding: 16px;
                     spacing: 12px;
 
@@ -208,33 +204,37 @@ export component AppWindow inherits Window {
                         cpu_avg: root.cpu_avg;
                         cpu_std: root.cpu_std;
                         cpu_var: root.cpu_var;
+                        cpu_available: root.cpu_available;
+                        cpu_logical_count: root.cpu_logical_cores;
+                        history_samples: root.history_samples;
+                        history_seconds: root.history_seconds;
                         rotate_drag(dx, dy) => { root.rotate_3d(dx, dy); }
                         pan_drag(dx, dy) => { root.pan_3d(dx, dy); }
                         zoom_scroll(delta) => { root.zoom_3d(delta); }
+                        resize_viewport(width, height) => { root.resize_viewport(width, height); }
                     }
 
-                    // 2. 16-Core Matrix (8x2 Logical Processors Grid)
+                    // 2. Logical processor matrix (8 columns)
                     VerticalLayout {
                         spacing: 6px;
                         HorizontalLayout {
                             alignment: space-between;
                             Text {
-                                text: "LOGICAL PROCESSORS (16 CORES)";
+                                text: "LOGICAL PROCESSORS (" + root.cpu_logical_cores + ")";
                                 font-size: 11px;
                                 font-weight: 700;
                                 color: Theme.text_secondary;
                                 letter-spacing: 0.5px;
                             }
                             Text {
-                                text: "Std Dev: " + (Math.round(root.cpu_std * 100.0) / 100.0) + " • Variance: " + (Math.round(root.cpu_var * 10.0) / 10.0);
+                                text: root.cpu_available ? "Std Dev: " + (Math.round(root.cpu_std * 100.0) / 100.0) + " • Variance: " + (Math.round(root.cpu_var * 10.0) / 10.0) : "CPU data unavailable";
                                 font-size: 10px;
                                 color: Theme.text_muted;
                             }
                         }
 
                         CoreMatrix {
-                            cores_row1: root.cores_row1;
-                            cores_row2: root.cores_row2;
+                            rows: root.core_rows;
                         }
                     }
 
@@ -254,35 +254,36 @@ export component AppWindow inherits Window {
                             VerticalLayout {
                                 spacing: 2px;
                                 Text { text: "Utilization"; font-size: 10px; color: Theme.text_muted; }
-                                Text { text: Math.round(root.cpu_avg * 10.0) / 10.0 + "%"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
-                                Text { text: "Normal Profile"; font-size: 10px; color: Theme.teal_primary; }
+                                Text { text: root.cpu_available ? Math.round(root.cpu_avg * 10.0) / 10.0 + "%" : "N/A"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
+                                Text { text: "Mức sử dụng"; font-size: 10px; color: Theme.teal_primary; }
                             }
 
                             // Column 2
                             VerticalLayout {
                                 spacing: 2px;
                                 Text { text: "Speed"; font-size: 10px; color: Theme.text_muted; }
-                                Text { text: "3.42 GHz"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
-                                Text { text: "Base: 2.30 GHz"; font-size: 10px; color: Theme.text_muted; }
+                                Text { text: root.cpu_frequency; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
+                                Text { text: "Tần số hiện tại"; font-size: 10px; color: Theme.text_muted; }
                             }
 
                             // Column 3
                             VerticalLayout {
                                 spacing: 2px;
-                                Text { text: "Sockets / Cores"; font-size: 10px; color: Theme.text_muted; }
-                                Text { text: "1 / 8 Cores"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
-                                Text { text: "16 Logical Processors"; font-size: 10px; color: Theme.text_muted; }
+                                Text { text: "Physical / logical"; font-size: 10px; color: Theme.text_muted; }
+                                Text { text: root.cpu_physical_cores + " / " + root.cpu_logical_cores + " cores"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
+                                Text { text: "Physical / logical"; font-size: 10px; color: Theme.text_muted; }
                             }
 
                             // Column 4
                             VerticalLayout {
                                 spacing: 2px;
-                                Text { text: "L1 / L2 / L3 Cache"; font-size: 10px; color: Theme.text_muted; }
-                                Text { text: "512K / 2M / 16M"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
-                                Text { text: "Virtualization: Enabled"; font-size: 10px; color: Theme.success; }
+                                Text { text: "CPU model"; font-size: 10px; color: Theme.text_muted; }
+                                Text { text: root.cpu_name; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
+                                Text { text: "Model CPU"; font-size: 10px; color: Theme.text_muted; }
                             }
                         }
                     }
+                }
                 }
             }
         }

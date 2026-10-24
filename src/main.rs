@@ -3,10 +3,14 @@
 
 slint::include_modules!();
 
+use slint::{ModelRc, Timer, TimerMode, VecModel};
+use std::cell::Cell;
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::time::Duration;
-use slint::{Timer, TimerMode, VecModel};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::time::{Duration, Instant};
 
 pub mod renderer;
 pub mod telemetry;
@@ -18,45 +22,97 @@ fn main() -> Result<(), slint::PlatformError> {
     let app_weak = app.as_weak();
 
     // 1. Initialize hardware telemetry collector
-    let collector = Rc::new(RefCell::new(telemetry::collector::TelemetryCollector::new()));
+    let latest_payload = Arc::new(Mutex::new(None));
+    let stop_worker = Arc::new(AtomicBool::new(false));
+    let worker_payload = latest_payload.clone();
+    let worker_stop = stop_worker.clone();
+    let telemetry_worker = thread::spawn(move || {
+        let mut collector = telemetry::collector::TelemetryCollector::new();
+        thread::sleep(Duration::from_secs(1));
+        while !worker_stop.load(Ordering::Relaxed) {
+            let started = Instant::now();
+            let payload = collector.collect();
+            if let Ok(mut latest) = worker_payload.lock() {
+                *latest = Some(payload);
+            }
+            let remaining = Duration::from_secs(1).saturating_sub(started.elapsed());
+            thread::sleep(remaining);
+        }
+    });
 
     // 2. Initialize native 3D renderer (640x380 viewport resolution)
     let renderer = Rc::new(RefCell::new(OffscreenRenderer::new(640, 380)));
+    let frame_dirty = Rc::new(Cell::new(false));
+    let animation_timer = Rc::new(Timer::default());
 
-    // 3. Connect 3D Interactive Mouse Controls
+    // Camera callbacks only update state. The animation timer coalesces redraws.
     {
         let renderer_ref = renderer.clone();
-        let app_weak_ref = app_weak.clone();
+        let dirty = frame_dirty.clone();
+        let timer = animation_timer.clone();
+        let app_weak = app_weak.clone();
         app.on_rotate_3d(move |dx, dy| {
             renderer_ref.borrow_mut().camera.rotate(dx, dy);
-            if let Some(app) = app_weak_ref.upgrade() {
-                let frame = renderer_ref.borrow_mut().render_frame();
-                app.set_viewport_3d_frame(frame);
-            }
+            dirty.set(true);
+            schedule_animation(
+                app_weak.clone(),
+                renderer_ref.clone(),
+                dirty.clone(),
+                timer.clone(),
+            );
         });
     }
 
     {
         let renderer_ref = renderer.clone();
-        let app_weak_ref = app_weak.clone();
+        let dirty = frame_dirty.clone();
+        let timer = animation_timer.clone();
+        let app_weak = app_weak.clone();
         app.on_pan_3d(move |dx, dy| {
             renderer_ref.borrow_mut().camera.pan(dx, dy);
-            if let Some(app) = app_weak_ref.upgrade() {
-                let frame = renderer_ref.borrow_mut().render_frame();
-                app.set_viewport_3d_frame(frame);
-            }
+            dirty.set(true);
+            schedule_animation(
+                app_weak.clone(),
+                renderer_ref.clone(),
+                dirty.clone(),
+                timer.clone(),
+            );
         });
     }
 
     {
         let renderer_ref = renderer.clone();
-        let app_weak_ref = app_weak.clone();
+        let dirty = frame_dirty.clone();
+        let timer = animation_timer.clone();
+        let app_weak = app_weak.clone();
         app.on_zoom_3d(move |delta| {
             renderer_ref.borrow_mut().camera.zoom(delta);
-            if let Some(app) = app_weak_ref.upgrade() {
-                let frame = renderer_ref.borrow_mut().render_frame();
-                app.set_viewport_3d_frame(frame);
-            }
+            dirty.set(true);
+            schedule_animation(
+                app_weak.clone(),
+                renderer_ref.clone(),
+                dirty.clone(),
+                timer.clone(),
+            );
+        });
+    }
+
+    {
+        let renderer_ref = renderer.clone();
+        let dirty = frame_dirty.clone();
+        let timer = animation_timer.clone();
+        let app_weak = app_weak.clone();
+        app.on_resize_viewport(move |width, height| {
+            renderer_ref
+                .borrow_mut()
+                .resize(width.round() as u32, height.round() as u32);
+            dirty.set(true);
+            schedule_animation(
+                app_weak.clone(),
+                renderer_ref.clone(),
+                dirty.clone(),
+                timer.clone(),
+            );
         });
     }
 
@@ -65,90 +121,131 @@ fn main() -> Result<(), slint::PlatformError> {
         let frame = renderer.borrow_mut().render_frame();
         app.set_viewport_3d_frame(frame);
         app.set_has_3d_frame(true);
+        frame_dirty.set(false);
     }
 
-    // 5. Telemetry update timer (1 Hz interval)
+    // Poll the latest worker snapshot on the UI thread.
     let telemetry_timer = Timer::default();
     {
         let app_weak_ref = app_weak.clone();
-        let collector_ref = collector.clone();
+        let payload_ref = latest_payload.clone();
         let renderer_ref = renderer.clone();
+        let dirty = frame_dirty.clone();
+        let animation_timer = animation_timer.clone();
 
-        telemetry_timer.start(TimerMode::Repeated, Duration::from_millis(1000), move || {
+        telemetry_timer.start(TimerMode::Repeated, Duration::from_millis(100), move || {
             if let Some(app) = app_weak_ref.upgrade() {
-                let payload = collector_ref.borrow_mut().collect();
+                let payload = payload_ref.lock().ok().and_then(|mut p| p.take());
+                let Some(payload) = payload else {
+                    return;
+                };
 
                 // CPU metrics
-                app.set_cpu_avg(payload.cpu_detail.avg_utilization);
-                app.set_cpu_std(payload.cpu_detail.std_dev);
-                app.set_cpu_var(payload.cpu_detail.variance);
+                let cpu = &payload.cpu_detail;
+                app.set_cpu_available(cpu.status == telemetry::models::MetricStatus::Available);
+                app.set_cpu_avg(cpu.avg_utilization.unwrap_or_default());
+                app.set_cpu_std(cpu.std_dev.unwrap_or_default());
+                app.set_cpu_var(cpu.variance.unwrap_or_default());
+                app.set_cpu_name(cpu.name.clone().unwrap_or_else(|| "N/A".into()).into());
+                app.set_cpu_frequency(
+                    cpu.frequency_ghz
+                        .map(|f| format!("{f:.2} GHz"))
+                        .unwrap_or_else(|| "N/A".into())
+                        .into(),
+                );
+                app.set_cpu_physical_cores(
+                    cpu.physical_core_count
+                        .map(|n| n.to_string())
+                        .unwrap_or_else(|| "N/A".into())
+                        .into(),
+                );
+                app.set_cpu_logical_cores(cpu.cores.len() as i32);
 
-                let cores = &payload.cpu_detail.cores;
-                let len = cores.len();
-                let row1_items: Vec<CoreItem> = cores[..8.min(len)]
-                    .iter()
+                let rows = cpu
+                    .cores
+                    .chunks(8)
                     .enumerate()
-                    .map(|(idx, &load)| CoreItem {
-                        id: idx as i32,
-                        load,
+                    .map(|(row, values)| CoreRow {
+                        cells: ModelRc::from(Rc::new(VecModel::from(
+                            values
+                                .iter()
+                                .enumerate()
+                                .map(|(i, &load)| CoreItem {
+                                    id: (row * 8 + i) as i32,
+                                    load,
+                                })
+                                .collect::<Vec<_>>(),
+                        ))),
                     })
-                    .collect();
-                let row2_items: Vec<CoreItem> = if len > 8 {
-                    cores[8..16.min(len)]
-                        .iter()
-                        .enumerate()
-                        .map(|(idx, &load)| CoreItem {
-                            id: (idx + 8) as i32,
-                            load,
-                        })
-                        .collect()
-                } else {
-                    vec![]
-                };
-                app.set_cores_row1(Rc::new(VecModel::from(row1_items)).into());
-                app.set_cores_row2(Rc::new(VecModel::from(row2_items)).into());
+                    .collect::<Vec<_>>();
+                app.set_core_rows(Rc::new(VecModel::from(rows)).into());
 
                 // Push cores to 3D terrain heightmap
-                renderer_ref
-                    .borrow_mut()
-                    .mesh
-                    .push_sample(&payload.cpu_detail.cores);
+                renderer_ref.borrow_mut().mesh.push_sample(&cpu.cores);
+                dirty.set(true);
 
                 // Memory metrics
-                app.set_ram_percent(payload.memory_detail.percent as f32);
-                app.set_ram_used_gb(payload.memory_detail.used_gb as f32);
-                app.set_ram_total_gb(payload.memory_detail.total_gb as f32);
+                app.set_ram_available(payload.memory_detail.percent.is_some());
+                app.set_ram_percent(payload.memory_detail.percent.unwrap_or_default() as f32);
+                app.set_ram_used_gb(payload.memory_detail.used_gib as f32);
+                app.set_ram_total_gb(payload.memory_detail.total_gib as f32);
 
                 // Network speeds
-                app.set_net_sent_kbps(payload.network_speed.sent_kbps as f32);
-                app.set_net_recv_kbps(payload.network_speed.received_kbps as f32);
-
-                // GPU telemetry
-                if let Some(gpu) = payload.gpu_detail.first() {
-                    app.set_gpu_load(gpu.load_percent);
-                    app.set_gpu_temp(gpu.temperature_c);
-                    app.set_gpu_name(slint::SharedString::from(gpu.name.clone()));
-                }
+                let network = &payload.network_speed;
+                app.set_network_available(
+                    network.status == telemetry::models::MetricStatus::Available,
+                );
+                let network_status_text = match network.status {
+                    telemetry::models::MetricStatus::Available => "Available",
+                    telemetry::models::MetricStatus::WarmingUp => "Đang lấy mẫu",
+                    telemetry::models::MetricStatus::Unavailable => "Không có interface",
+                };
+                app.set_network_status_text(network_status_text.into());
+                app.set_net_sent_kib(network.sent_kib_per_sec.unwrap_or_default() as f32);
+                app.set_net_recv_kib(network.received_kib_per_sec.unwrap_or_default() as f32);
+                let ren = renderer_ref.borrow();
+                app.set_history_samples(ren.mesh.sample_count() as i32);
+                app.set_history_seconds(ren.mesh.history_seconds() as i32);
+                drop(ren);
+                schedule_animation(
+                    app_weak_ref.clone(),
+                    renderer_ref.clone(),
+                    dirty.clone(),
+                    animation_timer.clone(),
+                );
             }
         });
     }
 
-    // 6. Smooth 3D animation interpolation loop (~30 FPS)
-    let animation_timer = Timer::default();
-    {
-        let app_weak_ref = app_weak.clone();
-        let renderer_ref = renderer.clone();
+    let result = app.run();
+    stop_worker.store(true, Ordering::Relaxed);
+    let _ = telemetry_worker.join();
+    result
+}
 
-        animation_timer.start(TimerMode::Repeated, Duration::from_millis(33), move || {
-            if let Some(app) = app_weak_ref.upgrade() {
-                let mut ren = renderer_ref.borrow_mut();
-                ren.mesh.update_interpolation(0.12);
-                let frame = ren.render_frame();
-                app.set_viewport_3d_frame(frame);
+fn schedule_animation(
+    app_weak: slint::Weak<AppWindow>,
+    renderer: Rc<RefCell<OffscreenRenderer>>,
+    dirty: Rc<Cell<bool>>,
+    timer: Rc<Timer>,
+) {
+    timer.start(
+        TimerMode::SingleShot,
+        Duration::from_millis(33),
+        move || {
+            let Some(app) = app_weak.upgrade() else {
+                return;
+            };
+            let mut ren = renderer.borrow_mut();
+            let moving = ren.mesh.update_interpolation(0.12);
+            if moving || dirty.replace(false) {
+                app.set_viewport_3d_frame(ren.render_frame());
                 app.set_has_3d_frame(true);
             }
-        });
-    }
-
-    app.run()
+            drop(ren);
+            if moving {
+                schedule_animation(app_weak, renderer, dirty, timer);
+            }
+        },
+    );
 }

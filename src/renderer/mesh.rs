@@ -1,57 +1,131 @@
 // 3D Terrain Heightmap Mesh & Viridis Color Mapping
 
-pub const CORE_COUNT: usize = 16;
 pub const TIME_WINDOW: usize = 30;
+use std::collections::VecDeque;
+use std::time::Instant;
 
 pub struct TerrainMesh {
-    // 30 time slices x 16 cores (0.0 to 100.0)
-    pub grid: [[f32; CORE_COUNT]; TIME_WINDOW],
-    pub render_grid: [[f32; CORE_COUNT]; TIME_WINDOW],
+    pub grid: Vec<Vec<f32>>,
+    pub render_grid: Vec<Vec<f32>>,
+    sample_times: VecDeque<Instant>,
+    core_count: usize,
 }
 
 impl TerrainMesh {
     pub fn new() -> Self {
-        let mut mesh = Self {
-            grid: [[0.0; CORE_COUNT]; TIME_WINDOW],
-            render_grid: [[0.0; CORE_COUNT]; TIME_WINDOW],
-        };
-
-        // Initialize with default subtle wave for preview
-        for (z, row) in mesh.grid.iter_mut().enumerate() {
-            for (x, val) in row.iter_mut().enumerate() {
-                let wave = ((x as f32 * 0.4).sin() + (z as f32 * 0.3).cos()) * 15.0 + 25.0;
-                *val = wave.clamp(0.0, 100.0);
-            }
+        Self {
+            grid: Vec::new(),
+            render_grid: Vec::new(),
+            sample_times: VecDeque::new(),
+            core_count: 0,
         }
-        mesh.render_grid = mesh.grid;
-        mesh
     }
 
     pub fn push_sample(&mut self, cores: &[f32]) {
-        // Shift time slices backward
-        for i in 0..TIME_WINDOW - 1 {
-            self.grid[i] = self.grid[i + 1];
+        if cores.len() != self.core_count {
+            self.core_count = cores.len();
+            self.grid.clear();
+            self.render_grid.clear();
+            self.sample_times.clear();
         }
-
-        // Push new cores row at latest time slice
-        let mut new_row = [0.0; CORE_COUNT];
-        for i in 0..CORE_COUNT {
-            if i < cores.len() {
-                new_row[i] = cores[i].clamp(0.0, 100.0);
-            }
+        let new_row = cores
+            .iter()
+            .map(|value| value.clamp(0.0, 100.0))
+            .collect::<Vec<_>>();
+        let render_row = self
+            .render_grid
+            .last()
+            .cloned()
+            .unwrap_or_else(|| new_row.clone());
+        self.grid.push(new_row);
+        self.render_grid.push(render_row);
+        self.sample_times.push_back(Instant::now());
+        if self.grid.len() > TIME_WINDOW {
+            self.grid.remove(0);
+            self.render_grid.remove(0);
+            self.sample_times.pop_front();
         }
-        self.grid[TIME_WINDOW - 1] = new_row;
     }
 
-    pub fn update_interpolation(&mut self, alpha: f32) {
-        // Smooth lerp towards target grid
-        for z in 0..TIME_WINDOW {
-            for x in 0..CORE_COUNT {
-                let target = self.grid[z][x];
-                let current = self.render_grid[z][x];
-                self.render_grid[z][x] = current + alpha * (target - current);
+    pub fn update_interpolation(&mut self, alpha: f32) -> bool {
+        let mut moving = false;
+        for (target_row, render_row) in self.grid.iter().zip(&mut self.render_grid) {
+            for (target, current) in target_row.iter().zip(render_row) {
+                let delta = *target - *current;
+                if delta.abs() > 0.1 {
+                    *current += alpha.clamp(0.0, 1.0) * delta;
+                    moving = true;
+                } else {
+                    *current = *target;
+                }
             }
         }
+        moving
+    }
+
+    pub fn sample_count(&self) -> usize {
+        self.grid.len()
+    }
+
+    pub fn history_seconds(&self) -> u64 {
+        self.sample_times
+            .front()
+            .zip(self.sample_times.back())
+            .map(|(first, last)| last.duration_since(*first).as_secs())
+            .unwrap_or_default()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn history_tracks_arbitrary_core_counts_and_keeps_last_thirty_samples() {
+        for count in [0, 1, 4, 16, 32, 64] {
+            let mut mesh = TerrainMesh::new();
+            mesh.push_sample(&vec![42.0; count]);
+            assert_eq!(mesh.grid[0].len(), count);
+            assert_eq!(mesh.sample_count(), 1);
+            for _ in 1..35 {
+                mesh.push_sample(&vec![42.0; count]);
+            }
+            assert_eq!(mesh.sample_count(), TIME_WINDOW);
+            assert_eq!(mesh.grid.last().unwrap().len(), count);
+        }
+    }
+
+    #[test]
+    fn history_starts_empty_and_only_contains_real_samples() {
+        let mut mesh = TerrainMesh::new();
+        assert_eq!(mesh.sample_count(), 0);
+        assert!(mesh.grid.is_empty());
+        mesh.push_sample(&[12.5, 75.0]);
+        assert_eq!(mesh.grid, vec![vec![12.5, 75.0]]);
+        assert_eq!(mesh.render_grid, mesh.grid);
+    }
+
+    #[test]
+    fn changing_core_count_resets_history_and_interpolation_converges() {
+        let mut mesh = TerrainMesh::new();
+        mesh.push_sample(&[100.0; 16]);
+        assert!(mesh.update_interpolation(0.5));
+        mesh.push_sample(&[50.0; 32]);
+        assert_eq!(mesh.sample_count(), 1);
+        assert_eq!(mesh.render_grid[0].len(), 32);
+        for _ in 0..20 {
+            mesh.update_interpolation(0.5);
+        }
+        assert!(!mesh.update_interpolation(0.5));
+    }
+
+    #[test]
+    fn viridis_palette_uses_shared_anchor_colors() {
+        assert_eq!(viridis_color(0.0), [68, 1, 84, 255]);
+        assert_eq!(viridis_color(0.25), [59, 82, 139, 255]);
+        assert_eq!(viridis_color(0.5), [33, 145, 140, 255]);
+        assert_eq!(viridis_color(0.75), [94, 201, 98, 255]);
+        assert_eq!(viridis_color(1.0), [253, 231, 37, 255]);
     }
 }
 

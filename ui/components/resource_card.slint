@@ -6,30 +6,13 @@ export component ResourceCard inherits Rectangle {
     in property <string> value_text: "0%";
     in property <string> sub_text: "";
     in property <float> percent: 0.0;
-    in property <bool> is_selected: false;
+    in property <bool> show_meter: true;
     in property <brush> meter_brush: Theme.gradient_cpu;
-    in property <color> accent_color: Theme.accent;
-
-    callback clicked;
 
     height: 62px;
-    background: root.is_selected ? Theme.card_bg : (touch.has-hover ? Theme.hover_bg : #00000000);
+    background: Theme.card_bg;
     border-radius: Theme.radius_sm;
     clip: true;
-
-    // Active vertical indicator bar on left (VS Code / Windows 11 style)
-    if root.is_selected: Rectangle {
-        x: 0;
-        y: 6px;
-        width: 3px;
-        height: parent.height - 12px;
-        background: root.accent_color;
-        border-radius: 1px;
-    }
-
-    touch := TouchArea {
-        clicked => { root.clicked(); }
-    }
 
     VerticalLayout {
         padding-left: 14px;
@@ -44,13 +27,13 @@ export component ResourceCard inherits Rectangle {
                 text: root.title;
                 font-size: 13px;
                 font-weight: 700;
-                color: root.is_selected ? Theme.text_primary : Theme.text_secondary;
+                color: Theme.text_primary;
             }
             Text {
                 text: root.value_text;
                 font-size: 12px;
                 font-weight: 600;
-                color: root.is_selected ? root.accent_color : Theme.text_secondary;
+                color: Theme.text_secondary;
             }
         }
 
@@ -61,7 +44,7 @@ export component ResourceCard inherits Rectangle {
         }
 
         // Gradient meter line
-        Rectangle {
+        if root.show_meter: Rectangle {
             height: 3px;
             background: Theme.progress_track;
             border-radius: 1px;

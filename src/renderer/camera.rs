@@ -1,9 +1,9 @@
 // 3D Camera Orbit Controls & Perspective Projection
 
 pub struct OrbitCamera {
-    pub yaw: f32,       // Radians (horizontal rotation)
-    pub pitch: f32,     // Radians (vertical elevation)
-    pub distance: f32,  // Distance from target
+    pub yaw: f32,                // Radians (horizontal rotation)
+    pub pitch: f32,              // Radians (vertical elevation)
+    pub distance: f32,           // Distance from target
     pub target: (f32, f32, f32), // Look-at point
     pub pan_x: f32,
     pub pan_y: f32,
@@ -12,8 +12,8 @@ pub struct OrbitCamera {
 impl OrbitCamera {
     pub fn new() -> Self {
         Self {
-            yaw: 0.785,     // ~45 degrees
-            pitch: 0.610,   // ~35 degrees isometric tilt
+            yaw: 0.785,   // ~45 degrees
+            pitch: 0.610, // ~35 degrees isometric tilt
             distance: 55.0,
             target: (0.0, 0.0, 0.0),
             pan_x: 0.0,
@@ -36,7 +36,14 @@ impl OrbitCamera {
     }
 
     // Projects 3D world coordinate (x, y, z) into 2D viewport space (screen_x, screen_y)
-    pub fn project(&self, x: f32, y: f32, z: f32, width: u32, height: u32) -> Option<(i32, i32, f32)> {
+    pub fn project(
+        &self,
+        x: f32,
+        y: f32,
+        z: f32,
+        width: u32,
+        height: u32,
+    ) -> Option<(i32, i32, f32)> {
         // 1. Translate to target center
         let tx = x - self.target.0;
         let ty = y - self.target.1;

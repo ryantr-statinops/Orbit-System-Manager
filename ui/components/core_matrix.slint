@@ -2,6 +2,10 @@
 import { Theme } from "../theme.slint";
 import { CoreItem } from "core_bar.slint";
 
+export struct CoreRow {
+    cells: [CoreItem],
+}
+
 export component CoreCell inherits Rectangle {
     in property <int> id: 0;
     in property <float> load: 0.0;
@@ -52,21 +56,12 @@ export component CoreCell inherits Rectangle {
 }
 
 export component CoreMatrix inherits VerticalLayout {
-    in property <[CoreItem]> cores_row1;
-    in property <[CoreItem]> cores_row2;
+    in property <[CoreRow]> rows;
     spacing: 6px;
 
-    HorizontalLayout {
+    for row in root.rows: HorizontalLayout {
         spacing: 6px;
-        for item in root.cores_row1: CoreCell {
-            id: item.id;
-            load: item.load;
-        }
-    }
-
-    HorizontalLayout {
-        spacing: 6px;
-        for item in root.cores_row2: CoreCell {
+        for item in row.cells: CoreCell {
             id: item.id;
             load: item.load;
         }

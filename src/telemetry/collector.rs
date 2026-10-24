@@ -1,92 +1,84 @@
-use sysinfo::{System, Networks};
 use crate::telemetry::models::{
-    CpuDetail, GpuMetric, MemoryDetail, NetworkSpeed, ProcessInfo, TelemetryPayload,
+    CpuDetail, MemoryDetail, MetricStatus, NetworkSpeed, TelemetryPayload,
 };
+use std::collections::HashSet;
+use std::time::{Duration, Instant};
+use sysinfo::{Networks, System};
 
 pub struct TelemetryCollector {
     sys: System,
     networks: Networks,
+    network_rates: NetworkRateTracker,
 }
 
 impl TelemetryCollector {
     pub fn new() -> Self {
-        let mut sys = System::new_all();
-        sys.refresh_all();
+        let mut sys = System::new();
+        sys.refresh_cpu_all();
+        sys.refresh_cpu_frequency();
+        sys.refresh_memory();
         let networks = Networks::new_with_refreshed_list();
-        Self { sys, networks }
+        Self {
+            sys,
+            networks,
+            network_rates: NetworkRateTracker::default(),
+        }
     }
 
     pub fn collect(&mut self) -> TelemetryPayload {
         self.sys.refresh_cpu_all();
+        self.sys.refresh_cpu_frequency();
         self.sys.refresh_memory();
         self.networks.refresh(true);
 
         // 1. CPU
         let cpus = self.sys.cpus();
-        let mut cores: Vec<f32> = cpus.iter().map(|c| c.cpu_usage()).collect();
-        if cores.is_empty() {
-            cores = vec![0.0; 16];
-        }
+        let cores: Vec<f32> = cpus.iter().map(|c| c.cpu_usage()).collect();
 
-        let avg: f32 = if !cores.is_empty() {
-            cores.iter().sum::<f32>() / cores.len() as f32
+        let avg: Option<f32> = if !cores.is_empty() {
+            Some(cores.iter().sum::<f32>() / cores.len() as f32)
         } else {
-            0.0
+            None
         };
 
-        let variance: f32 = if !cores.is_empty() {
-            cores.iter().map(|c| (c - avg).powi(2)).sum::<f32>() / cores.len() as f32
+        let variance: Option<f32> = if let Some(avg) = avg {
+            Some(cores.iter().map(|c| (c - avg).powi(2)).sum::<f32>() / cores.len() as f32)
         } else {
-            0.0
+            None
         };
-        let std_dev = variance.sqrt();
+        let std_dev = variance.map(f32::sqrt);
+
+        let frequencies: Vec<u64> = cpus
+            .iter()
+            .map(|cpu| cpu.frequency())
+            .filter(|&f| f > 0)
+            .collect();
+        let frequency_ghz = (!frequencies.is_empty())
+            .then(|| frequencies.iter().sum::<u64>() as f32 / frequencies.len() as f32 / 1000.0);
 
         // 2. Memory
         let total_bytes = self.sys.total_memory() as f64;
         let used_bytes = self.sys.used_memory() as f64;
-        let total_gb = total_bytes / (1024.0 * 1024.0 * 1024.0);
-        let used_gb = used_bytes / (1024.0 * 1024.0 * 1024.0);
-        let percent = if total_gb > 0.0 {
-            (used_gb / total_gb) * 100.0
+        let total_gib = total_bytes / (1024.0 * 1024.0 * 1024.0);
+        let used_gib = used_bytes / (1024.0 * 1024.0 * 1024.0);
+        let percent = if total_gib > 0.0 {
+            Some((used_gib / total_gib) * 100.0)
         } else {
-            0.0
+            None
         };
 
-        // 3. Top processes by memory usage
-        let mut processes: Vec<ProcessInfo> = self
-            .sys
-            .processes()
-            .values()
-            .map(|p| ProcessInfo {
-                name: p.name().to_string_lossy().to_string(),
-                memory_mb: (p.memory() as f64) / (1024.0 * 1024.0),
-            })
-            .collect();
-        processes.sort_by(|a, b| {
-            b.memory_mb
-                .partial_cmp(&a.memory_mb)
-                .unwrap_or(std::cmp::Ordering::Equal)
-        });
-        processes.truncate(5);
-
-        // 4. Network I/O
-        let mut total_received_bytes = 0;
-        let mut total_transmitted_bytes = 0;
-        for (_interface_name, data) in &self.networks {
-            total_received_bytes += data.received();
-            total_transmitted_bytes += data.transmitted();
-        }
-        let received_kbps = (total_received_bytes as f64) / 1024.0;
-        let sent_kbps = (total_transmitted_bytes as f64) / 1024.0;
-
-        // 5. GPU placeholder (ready for OS-specific GPU provider trait)
-        let gpu_detail = vec![
-            GpuMetric {
-                name: "Primary GPU".to_string(),
-                load_percent: 0.0,
-                temperature_c: 0.0,
-            },
-        ];
+        let now = Instant::now();
+        let interface_names = self.networks.keys().cloned().collect::<HashSet<_>>();
+        let (received_bytes, sent_bytes) =
+            self.networks.values().fold((0u64, 0u64), |sum, data| {
+                (
+                    sum.0.saturating_add(data.received()),
+                    sum.1.saturating_add(data.transmitted()),
+                )
+            });
+        let (rates, network_status) =
+            self.network_rates
+                .update(now, interface_names, received_bytes, sent_bytes);
 
         TelemetryPayload {
             cpu_detail: CpuDetail {
@@ -94,18 +86,142 @@ impl TelemetryCollector {
                 avg_utilization: avg,
                 std_dev,
                 variance,
+                name: cpus
+                    .first()
+                    .map(|cpu| cpu.brand().trim().to_owned())
+                    .filter(|name| !name.is_empty()),
+                frequency_ghz,
+                physical_core_count: System::physical_core_count(),
+                status: if cores.is_empty() {
+                    MetricStatus::Unavailable
+                } else {
+                    MetricStatus::Available
+                },
             },
             memory_detail: MemoryDetail {
-                total_gb,
-                used_gb,
+                total_gib,
+                used_gib,
                 percent,
-                processes,
             },
-            gpu_detail,
+            gpu_detail: None,
             network_speed: NetworkSpeed {
-                sent_kbps,
-                received_kbps,
+                sent_kib_per_sec: rates.map(|r| r.0),
+                received_kib_per_sec: rates.map(|r| r.1),
+                status: network_status,
             },
         }
+    }
+}
+
+#[derive(Default)]
+struct NetworkRateTracker {
+    last_sample: Option<(Instant, HashSet<String>)>,
+}
+
+impl NetworkRateTracker {
+    fn update(
+        &mut self,
+        now: Instant,
+        interfaces: HashSet<String>,
+        received_bytes: u64,
+        sent_bytes: u64,
+    ) -> (Option<(f64, f64)>, MetricStatus) {
+        let previous = self.last_sample.replace((now, interfaces.clone()));
+        if interfaces.is_empty() {
+            return (None, MetricStatus::Unavailable);
+        }
+        let Some((previous_at, previous_interfaces)) = previous else {
+            return (None, MetricStatus::WarmingUp);
+        };
+        let elapsed = now.saturating_duration_since(previous_at);
+        if elapsed.is_zero()
+            || elapsed > Duration::from_secs(5)
+            || interfaces != previous_interfaces
+        {
+            return (None, MetricStatus::WarmingUp);
+        }
+        let seconds = elapsed.as_secs_f64();
+        (
+            Some((
+                sent_bytes as f64 / seconds / 1024.0,
+                received_bytes as f64 / seconds / 1024.0,
+            )),
+            MetricStatus::Available,
+        )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn interfaces() -> HashSet<String> {
+        ["eth0".to_owned()].into_iter().collect()
+    }
+
+    #[test]
+    fn network_rate_respects_elapsed_time() {
+        for (milliseconds, expected) in [(500, 2.0), (1000, 1.0), (2000, 0.5)] {
+            let start = Instant::now();
+            let mut tracker = NetworkRateTracker::default();
+            assert_eq!(tracker.update(start, interfaces(), 0, 0).0, None);
+            let (rate, status) = tracker.update(
+                start + Duration::from_millis(milliseconds),
+                interfaces(),
+                1024,
+                2048,
+            );
+            assert_eq!(status, MetricStatus::Available);
+            let (sent, received) = rate.unwrap();
+            assert!((sent - expected * 2.0).abs() < 0.001);
+            assert!((received - expected).abs() < 0.001);
+        }
+        let start = Instant::now();
+        let mut tracker = NetworkRateTracker::default();
+        tracker.update(start, interfaces(), 0, 0);
+        assert_eq!(tracker.update(start, interfaces(), 1024, 1024).0, None);
+    }
+
+    #[test]
+    fn network_rate_warms_up_after_first_sample_gaps_and_interface_changes() {
+        let start = Instant::now();
+        let mut tracker = NetworkRateTracker::default();
+        assert_eq!(
+            tracker.update(start, interfaces(), 10, 10).1,
+            MetricStatus::WarmingUp
+        );
+        assert_eq!(
+            tracker
+                .update(start + Duration::from_secs(6), interfaces(), 10, 10)
+                .1,
+            MetricStatus::WarmingUp
+        );
+        assert_eq!(
+            tracker
+                .update(
+                    start + Duration::from_secs(7),
+                    ["wlan0".to_owned()].into(),
+                    10,
+                    10
+                )
+                .1,
+            MetricStatus::WarmingUp
+        );
+        let (rate, state) = tracker.update(
+            start + Duration::from_secs(8),
+            ["wlan0".to_owned()].into(),
+            1024,
+            2048,
+        );
+        assert_eq!(state, MetricStatus::Available);
+        assert_eq!(rate, Some((2.0, 1.0)));
+    }
+
+    #[test]
+    fn network_rate_is_unavailable_when_no_interfaces_exist() {
+        let mut tracker = NetworkRateTracker::default();
+        let (rate, status) = tracker.update(Instant::now(), HashSet::new(), 0, 0);
+        assert_eq!(rate, None);
+        assert_eq!(status, MetricStatus::Unavailable);
     }
 }

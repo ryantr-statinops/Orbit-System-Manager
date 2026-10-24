@@ -37,7 +37,7 @@ export global Theme {
     // Synchronized Gradient Spectrum Brushes
     // -------------------------------------------------------------
     // Canonical 3D Viridis spectrum matching the 3D mesh shader
-    in-out property <brush> gradient_viridis: @linear-gradient(90deg, #3b528b 0%, #21918c 45%, #5ec962 75%, #fde725 100%);
+    in-out property <brush> gradient_viridis: @linear-gradient(90deg, #440154 0%, #3b528b 25%, #21918c 50%, #5ec962 75%, #fde725 100%);
     in-out property <brush> gradient_cpu: @linear-gradient(90deg, #3b528b 0%, #21918c 50%, #fde725 100%);
     in-out property <brush> gradient_ram: @linear-gradient(90deg, #0969da 0%, #58a6ff 60%, #79c0ff 100%);
     in-out property <brush> gradient_gpu: @linear-gradient(90deg, #9e6a03 0%, #d29922 60%, #fde725 100%);
@@ -52,18 +52,10 @@ export global Theme {
 
     // Synchronized Viridis Color Calculator (Maps 0.0 - 100.0 load to Viridis Palette)
     public pure function viridis_color_for_load(load: float) -> color {
-        if (load > 85.0) {
-            return #fde725; // Bright neon yellow at peak
-        }
-        if (load > 60.0) {
-            return #5ec962; // Vibrant green
-        }
-        if (load > 35.0) {
-            return #21918c; // Viridis teal
-        }
-        if (load > 15.0) {
-            return #3b528b; // Cool deep blue
-        }
-        return #4ec9b0;     // Soft teal minimum
+        if (load >= 87.5) { return #fde725; }
+        if (load >= 62.5) { return #5ec962; }
+        if (load >= 37.5) { return #21918c; }
+        if (load >= 12.5) { return #3b528b; }
+        return #440154;
     }
 }
