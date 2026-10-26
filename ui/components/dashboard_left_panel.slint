@@ -1,0 +1,90 @@
+import { Theme } from "../theme.slint";
+import { CoreMatrix, CoreRow } from "core_matrix.slint";
+import { ScrollView } from "std-widgets.slint";
+
+export component DashboardLeftPanel inherits Rectangle {
+    in property <float> cpu_avg: 0.0;
+    in property <float> cpu_std: 0.0;
+    in property <float> cpu_var: 0.0;
+    in property <bool> cpu_available: false;
+    in property <string> cpu_status_text: "Waiting for telemetry";
+    in property <string> cpu_name: "N/A";
+    in property <string> cpu_frequency: "N/A";
+    in property <string> cpu_physical_cores: "N/A";
+    in property <int> cpu_logical_cores: 0;
+    in property <[CoreRow]> core_rows: [];
+
+    background: transparent;
+    VerticalLayout {
+        spacing: 8px;
+
+        Rectangle {
+            height: 132px;
+            background: Theme.card_bg;
+            border-radius: Theme.radius_sm;
+            border-width: 1px;
+            border-color: Theme.border;
+            VerticalLayout {
+                padding: 12px;
+                spacing: 8px;
+                Text { text: "ENVIRONMENT MONITOR"; font-size: 11px; font-weight: 700; color: Theme.text_secondary; }
+                HorizontalLayout {
+                    spacing: 8px;
+                    VerticalLayout {
+                        Text { text: "Avg Utilization"; font-size: 11px; color: Theme.text_muted; }
+                        Text { text: "Std Dev (σ)"; font-size: 11px; color: Theme.text_muted; }
+                        Text { text: "Variance (σ²)"; font-size: 11px; color: Theme.text_muted; }
+                    }
+                    VerticalLayout {
+                        alignment: end;
+                        Text { text: root.cpu_available ? Math.round(root.cpu_avg * 10.0) / 10.0 + "%" : "N/A"; font-size: 12px; font-weight: 700; color: Theme.text_primary; horizontal-alignment: right; }
+                        Text { text: root.cpu_available ? Math.round(root.cpu_std * 100.0) / 100.0 + "" : "N/A"; font-size: 12px; font-weight: 700; color: Theme.text_primary; horizontal-alignment: right; }
+                        Text { text: root.cpu_available ? Math.round(root.cpu_var * 100.0) / 100.0 + "" : "N/A"; font-size: 12px; font-weight: 700; color: Theme.text_primary; horizontal-alignment: right; }
+                    }
+                }
+                Rectangle {
+                    height: 5px;
+                    background: Theme.progress_track;
+                    border-radius: 2px;
+                    clip: true;
+                    Rectangle { width: parent.width * Math.max(0.0, Math.min(100.0, root.cpu_avg)) / 100.0; height: parent.height; background: Theme.teal_primary; }
+                }
+            }
+        }
+
+        Rectangle {
+            height: 1fr;
+            background: Theme.card_bg;
+            border-radius: Theme.radius_sm;
+            border-width: 1px;
+            border-color: Theme.border;
+            VerticalLayout {
+                padding: 12px;
+                spacing: 8px;
+                HorizontalLayout {
+                    Text { text: "LOGICAL PROCESSORS"; font-size: 11px; font-weight: 700; color: Theme.text_secondary; }
+                    Text { text: "(" + root.cpu_logical_cores + ")"; font-size: 11px; font-weight: 700; color: Theme.text_muted; }
+                }
+                if root.cpu_logical_cores == 0: Text { text: root.cpu_status_text; font-size: 11px; color: Theme.text_muted; }
+                ScrollView {
+                    CoreMatrix { rows: root.core_rows; }
+                }
+            }
+        }
+
+        Rectangle {
+            height: 88px;
+            background: Theme.card_bg;
+            border-radius: Theme.radius_sm;
+            border-width: 1px;
+            border-color: Theme.border;
+            VerticalLayout {
+                padding: 12px;
+                spacing: 5px;
+                Text { text: "CPU HARDWARE"; font-size: 11px; font-weight: 700; color: Theme.text_secondary; }
+                Text { text: root.cpu_name; overflow: elide; font-size: 11px; color: Theme.text_primary; }
+                Text { text: root.cpu_frequency + "  •  " + root.cpu_physical_cores + " physical / " + root.cpu_logical_cores + " logical"; overflow: elide; font-size: 10px; color: Theme.text_muted; }
+            }
+        }
+    }
+}
