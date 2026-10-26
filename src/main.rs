@@ -240,7 +240,11 @@ fn main() -> Result<(), slint::PlatformError> {
 }
 
 fn columns_for_width(width: f32) -> usize {
-    ((width - 48.0) / 108.0).floor().clamp(2.0, 8.0) as usize
+    if width >= 1060.0 {
+        1
+    } else {
+        ((width - 48.0) / 108.0).floor().clamp(1.0, 8.0) as usize
+    }
 }
 
 fn build_core_rows(cores: &[f32], columns: usize) -> Vec<CoreRow> {
@@ -304,8 +308,10 @@ mod tests {
     #[test]
     fn processor_columns_adapt_to_window_width() {
         assert_eq!(columns_for_width(720.0), 6);
-        assert_eq!(columns_for_width(1280.0), 8);
-        assert_eq!(columns_for_width(1600.0), 8);
+        assert_eq!(columns_for_width(1059.0), 8);
+        assert_eq!(columns_for_width(1060.0), 1);
+        assert_eq!(columns_for_width(1280.0), 1);
+        assert_eq!(columns_for_width(1600.0), 1);
     }
 
     #[test]
