@@ -10,47 +10,44 @@ export component CoreCell inherits Rectangle {
     in property <int> id: 0;
     in property <float> load: 0.0;
 
-    height: 44px;
+    height: 26px;
     background: Theme.card_bg;
     border-radius: Theme.radius_sm;
     border-width: 1px;
     border-color: Theme.border;
-    VerticalLayout {
-        padding: 6px;
-        alignment: space-between;
-
-        HorizontalLayout {
-            alignment: space-between;
-            Text {
-                text: root.id < 10 ? "0" + root.id : "" + root.id;
-                font-size: 10px;
-                font-weight: 700;
-                color: Theme.text_muted;
-                vertical-alignment: center;
-            }
-            Text {
-                text: Math.round(root.load) + "%";
-                font-size: 11px;
-                font-weight: 700;
-                color: Theme.viridis_color_for_load(root.load);
-                vertical-alignment: center;
-            }
+    HorizontalLayout {
+        padding-left: 6px;
+        padding-right: 6px;
+        spacing: 6px;
+        Text {
+            text: root.id < 10 ? "C0" + root.id : "C" + root.id;
+            width: 26px;
+            font-size: 10px;
+            font-weight: 700;
+            color: Theme.text_muted;
+            vertical-alignment: center;
         }
-
-        // Gradient meter bar synchronized with 3D mesh Viridis palette
         Rectangle {
+            width: 1fr;
             height: 4px;
             background: Theme.progress_track;
             border-radius: 1px;
             clip: true;
             Rectangle {
-                x: 0;
-                y: 0;
                 width: Math.min(parent.width, Math.max(0px, parent.width * (root.load / 100.0)));
                 height: parent.height;
                 background: Theme.viridis_color_for_load(root.load);
                 animate width { duration: 250ms; easing: ease-out; }
             }
+        }
+        Text {
+            text: Math.round(root.load) + "%";
+            width: 36px;
+            font-size: 10px;
+            font-weight: 700;
+            color: Theme.viridis_color_for_load(root.load);
+            horizontal-alignment: right;
+            vertical-alignment: center;
         }
     }
 }
