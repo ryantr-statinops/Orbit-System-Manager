@@ -34,17 +34,10 @@ export component Viewport3D inherits Rectangle {
                 HorizontalLayout {
                     spacing: 12px;
                     Text {
-                        text: "CPU utilization history";
-                        font-size: 19px;
-                        font-weight: 800;
-                        color: Theme.text_primary;
-                    }
-                    Text {
-                        text: root.cpu_available ? Math.round(root.cpu_avg * 10.0) / 10.0 + "% Utilization" : "N/A";
-                        font-size: 15px;
+                        text: "ORBIT SYSTEM MANAGER // 3D TOPOLOGY";
+                        font-size: 11px;
                         font-weight: 700;
-                        color: Theme.accent;
-                        vertical-alignment: center;
+                        color: Theme.text_primary;
                     }
                 }
                 Text {
@@ -64,20 +57,41 @@ export component Viewport3D inherits Rectangle {
                     border-width: 1px;
                     border-color: Theme.border;
                     HorizontalLayout {
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        padding-top: 4px;
+                        padding-bottom: 4px;
+                        Text { text: root.cpu_logical_count + " CORES"; font-size: 9px; font-weight: 600; color: Theme.text_secondary; }
+                    }
+                }
+                Rectangle {
+                    background: Theme.hover_bg;
+                    border-radius: Theme.radius_sm;
+                    border-width: 1px;
+                    border-color: Theme.border;
+                    HorizontalLayout {
+                        padding-left: 8px;
+                        padding-right: 8px;
+                        padding-top: 4px;
+                        padding-bottom: 4px;
+                        Text { text: root.history_samples > 0 ? root.history_seconds + "s WINDOW" : "WAITING"; font-size: 9px; font-weight: 600; color: Theme.text_secondary; }
+                    }
+                }
+                Rectangle {
+                    background: Theme.hover_bg;
+                    border-radius: Theme.radius_sm;
+                    border-width: 1px;
+                    border-color: Theme.border;
+                    HorizontalLayout {
                         padding-left: 10px;
                         padding-right: 10px;
                         padding-top: 4px;
                         padding-bottom: 4px;
-                        Text { text: "Reset view"; font-size: 10px; font-weight: 600; color: Theme.text_primary; }
-                    }
-                    TouchArea {
-                        width: parent.width;
-                        height: parent.height;
-                        clicked => { root.reset_view(); }
+                        Text { text: "VIRIDIS THERMAL"; font-size: 9px; font-weight: 600; color: Theme.teal_primary; }
                     }
                 }
                 Rectangle {
-                    background: Theme.card_bg;
+                    background: Theme.hover_bg;
                     border-radius: Theme.radius_sm;
                     border-width: 1px;
                     border-color: Theme.border;
@@ -87,11 +101,16 @@ export component Viewport3D inherits Rectangle {
                         padding-top: 3px;
                         padding-bottom: 3px;
                         Text {
-                        text: "CPU-rendered • up to 30 FPS";
+                        text: "Reset view";
                             font-size: 10px;
                             font-weight: 600;
-                            color: Theme.success;
+                        color: Theme.text_primary;
                         }
+                    }
+                    TouchArea {
+                        width: parent.width;
+                        height: parent.height;
+                        clicked => { root.reset_view(); }
                     }
                 }
             }
