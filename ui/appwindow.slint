@@ -1,11 +1,12 @@
 import { Theme } from "theme.slint";
-import { CoreMatrix, CoreRow } from "components/core_matrix.slint";
+import { DashboardLeftPanel } from "components/dashboard_left_panel.slint";
+import { DashboardRightPanel } from "components/dashboard_right_panel.slint";
 import { Viewport3D } from "components/viewport_3d.slint";
-import { KpiCard } from "components/kpi_card.slint";
+import { CoreRow } from "components/core_matrix.slint";
 import { ScrollView } from "std-widgets.slint";
 
 export component AppWindow inherits Window {
-    title: "Orbit System Manager | System Performance";
+    title: "Orbit System Manager";
     min-width: 720px;
     min-height: 520px;
     preferred-width: 1280px;
@@ -49,92 +50,92 @@ export component AppWindow inherits Window {
         spacing: 0px;
 
         Rectangle {
-            height: 58px;
-            background: Theme.app_bg;
+            height: 54px;
+            background: Theme.editor_bg;
             HorizontalLayout {
-                padding-left: 24px;
-                padding-right: 24px;
+                padding-left: 18px;
+                padding-right: 18px;
                 alignment: space-between;
-                HorizontalLayout {
-                    spacing: 12px;
-                    alignment: center;
-                    Text {
-                        text: "Orbit System Manager";
-                        font-size: 15px;
-                        font-weight: 700;
-                        color: Theme.text_primary;
-                    }
-                    Text {
-                        text: "SYSTEM PERFORMANCE";
-                        font-size: 10px;
-                        font-weight: 600;
-                        color: Theme.text_muted;
-                    }
-                }
                 HorizontalLayout {
                     spacing: 8px;
                     alignment: center;
-                    Rectangle {
-                        width: 7px;
-                        height: 7px;
-                        border-radius: 4px;
-                        background: Theme.success;
-                    }
-                    Text {
-                        text: "LIVE";
-                        font-size: 10px;
-                        font-weight: 700;
-                        color: Theme.success;
-                    }
-                    Text {
-                        text: "1 second updates";
-                        font-size: 11px;
-                        color: Theme.text_muted;
-                    }
+                    Rectangle { width: 8px; height: 8px; border-radius: 4px; background: Theme.success; }
+                    Text { text: "LIVE"; font-size: 11px; color: Theme.success; }
                 }
+                Text { text: "ORBIT SYSTEM MANAGER"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
+                Text { text: "1 second sampling"; font-size: 11px; color: Theme.text_muted; }
             }
         }
         Rectangle { height: 1px; background: Theme.border; }
 
-        ScrollView {
+        if root.width >= 1060px: HorizontalLayout {
+            padding: 8px;
+            spacing: 8px;
+            DashboardLeftPanel {
+                width: (root.width - 32px) * 0.25;
+                height: root.height - 72px;
+                cpu_avg: root.cpu_avg;
+                cpu_std: root.cpu_std;
+                cpu_var: root.cpu_var;
+                cpu_available: root.cpu_available;
+                cpu_status_text: root.cpu_status_text;
+                cpu_name: root.cpu_name;
+                cpu_frequency: root.cpu_frequency;
+                cpu_physical_cores: root.cpu_physical_cores;
+                cpu_logical_cores: root.cpu_logical_cores;
+                core_rows: root.core_rows;
+            }
+            Viewport3D {
+                width: (root.width - 32px) * 0.50;
+                height: root.height - 72px;
+                frame: root.viewport_3d_frame;
+                has_frame: root.has_3d_frame;
+                cpu_avg: root.cpu_avg;
+                cpu_std: root.cpu_std;
+                cpu_var: root.cpu_var;
+                cpu_available: root.cpu_available;
+                cpu_logical_count: root.cpu_logical_cores;
+                history_samples: root.history_samples;
+                history_seconds: root.history_seconds;
+                rotate_drag(dx, dy) => { root.rotate_3d(dx, dy); }
+                pan_drag(dx, dy) => { root.pan_3d(dx, dy); }
+                zoom_scroll(delta) => { root.zoom_3d(delta); }
+                resize_viewport(width, height) => { root.resize_viewport(width, height); }
+                reset_view() => { root.reset_3d_view(); }
+            }
+            DashboardRightPanel {
+                width: (root.width - 32px) * 0.25;
+                height: root.height - 72px;
+                ram_percent: root.ram_percent;
+                ram_available: root.ram_available;
+                ram_used_gb: root.ram_used_gb;
+                ram_total_gb: root.ram_total_gb;
+                net_sent_kib: root.net_sent_kib;
+                net_recv_kib: root.net_recv_kib;
+                network_available: root.network_available;
+                network_status_text: root.network_status_text;
+            }
+        }
+
+        if root.width < 1060px: ScrollView {
             VerticalLayout {
-                        padding: 20px;
-                spacing: 16px;
-
-                HorizontalLayout {
-                    spacing: 12px;
-                    KpiCard {
-                        title: "CPU";
-                        value_text: root.cpu_available ? Math.round(root.cpu_avg) + "%" : "N/A";
-                        detail_text: root.cpu_available ? root.cpu_logical_cores + " logical processors" : root.cpu_status_text;
-                        percent: root.cpu_avg;
-                        show_meter: root.cpu_available;
-                        accent: Theme.accent;
-                    }
-                    KpiCard {
-                        title: "MEMORY";
-                        value_text: root.ram_available ? Math.round(root.ram_percent) + "%" : "N/A";
-                        detail_text: root.ram_available ? Math.round(root.ram_used_gb * 10.0) / 10.0 + " / " + Math.round(root.ram_total_gb * 10.0) / 10.0 + " GiB" : "Memory telemetry unavailable";
-                        percent: root.ram_percent;
-                        show_meter: root.ram_available;
-                        accent: Theme.teal_primary;
-                    }
-                    KpiCard {
-                        title: "NETWORK";
-                        value_text: root.network_available ? "Receive " + Math.round(root.net_recv_kib) + " KiB/s" : "Unavailable";
-                        detail_text: root.network_available ? "Send " + Math.round(root.net_sent_kib) + " KiB/s • all interfaces" : root.network_status_text;
-                        accent: Theme.purple;
-                    }
-                    KpiCard {
-                        title: "GPU";
-                        value_text: "Unavailable";
-                        detail_text: "GPU telemetry is not supported";
-                        accent: Theme.warning;
-                    }
+                padding: 8px;
+                spacing: 8px;
+                DashboardLeftPanel {
+                    height: 420px;
+                    cpu_avg: root.cpu_avg;
+                    cpu_std: root.cpu_std;
+                    cpu_var: root.cpu_var;
+                    cpu_available: root.cpu_available;
+                    cpu_status_text: root.cpu_status_text;
+                    cpu_name: root.cpu_name;
+                    cpu_frequency: root.cpu_frequency;
+                    cpu_physical_cores: root.cpu_physical_cores;
+                    cpu_logical_cores: root.cpu_logical_cores;
+                    core_rows: root.core_rows;
                 }
-
                 Viewport3D {
-                    height: Math.min(440px, Math.max(340px, root.height * 0.46));
+                    height: 480px;
                     frame: root.viewport_3d_frame;
                     has_frame: root.has_3d_frame;
                     cpu_avg: root.cpu_avg;
@@ -150,66 +151,16 @@ export component AppWindow inherits Window {
                     resize_viewport(width, height) => { root.resize_viewport(width, height); }
                     reset_view() => { root.reset_3d_view(); }
                 }
-
-                Rectangle {
-                    background: Theme.sub_card_bg;
-                    border-radius: Theme.radius_md;
-                    border-width: 1px;
-                    border-color: Theme.border;
-                    VerticalLayout {
-                        padding: 16px;
-                        spacing: 12px;
-                        HorizontalLayout {
-                            alignment: space-between;
-                            Text {
-                                text: "LOGICAL PROCESSORS (" + root.cpu_logical_cores + ")";
-                                font-size: 12px;
-                                font-weight: 700;
-                                color: Theme.text_primary;
-                            }
-                            Text {
-                                text: root.cpu_available ? "Avg " + Math.round(root.cpu_avg * 10.0) / 10.0 + "%" : "Waiting for CPU data";
-                                font-size: 11px;
-                                color: Theme.text_secondary;
-                            }
-                        }
-                        if root.cpu_logical_cores == 0: Text {
-                            text: "Processor telemetry is not available yet.";
-                            font-size: 12px;
-                            color: Theme.text_muted;
-                        }
-                        CoreMatrix { rows: root.core_rows; }
-                    }
-                }
-
-                Rectangle {
-                    height: 76px;
-                    background: Theme.card_bg;
-                    border-radius: Theme.radius_md;
-                    border-width: 1px;
-                    border-color: Theme.border;
-                    HorizontalLayout {
-                        padding: 14px;
-                        alignment: space-between;
-                        VerticalLayout {
-                            width: 50%;
-                            spacing: 4px;
-                            Text { text: "CPU MODEL"; font-size: 10px; color: Theme.text_muted; }
-                            Text { text: root.cpu_name; overflow: elide; font-size: 13px; font-weight: 700; color: Theme.text_primary; }
-                        }
-                        VerticalLayout {
-                            width: 25%;
-                            spacing: 4px;
-                            Text { text: "CURRENT SPEED"; font-size: 10px; color: Theme.text_muted; }
-                            Text { text: root.cpu_frequency; font-size: 13px; font-weight: 700; color: Theme.text_primary; }
-                        }
-                        VerticalLayout {
-                            width: 25%;
-                            spacing: 4px;
-                            Text { text: "PHYSICAL / LOGICAL"; font-size: 10px; color: Theme.text_muted; }
-                            Text { text: root.cpu_physical_cores + " / " + root.cpu_logical_cores; font-size: 13px; font-weight: 700; color: Theme.text_primary; }
-                        }
-                    }
+                DashboardRightPanel {
+                    height: 680px;
+                    ram_percent: root.ram_percent;
+                    ram_available: root.ram_available;
+                    ram_used_gb: root.ram_used_gb;
+                    ram_total_gb: root.ram_total_gb;
+                    net_sent_kib: root.net_sent_kib;
+                    net_recv_kib: root.net_recv_kib;
+                    network_available: root.network_available;
+                    network_status_text: root.network_status_text;
                 }
             }
         }
