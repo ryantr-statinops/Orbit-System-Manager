@@ -10,7 +10,9 @@ export component CoreCell inherits Rectangle {
     in property <int> id: 0;
     in property <float> load: 0.0;
 
-    height: 26px;
+    height: 28px;
+    min-width: 96px;
+    horizontal-stretch: 1;
     background: Theme.card_bg;
     border-radius: Theme.radius_sm;
     border-width: 1px;
@@ -21,7 +23,7 @@ export component CoreCell inherits Rectangle {
         spacing: Theme.space_xs;
         Text {
             text: root.id < 10 ? "C0" + root.id : "C" + root.id;
-            width: 26px;
+            width: 30px;
             font-size: 12px;
             font-weight: 700;
             color: Theme.text_muted;
@@ -29,7 +31,7 @@ export component CoreCell inherits Rectangle {
         }
         Rectangle {
             horizontal-stretch: 1;
-            height: 4px;
+            height: 6px;
             background: Theme.progress_track;
             border-radius: 1px;
             clip: true;
@@ -42,7 +44,7 @@ export component CoreCell inherits Rectangle {
         }
         Text {
             text: Math.round(root.load) + "%";
-            width: 36px;
+            width: 42px;
             font-size: 12px;
             font-weight: 700;
             color: Theme.viridis_color_for_load(root.load);
