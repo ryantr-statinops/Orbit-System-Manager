@@ -1,6 +1,6 @@
 // 3D Terrain Heightmap Mesh & Viridis Color Mapping
 
-pub const TIME_WINDOW: usize = 30;
+pub const TIME_WINDOW: usize = 61;
 use std::collections::VecDeque;
 use std::time::Instant;
 
@@ -22,6 +22,10 @@ impl TerrainMesh {
     }
 
     pub fn push_sample(&mut self, cores: &[f32]) {
+        self.push_sample_at(cores, Instant::now());
+    }
+
+    pub fn push_sample_at(&mut self, cores: &[f32], sampled_at: Instant) {
         if cores.len() != self.core_count {
             self.core_count = cores.len();
             self.grid.clear();
@@ -39,7 +43,7 @@ impl TerrainMesh {
             .unwrap_or_else(|| new_row.clone());
         self.grid.push(new_row);
         self.render_grid.push(render_row);
-        self.sample_times.push_back(Instant::now());
+        self.sample_times.push_back(sampled_at);
         if self.grid.len() > TIME_WINDOW {
             self.grid.remove(0);
             self.render_grid.remove(0);
@@ -201,18 +205,34 @@ mod tests {
     use super::*;
 
     #[test]
-    fn history_tracks_arbitrary_core_counts_and_keeps_last_thirty_samples() {
+    fn history_tracks_arbitrary_core_counts_and_keeps_last_sixty_one_samples() {
         for count in [0, 1, 4, 16, 32, 64] {
             let mut mesh = TerrainMesh::new();
             mesh.push_sample(&vec![42.0; count]);
             assert_eq!(mesh.grid[0].len(), count);
             assert_eq!(mesh.sample_count(), 1);
-            for _ in 1..35 {
+            for _ in 1..70 {
                 mesh.push_sample(&vec![42.0; count]);
             }
             assert_eq!(mesh.sample_count(), TIME_WINDOW);
             assert_eq!(mesh.grid.last().unwrap().len(), count);
         }
+    }
+
+    #[test]
+    fn sixty_second_preview_keeps_sixty_one_timestamped_endpoints() {
+        let mut mesh = TerrainMesh::new();
+        let start = Instant::now();
+        for seconds in 0..=60 {
+            mesh.push_sample_at(
+                &[seconds as f32],
+                start + std::time::Duration::from_secs(seconds),
+            );
+        }
+        assert_eq!(mesh.sample_count(), 61);
+        assert_eq!(mesh.history_seconds(), 60);
+        assert_eq!(mesh.grid.first().unwrap()[0], 0.0);
+        assert_eq!(mesh.grid.last().unwrap()[0], 60.0);
     }
 
     #[test]

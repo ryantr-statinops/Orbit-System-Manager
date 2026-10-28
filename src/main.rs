@@ -40,10 +40,8 @@ fn main() -> Result<(), slint::PlatformError> {
     let frame_dirty = Rc::new(Cell::new(false));
     let animation_timer = Rc::new(Timer::default());
 
-    let core_values = apply_snapshot(&app, &snapshot, core_columns.get());
-    if !core_values.is_empty() {
-        renderer.borrow_mut().mesh.push_sample(&core_values);
-    }
+    apply_snapshot(&app, &snapshot, core_columns.get());
+    seed_terrain_history(&mut renderer.borrow_mut(), &snapshot.cores);
     {
         let mesh = renderer.borrow();
         app.set_history_samples(mesh.mesh.sample_count() as i32);
@@ -404,6 +402,24 @@ fn build_core_rows(cores: &[preview::ProcessorPreview], columns: usize) -> Vec<C
             ))),
         })
         .collect()
+}
+
+fn seed_terrain_history(renderer: &mut OffscreenRenderer, cores: &[preview::ProcessorPreview]) {
+    let Some(first_core) = cores.first() else {
+        return;
+    };
+    let newest_sample_time = std::time::Instant::now();
+    for (index, point) in first_core.history.iter().enumerate() {
+        let Some(values) = cores
+            .iter()
+            .map(|core| core.history.get(index)?.value)
+            .collect::<Option<Vec<_>>>()
+        else {
+            continue;
+        };
+        let sampled_at = newest_sample_time - Duration::from_secs(point.seconds_ago as u64);
+        renderer.mesh.push_sample_at(&values, sampled_at);
+    }
 }
 
 fn schedule_animation(
