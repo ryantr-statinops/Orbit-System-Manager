@@ -234,12 +234,22 @@ export component Viewport3D inherits Rectangle {
             }
         }
         HorizontalLayout {
-            spacing: Theme.space_sm;
+            spacing: Theme.space_xs;
             alignment: center;
-            Text { text: "UTILIZATION"; font-size: 10px; font-weight: 700; color: Theme.text_secondary; }
-            Text { text: "0%"; font-size: 10px; color: #440154; }
-            Rectangle { width: 180px; height: 5px; border-radius: 2px; background: Theme.gradient_viridis; }
-            Text { text: "100%"; font-size: 10px; color: #fde725; }
+            Text { text: "Utilization"; font-size: 10px; font-weight: 700; color: Theme.text_secondary; }
+            Text { text: "0%"; font-size: 9px; color: Theme.viridis_0; }
+            VerticalLayout {
+                horizontal-stretch: 1;
+                spacing: 2px;
+                Rectangle { height: 5px; border-radius: 2px; background: Theme.gradient_viridis; }
+                HorizontalLayout {
+                    alignment: space-between;
+                    Text { text: "25%"; font-size: 9px; color: Theme.viridis_25; }
+                    Text { text: "50%"; font-size: 9px; color: Theme.viridis_50; }
+                    Text { text: "75%"; font-size: 9px; color: Theme.viridis_75; }
+                }
+            }
+            Text { text: "100%"; font-size: 9px; color: Theme.viridis_100; }
         }
         Text {
             text: "Left drag to rotate • Right drag to pan • Scroll to zoom";
