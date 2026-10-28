@@ -1,9 +1,8 @@
 // Orbit System Manager — Pure Native Rust & Slint Main Application
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-slint::include_modules!();
-
 use slint::{ModelRc, Timer, TimerMode, VecModel};
+use orbit_system_manager::ui::{AppWindow, CoreItem, CoreRow};
 use std::cell::Cell;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -12,9 +11,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 
-pub mod renderer;
-pub mod telemetry;
-
+use orbit_system_manager::{renderer, telemetry};
 use renderer::OffscreenRenderer;
 
 fn main() -> Result<(), slint::PlatformError> {
