@@ -38,6 +38,7 @@ export component AppWindow inherits Window {
     in-out property <length> left_sidebar_width: 290px;
     in-out property <length> right_sidebar_width: 290px;
     in-out property <bool> left_sidebar_visible: true;
+    in-out property <bool> right_sidebar_visible: true;
 
     in property <image> viewport_3d_frame;
     in property <bool> has_3d_frame: true;
@@ -75,7 +76,19 @@ export component AppWindow inherits Window {
                     Text { text: "LIVE"; font-size: 11px; color: Theme.success; }
                 }
                 Text { text: "ORBIT SYSTEM MANAGER"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
-                Text { text: "1 second sampling"; font-size: 11px; color: Theme.text_muted; }
+                HorizontalLayout {
+                    spacing: 8px;
+                    alignment: center;
+                    Text { text: "1 second sampling"; font-size: 11px; color: Theme.text_muted; }
+                    Rectangle {
+                        width: 22px;
+                        height: 22px;
+                        background: Theme.hover_bg;
+                        border-radius: 4px;
+                        Text { text: root.right_sidebar_visible ? ">" : "<"; color: Theme.text_secondary; horizontal-alignment: center; vertical-alignment: center; }
+                        TouchArea { width: parent.width; height: parent.height; clicked => { root.right_sidebar_visible = !root.right_sidebar_visible; } }
+                    }
+                }
             }
         }
         Rectangle { height: 1px; background: Theme.border; }
@@ -122,14 +135,14 @@ export component AppWindow inherits Window {
                 resize_viewport(width, height) => { root.resize_viewport(width, height); }
                 reset_view() => { root.reset_3d_view(); }
             }
-            PanelSplitter {
+            if root.right_sidebar_visible: PanelSplitter {
                 width: 5px;
                 height: root.height - 52px;
                 drag_delta(delta) => {
                     root.right_sidebar_width = Math.max(290px, Math.min(root.width - 676px, Math.min(380px, root.right_sidebar_width - delta)));
                 }
             }
-            DashboardRightPanel {
+            if root.right_sidebar_visible: DashboardRightPanel {
                 width: root.right_sidebar_width;
                 height: root.height - 52px;
                 ram_percent: root.ram_percent;
