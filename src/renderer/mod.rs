@@ -140,6 +140,75 @@ impl OffscreenRenderer {
             }
         }
 
+        let floor_y = -0.75;
+        let floor_half_x = span_x * 0.54;
+        let floor_half_z = span_z * 0.54;
+        let floor_color = [40, 59, 69, 255];
+        for step in 0..=8 {
+            let x = -floor_half_x + floor_half_x * 2.0 * step as f32 / 8.0;
+            if let (Some(start), Some(end)) = (
+                self.camera.project(x, floor_y, -floor_half_z, w, h),
+                self.camera.project(x, floor_y, floor_half_z, w, h),
+            ) {
+                draw_depth_line(pixels, &mut depth_buffer, (w, h), start, end, floor_color);
+            }
+            let z = -floor_half_z + floor_half_z * 2.0 * step as f32 / 8.0;
+            if let (Some(start), Some(end)) = (
+                self.camera.project(-floor_half_x, floor_y, z, w, h),
+                self.camera.project(floor_half_x, floor_y, z, w, h),
+            ) {
+                draw_depth_line(pixels, &mut depth_buffer, (w, h), start, end, floor_color);
+            }
+        }
+
+        let processor_axis_color = [99, 214, 232, 255];
+        let time_axis_color = [103, 183, 255, 255];
+        let utilization_axis_color = [253, 231, 37, 255];
+        if let (Some(start), Some(end)) = (
+            self.camera
+                .project(-span_x * 0.5, floor_y, floor_half_z, w, h),
+            self.camera
+                .project(span_x * 0.5, floor_y, floor_half_z, w, h),
+        ) {
+            draw_depth_line(
+                pixels,
+                &mut depth_buffer,
+                (w, h),
+                start,
+                end,
+                processor_axis_color,
+            );
+        }
+        if let (Some(start), Some(end)) = (
+            self.camera
+                .project(-floor_half_x, floor_y, -span_z * 0.5, w, h),
+            self.camera
+                .project(-floor_half_x, floor_y, span_z * 0.5, w, h),
+        ) {
+            draw_depth_line(
+                pixels,
+                &mut depth_buffer,
+                (w, h),
+                start,
+                end,
+                time_axis_color,
+            );
+        }
+        if let (Some(start), Some(end)) = (
+            self.camera
+                .project(-floor_half_x, floor_y, floor_half_z, w, h),
+            self.camera.project(-floor_half_x, 12.0, floor_half_z, w, h),
+        ) {
+            draw_depth_line(
+                pixels,
+                &mut depth_buffer,
+                (w, h),
+                start,
+                end,
+                utilization_axis_color,
+            );
+        }
+
         Image::from_rgba8(self.buffer.clone())
     }
 }
@@ -262,6 +331,61 @@ fn draw_line(
     }
 }
 
+fn draw_depth_line(
+    pixels: &mut [Rgba8Pixel],
+    depth_buffer: &mut [f32],
+    viewport: (u32, u32),
+    start: (i32, i32, f32),
+    end: (i32, i32, f32),
+    color: [u8; 4],
+) {
+    let (width, height) = viewport;
+    let Some((x0, y0, x1, y1)) =
+        clip_line(start.0, start.1, end.0, end.1, width as i32, height as i32)
+    else {
+        return;
+    };
+    let dx = (end.0 - start.0) as f32;
+    let dy = (end.1 - start.1) as f32;
+    let length_squared = dx * dx + dy * dy;
+    let step_x = if x0 < x1 { 1 } else { -1 };
+    let step_y = if y0 < y1 { 1 } else { -1 };
+    let (mut x, mut y) = (x0, y0);
+    let (delta_x, delta_y) = ((x1 - x0).abs(), -(y1 - y0).abs());
+    let mut error = delta_x + delta_y;
+    loop {
+        let amount = if length_squared > 0.0 {
+            (((x - start.0) as f32 * dx + (y - start.1) as f32 * dy) / length_squared)
+                .clamp(0.0, 1.0)
+        } else {
+            0.0
+        };
+        let depth = start.2 + (end.2 - start.2) * amount;
+        let index = (y as u32 * width + x as u32) as usize;
+        if depth <= depth_buffer[index] {
+            depth_buffer[index] = depth;
+            pixels[index] = Rgba8Pixel {
+                r: color[0],
+                g: color[1],
+                b: color[2],
+                a: color[3],
+            };
+        }
+        if x == x1 && y == y1 {
+            break;
+        }
+        let twice_error = 2 * error;
+        if twice_error >= delta_y {
+            error += delta_y;
+            x += step_x;
+        }
+        if twice_error <= delta_x {
+            error += delta_x;
+            y += step_y;
+        }
+    }
+}
+
 fn clip_line(
     x0: i32,
     y0: i32,
@@ -360,6 +484,23 @@ mod tests {
             .as_slice()
             .iter()
             .any(|pixel| { (pixel.r, pixel.g, pixel.b) != (9, 13, 19) }));
+    }
+
+    #[test]
+    fn headless_render_draws_the_processor_time_and_utilization_axes() {
+        let mut renderer = OffscreenRenderer::new(640, 380);
+        for sample in [[10.0, 35.0, 70.0], [20.0, 60.0, 90.0], [5.0, 42.0, 80.0]] {
+            renderer.mesh.push_sample(&sample);
+        }
+        renderer.fit_camera_to_viewport();
+        let frame = renderer.render_frame();
+        let pixels: SharedPixelBuffer<Rgba8Pixel> = frame.to_rgba8().unwrap();
+        for expected in [(99, 214, 232), (103, 183, 255), (253, 231, 37)] {
+            assert!(pixels
+                .as_slice()
+                .iter()
+                .any(|pixel| { (pixel.r, pixel.g, pixel.b) == expected }));
+        }
     }
 
     #[test]
