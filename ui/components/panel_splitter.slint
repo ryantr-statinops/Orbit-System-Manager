@@ -1,9 +1,56 @@
 import { Theme } from "../theme.slint";
 
 export component PanelSplitter inherits Rectangle {
+    in property <string> accessible_name: "Resize dashboard sidebar";
+    in property <float> current_value: 290;
+    in property <float> minimum_value: 290;
+    in property <float> maximum_value: 380;
+    in property <float> step: 12;
+    in property <float> value_direction: 1;
     callback drag_delta(length);
 
-    background: Theme.border;
+    background: keyboard_focus.has-focus ? Theme.accent_cyan : Theme.border;
+    accessible-role: slider;
+    accessible-label: root.accessible_name;
+    accessible-orientation: Orientation.horizontal;
+    accessible-value: "" + root.current_value + " px";
+    accessible-value-minimum: root.minimum_value;
+    accessible-value-maximum: root.maximum_value;
+    accessible-value-step: root.step;
+    forward-focus: keyboard_focus;
+    accessible-action-increment => {
+        root.drag_delta(root.step * 1px * root.value_direction);
+    }
+    accessible-action-decrement => {
+        root.drag_delta(-root.step * 1px * root.value_direction);
+    }
+
+    keyboard_focus := FocusScope {
+        width: 0px;
+        height: 0px;
+
+        key-pressed(event) => {
+            if (event.text == Key.RightArrow) {
+                root.drag_delta(root.step * 1px * root.value_direction);
+                return accept;
+            }
+            if (event.text == Key.LeftArrow) {
+                root.drag_delta(-root.step * 1px * root.value_direction);
+                return accept;
+            }
+            if (event.text == Key.Home) {
+                root.drag_delta((root.minimum_value - root.current_value) * 1px * root.value_direction);
+                return accept;
+            }
+            if (event.text == Key.End) {
+                root.drag_delta((root.maximum_value - root.current_value) * 1px * root.value_direction);
+                return accept;
+            }
+            return reject;
+        }
+
+    }
+
     TouchArea {
         property <length> last_x: 0px;
         property <bool> dragging: false;
@@ -12,6 +59,7 @@ export component PanelSplitter inherits Rectangle {
             if (event.kind == PointerEventKind.down) {
                 self.last_x = self.mouse-x;
                 self.dragging = true;
+                keyboard_focus.focus();
             }
             if (event.kind == PointerEventKind.up) {
                 self.dragging = false;

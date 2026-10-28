@@ -1,5 +1,6 @@
 // Viewport3D Component — VS Code Minimalist 3D Topology Viewport Frame
 import { Theme } from "../theme.slint";
+import { DashboardAction } from "dashboard_action.slint";
 
 export struct TerrainAxisLabel {
     x: length,
@@ -243,26 +244,13 @@ export component Viewport3D inherits Rectangle {
                 color: Theme.text_secondary;
                 vertical-alignment: center;
             }
-            Rectangle {
+            DashboardAction {
                 width: 84px;
                 height: 30px;
-                background: Theme.active_bg;
-                border-radius: Theme.radius_sm;
-                border-width: 1px;
-                border-color: Theme.border_focus;
-                Text {
-                    text: root.width < 760px ? "Reset" : "Reset view";
-                    font-size: 11px;
-                    font-weight: 600;
-                    color: Theme.text_primary;
-                    horizontal-alignment: center;
-                    vertical-alignment: center;
-                }
-                TouchArea {
-                    width: parent.width;
-                    height: parent.height;
-                    clicked => { root.reset_view(); }
-                }
+                text: root.width < 760px ? "Reset" : "Reset view";
+                accessible_name: "Reset terrain camera view";
+                button_background: Theme.active_bg;
+                activated => { root.reset_view(); }
             }
         }
     }

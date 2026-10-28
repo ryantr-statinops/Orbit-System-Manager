@@ -3,6 +3,7 @@ import { DashboardLeftPanel } from "components/dashboard_left_panel.slint";
 import { DashboardRightPanel } from "components/dashboard_right_panel.slint";
 import { Viewport3D, TerrainAxisLabel } from "components/viewport_3d.slint";
 import { PanelSplitter } from "components/panel_splitter.slint";
+import { DashboardAction } from "components/dashboard_action.slint";
 import { CoreRow } from "components/core_matrix.slint";
 import { LinePlotSeries } from "components/line_plot.slint";
 import { ScrollView } from "std-widgets.slint";
@@ -87,13 +88,12 @@ export component AppWindow inherits Window {
                 HorizontalLayout {
                     spacing: Theme.space_sm;
                     alignment: center;
-                    Rectangle {
+                    DashboardAction {
                         width: 28px;
                         height: 28px;
-                        background: Theme.hover_bg;
-                        border-radius: 4px;
-                        Text { text: root.left_sidebar_visible ? "<" : ">"; color: Theme.text_secondary; horizontal-alignment: center; vertical-alignment: center; }
-                        TouchArea { width: parent.width; height: parent.height; clicked => { root.left_sidebar_visible = !root.left_sidebar_visible; } }
+                        text: root.left_sidebar_visible ? "<" : ">";
+                        accessible_name: root.left_sidebar_visible ? "Hide left sidebar" : "Show left sidebar";
+                        activated => { root.left_sidebar_visible = !root.left_sidebar_visible; }
                     }
                     Rectangle { width: 8px; height: 8px; border-radius: 4px; background: Theme.success; }
                     Text { text: "DEMO DATA"; font-size: 11px; color: Theme.warning; }
@@ -104,29 +104,19 @@ export component AppWindow inherits Window {
                     spacing: Theme.space_sm;
                     alignment: center;
                     Text { text: "1 second sampling"; font-size: 11px; color: Theme.text_muted; }
-                    Rectangle {
+                    DashboardAction {
                         width: 72px;
                         height: 28px;
-                        background: Theme.hover_bg;
-                        border-color: Theme.border;
-                        border-width: 1px;
-                        border-radius: 4px;
-                        Text {
-                            text: root.demo_paused ? "Resume" : "Pause";
-                            color: Theme.text_primary;
-                            font-size: 10px;
-                            horizontal-alignment: center;
-                            vertical-alignment: center;
-                        }
-                        TouchArea { width: parent.width; height: parent.height; clicked => { root.toggle_demo_pause(); } }
+                        text: root.demo_paused ? "Resume" : "Pause";
+                        accessible_name: root.demo_paused ? "Resume demo playback" : "Pause demo playback";
+                        activated => { root.toggle_demo_pause(); }
                     }
-                    Rectangle {
+                    DashboardAction {
                         width: 28px;
                         height: 28px;
-                        background: Theme.hover_bg;
-                        border-radius: 4px;
-                        Text { text: root.right_sidebar_visible ? ">" : "<"; color: Theme.text_secondary; horizontal-alignment: center; vertical-alignment: center; }
-                        TouchArea { width: parent.width; height: parent.height; clicked => { root.right_sidebar_visible = !root.right_sidebar_visible; } }
+                        text: root.right_sidebar_visible ? ">" : "<";
+                        accessible_name: root.right_sidebar_visible ? "Hide right sidebar" : "Show right sidebar";
+                        activated => { root.right_sidebar_visible = !root.right_sidebar_visible; }
                     }
                 }
             }
@@ -159,6 +149,8 @@ export component AppWindow inherits Window {
                 drag_delta(delta) => {
                     root.left_sidebar_width = Math.max(290px, Math.min(root.width - 676px, Math.min(380px, root.left_sidebar_width + delta)));
                 }
+                accessible_name: "Resize left sidebar";
+                current_value: root.left_sidebar_width / 1px;
             }
             Viewport3D {
                 horizontal-stretch: 1;
@@ -185,6 +177,9 @@ export component AppWindow inherits Window {
                 drag_delta(delta) => {
                     root.right_sidebar_width = Math.max(290px, Math.min(root.width - 676px, Math.min(380px, root.right_sidebar_width - delta)));
                 }
+                accessible_name: "Resize right sidebar";
+                current_value: root.right_sidebar_width / 1px;
+                value_direction: -1;
             }
             if root.right_sidebar_visible: DashboardRightPanel {
                 width: root.right_sidebar_width;
