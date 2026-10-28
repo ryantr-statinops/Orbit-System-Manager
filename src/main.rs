@@ -16,7 +16,7 @@ fn main() -> Result<(), slint::PlatformError> {
     let app = AppWindow::new()?;
     let app_weak = app.as_weak();
     let core_columns = Rc::new(Cell::new(8usize));
-    let demo_source = Rc::new(RefCell::new(preview::DemoSource::new(16)));
+    let demo_source = Rc::new(RefCell::new(preview::PreviewState::new(16)));
     let snapshot = demo_source.borrow().snapshot();
 
     {
@@ -37,6 +37,17 @@ fn main() -> Result<(), slint::PlatformError> {
         let mesh = renderer.borrow();
         app.set_history_samples(mesh.mesh.sample_count() as i32);
         app.set_history_seconds(mesh.mesh.history_seconds() as i32);
+    }
+
+    {
+        let source = demo_source.clone();
+        let app_weak = app_weak.clone();
+        app.on_toggle_demo_pause(move || {
+            let paused = source.borrow_mut().toggle_pause();
+            if let Some(app) = app_weak.upgrade() {
+                app.set_demo_paused(paused);
+            }
+        });
     }
 
     // Camera callbacks only update state. The animation timer coalesces redraws.
@@ -147,7 +158,9 @@ fn main() -> Result<(), slint::PlatformError> {
             let Some(app) = app_weak.upgrade() else {
                 return;
             };
-            let snapshot = source.borrow_mut().tick();
+            let Some(snapshot) = source.borrow_mut().tick() else {
+                return;
+            };
             let core_values = apply_snapshot(&app, &snapshot, columns.get());
             {
                 let mut ren = renderer_ref.borrow_mut();

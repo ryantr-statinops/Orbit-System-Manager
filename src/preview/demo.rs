@@ -45,6 +45,37 @@ impl DemoSource {
     }
 }
 
+pub struct PreviewState {
+    source: DemoSource,
+    paused: bool,
+}
+
+impl PreviewState {
+    pub fn new(core_count: usize) -> Self {
+        Self {
+            source: DemoSource::new(core_count),
+            paused: false,
+        }
+    }
+
+    pub fn snapshot(&self) -> DashboardSnapshot {
+        self.source.snapshot()
+    }
+
+    pub fn is_paused(&self) -> bool {
+        self.paused
+    }
+
+    pub fn toggle_pause(&mut self) -> bool {
+        self.paused = !self.paused;
+        self.paused
+    }
+
+    pub fn tick(&mut self) -> Option<DashboardSnapshot> {
+        (!self.paused).then(|| self.source.tick())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::snapshot_at;
@@ -110,5 +141,20 @@ mod tests {
                 .seconds_ago,
             0
         );
+    }
+
+    #[test]
+    fn paused_preview_holds_the_clock_until_resumed() {
+        let mut state = super::PreviewState::new(16);
+        assert_eq!(state.tick().unwrap().elapsed_seconds, 1);
+
+        assert!(state.toggle_pause());
+        assert!(state.is_paused());
+        assert!(state.tick().is_none());
+        assert_eq!(state.snapshot().elapsed_seconds, 1);
+
+        assert!(!state.toggle_pause());
+        assert!(!state.is_paused());
+        assert_eq!(state.tick().unwrap().elapsed_seconds, 2);
     }
 }

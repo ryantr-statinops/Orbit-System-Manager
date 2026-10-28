@@ -38,6 +38,7 @@ export component AppWindow inherits Window {
     in property <float> gpu_vram_total_gib: 8.0;
     in property <float> gpu_temperature_c: 0.0;
     in property <float> gpu_clock_mhz: 0.0;
+    in property <bool> demo_paused: false;
     in property <[CoreRow]> core_rows: [];
     in property <int> history_samples: 0;
     in property <int> history_seconds: 0;
@@ -54,6 +55,7 @@ export component AppWindow inherits Window {
     callback resize_viewport(length, length);
     callback reset_3d_view();
     callback resize_core_grid(length);
+    callback toggle_demo_pause();
     changed width => { root.resize_core_grid(root.width); }
 
     VerticalLayout {
@@ -80,12 +82,29 @@ export component AppWindow inherits Window {
                     }
                     Rectangle { width: 8px; height: 8px; border-radius: 4px; background: Theme.success; }
                     Text { text: "DEMO DATA"; font-size: 11px; color: Theme.warning; }
+                    if root.demo_paused: Text { text: "PAUSED"; font-size: 10px; font-weight: 700; color: Theme.warning; }
                 }
                 Text { text: "ORBIT SYSTEM MANAGER"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
                 HorizontalLayout {
                     spacing: 8px;
                     alignment: center;
                     Text { text: "1 second sampling"; font-size: 11px; color: Theme.text_muted; }
+                    Rectangle {
+                        width: 62px;
+                        height: 22px;
+                        background: Theme.hover_bg;
+                        border-color: Theme.border;
+                        border-width: 1px;
+                        border-radius: 4px;
+                        Text {
+                            text: root.demo_paused ? "Resume" : "Pause";
+                            color: Theme.text_primary;
+                            font-size: 10px;
+                            horizontal-alignment: center;
+                            vertical-alignment: center;
+                        }
+                        TouchArea { width: parent.width; height: parent.height; clicked => { root.toggle_demo_pause(); } }
+                    }
                     Rectangle {
                         width: 22px;
                         height: 22px;
