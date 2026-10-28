@@ -167,17 +167,24 @@ export component Viewport3D inherits Rectangle {
                 property <length> last_x: 0px;
                 property <length> last_y: 0px;
                 property <PointerEventButton> drag_button: PointerEventButton.left;
+                property <bool> dragging: false;
 
                 pointer-event(event) => {
                     if (event.kind == PointerEventKind.down) {
                         self.last_x = self.mouse-x;
                         self.last_y = self.mouse-y;
                         self.drag_button = event.button;
+                        self.dragging = event.button == PointerEventButton.left || event.button == PointerEventButton.right;
+                    }
+                    if (event.kind == PointerEventKind.up || event.kind == PointerEventKind.cancel) {
+                        self.dragging = false;
                     }
                 }
 
                 moved => {
-                    if (self.pressed) {
+                    if (!self.pressed) {
+                        self.dragging = false;
+                    } else if (self.dragging) {
                         if (self.drag_button == PointerEventButton.left) {
                             root.rotate_drag(self.mouse-x - self.last_x, self.mouse-y - self.last_y);
                         } else if (self.drag_button == PointerEventButton.right) {
