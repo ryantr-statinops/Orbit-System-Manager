@@ -8,18 +8,45 @@ use orbit_system_manager::ui::{AppWindow, CoreItem, CoreRow, LinePlotSeries, Ter
 use slint::{ModelRc, Timer, TimerMode, VecModel};
 use std::cell::Cell;
 use std::cell::RefCell;
+#[cfg(feature = "dashboard-screenshot")]
+use std::path::Path;
 use std::rc::Rc;
 use std::time::Duration;
 
 use orbit_system_manager::{preview, renderer};
 use renderer::OffscreenRenderer;
 
-fn main() -> Result<(), slint::PlatformError> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let options = cli::parse_demo_args(std::env::args().skip(1)).unwrap_or_else(|error| {
         eprintln!("{error}");
         std::process::exit(2);
     });
+
+    #[cfg(not(feature = "dashboard-screenshot"))]
+    if options.capture_path.is_some() {
+        eprintln!("Screenshot capture requires building with --features dashboard-screenshot.");
+        std::process::exit(2);
+    }
+    #[cfg(feature = "dashboard-screenshot")]
+    if options.capture_path.is_some() {
+        let backend = i_slint_backend_testing::TestingBackend::new(
+            i_slint_backend_testing::TestingBackendOptions {
+                mock_time: false,
+                threading: true,
+                renderer_name: Some("software".into()),
+            },
+        );
+        slint::platform::set_platform(Box::new(backend))
+            .expect("could not initialize Slint screenshot backend");
+    }
+
     let app = AppWindow::new()?;
+    if options.capture_path.is_some() {
+        app.window().set_size(slint::LogicalSize::new(
+            options.capture_size.0 as f32,
+            options.capture_size.1 as f32,
+        ));
+    }
     let app_weak = app.as_weak();
     let core_columns = Rc::new(Cell::new(8usize));
     let demo_source = Rc::new(RefCell::new(preview::PreviewState::with_scenario(
@@ -37,6 +64,12 @@ fn main() -> Result<(), slint::PlatformError> {
 
     // Initialize the native 3D renderer with the initial demo sample.
     let renderer = Rc::new(RefCell::new(OffscreenRenderer::new(640, 380)));
+    if options.capture_path.is_some() {
+        let (width, height) = capture_canvas_size(options.capture_size);
+        renderer
+            .borrow_mut()
+            .resize_scaled(width as f32, height as f32, 1.0);
+    }
     let frame_dirty = Rc::new(Cell::new(false));
     let viewport_active = Rc::new(Cell::new(true));
     let animation_timer = Rc::new(Timer::default());
@@ -189,6 +222,11 @@ fn main() -> Result<(), slint::PlatformError> {
         frame_dirty.set(false);
     }
 
+    #[cfg(feature = "dashboard-screenshot")]
+    if let Some(path) = options.capture_path.as_deref() {
+        return capture_dashboard(&app, app_weak, path);
+    }
+
     let demo_timer = Timer::default();
     {
         let source = demo_source.clone();
@@ -231,11 +269,79 @@ fn main() -> Result<(), slint::PlatformError> {
     app.run()
 }
 
+#[cfg(feature = "dashboard-screenshot")]
+fn capture_dashboard(
+    app: &AppWindow,
+    app_weak: slint::Weak<AppWindow>,
+    path: &Path,
+) -> Result<(), Box<dyn std::error::Error>> {
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    let capture_result = Rc::new(RefCell::new(None::<Result<(), String>>));
+    let capture_result_ref = capture_result.clone();
+    let path = path.to_owned();
+    let capture_timer = Timer::default();
+    capture_timer.start(
+        TimerMode::SingleShot,
+        Duration::from_millis(150),
+        move || {
+            let result = app_weak
+                .upgrade()
+                .ok_or_else(|| "dashboard closed before screenshot capture".to_string())
+                .and_then(|app| save_dashboard_screenshot(&app, &path));
+            *capture_result_ref.borrow_mut() = Some(result);
+            let _ = slint::quit_event_loop();
+        },
+    );
+    app.window().show()?;
+    app.run()?;
+    capture_result
+        .borrow_mut()
+        .take()
+        .unwrap_or_else(|| Err("screenshot timer did not run".into()))?;
+    Ok(())
+}
+
+#[cfg(feature = "dashboard-screenshot")]
+fn save_dashboard_screenshot(app: &AppWindow, path: &Path) -> Result<(), String> {
+    if let Some(parent) = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+    {
+        std::fs::create_dir_all(parent)
+            .map_err(|error| format!("could not create {}: {error}", parent.display()))?;
+    }
+    let pixels = app
+        .window()
+        .take_snapshot()
+        .map_err(|error| format!("could not capture Slint window: {error}"))?;
+    let image =
+        image::RgbaImage::from_raw(pixels.width(), pixels.height(), pixels.as_bytes().to_vec())
+            .ok_or_else(|| "Slint returned an invalid RGBA screenshot buffer".to_owned())?;
+    image
+        .save(path)
+        .map_err(|error| format!("could not save screenshot to {}: {error}", path.display()))
+}
+
 fn columns_for_width(width: f32) -> usize {
     if width >= 1060.0 {
         1
     } else {
         ((width - 48.0) / 148.0).floor().clamp(1.0, 8.0) as usize
+    }
+}
+
+#[cfg(feature = "dashboard-screenshot")]
+fn capture_canvas_size(window_size: (u32, u32)) -> (u32, u32) {
+    let (window_width, window_height) = window_size;
+    if window_width >= 1060 {
+        (
+            window_width.saturating_sub(630).max(1),
+            window_height.saturating_sub(202).max(1),
+        )
+    } else {
+        (window_width.saturating_sub(40).max(1), 330)
     }
 }
 
@@ -556,5 +662,14 @@ mod tests {
         let first = rows[0].cells.row_data(0).unwrap();
         assert_eq!(first.id, 0);
         assert!(first.sparkline.to_string().starts_with("M "));
+    }
+
+    #[cfg(feature = "dashboard-screenshot")]
+    #[test]
+    fn screenshot_canvas_dimensions_follow_the_dashboard_breakpoint() {
+        assert_eq!(super::capture_canvas_size((1465, 955)), (835, 753));
+        assert_eq!(super::capture_canvas_size((1280, 800)), (650, 598));
+        assert_eq!(super::capture_canvas_size((1060, 800)), (430, 598));
+        assert_eq!(super::capture_canvas_size((720, 520)), (680, 330));
     }
 }
