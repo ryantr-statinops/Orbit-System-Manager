@@ -16,9 +16,9 @@ export component CoreCell inherits Rectangle {
     border-width: 1px;
     border-color: Theme.border;
     HorizontalLayout {
-        padding-left: 6px;
-        padding-right: 6px;
-        spacing: 6px;
+        padding-left: Theme.space_xs;
+        padding-right: Theme.space_xs;
+        spacing: Theme.space_xs;
         Text {
             text: root.id < 10 ? "C0" + root.id : "C" + root.id;
             width: 26px;
@@ -54,10 +54,10 @@ export component CoreCell inherits Rectangle {
 
 export component CoreMatrix inherits VerticalLayout {
     in property <[CoreRow]> rows;
-    spacing: 6px;
+    spacing: Theme.space_xs;
 
     for row in root.rows: HorizontalLayout {
-        spacing: 6px;
+        spacing: Theme.space_xs;
         for item in row.cells: CoreCell {
             id: item.id;
             load: item.load;

@@ -68,11 +68,11 @@ export component AppWindow inherits Window {
             height: 34px;
             background: Theme.editor_bg;
             HorizontalLayout {
-                padding-left: 8px;
-                padding-right: 8px;
+                padding-left: Theme.space_sm;
+                padding-right: Theme.space_sm;
                 alignment: space-between;
                 HorizontalLayout {
-                    spacing: 8px;
+                    spacing: Theme.space_sm;
                     alignment: center;
                     Rectangle {
                         width: 22px;
@@ -88,7 +88,7 @@ export component AppWindow inherits Window {
                 }
                 Text { text: "ORBIT SYSTEM MANAGER"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
                 HorizontalLayout {
-                    spacing: 8px;
+                    spacing: Theme.space_sm;
                     alignment: center;
                     Text { text: "1 second sampling"; font-size: 11px; color: Theme.text_muted; }
                     Rectangle {
@@ -121,7 +121,7 @@ export component AppWindow inherits Window {
         Rectangle { height: 1px; background: Theme.border; }
 
         if root.width >= 1060px: HorizontalLayout {
-            padding: 8px;
+            padding: Theme.space_sm;
             spacing: 0px;
             if root.left_sidebar_visible: DashboardLeftPanel {
                 width: root.left_sidebar_width;
@@ -194,8 +194,8 @@ export component AppWindow inherits Window {
 
         if root.width < 1060px: ScrollView {
             VerticalLayout {
-                padding: 8px;
-                spacing: 8px;
+                padding: Theme.space_sm;
+                spacing: Theme.space_sm;
                 DashboardLeftPanel {
                     height: 420px;
                     cpu_avg: root.cpu_avg;

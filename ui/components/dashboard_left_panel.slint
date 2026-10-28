@@ -19,7 +19,7 @@ export component DashboardLeftPanel inherits Rectangle {
         width: parent.width;
         height: parent.height;
         VerticalLayout {
-        spacing: 8px;
+        spacing: Theme.space_sm;
 
         Rectangle {
             height: 170px;
@@ -28,12 +28,12 @@ export component DashboardLeftPanel inherits Rectangle {
             border-width: 1px;
             border-color: Theme.border;
             VerticalLayout {
-                padding: 12px;
-                spacing: 8px;
+                padding: Theme.space_md;
+                spacing: Theme.space_sm;
                 Text { text: "CPU SUMMARY"; font-size: 13px; font-weight: 700; color: Theme.text_secondary; }
                 Text { text: root.cpu_name; overflow: elide; font-size: 12px; color: Theme.text_primary; }
                 HorizontalLayout {
-                    spacing: 8px;
+                    spacing: Theme.space_sm;
                     VerticalLayout {
                         Text { text: "Avg Utilization"; font-size: 11px; color: Theme.text_muted; }
                         Text { text: "Std Dev (σ)"; font-size: 11px; color: Theme.text_muted; }
@@ -69,8 +69,8 @@ export component DashboardLeftPanel inherits Rectangle {
             border-width: 1px;
             border-color: Theme.border;
             VerticalLayout {
-                padding: 12px;
-                spacing: 8px;
+                padding: Theme.space_md;
+                spacing: Theme.space_sm;
                 HorizontalLayout {
                     Text { text: "LOGICAL PROCESSORS"; font-size: 13px; font-weight: 700; color: Theme.text_secondary; }
                     Text { text: "(" + root.cpu_logical_cores + ")"; font-size: 12px; font-weight: 700; color: Theme.text_muted; }
@@ -89,8 +89,8 @@ export component DashboardLeftPanel inherits Rectangle {
             border-width: 1px;
             border-color: Theme.border;
             VerticalLayout {
-                padding: 12px;
-                spacing: 8px;
+                padding: Theme.space_md;
+                spacing: Theme.space_sm;
                 Text { text: "CPU HISTORY"; font-size: 13px; font-weight: 700; color: Theme.text_secondary; }
                 Rectangle { height: 1px; background: Theme.border; }
                 Text {
