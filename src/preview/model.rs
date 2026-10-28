@@ -12,6 +12,18 @@ pub struct ProcessorPreview {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+pub struct CpuPreview {
+    pub name: String,
+    pub frequency_ghz: Option<f32>,
+    pub physical_cores: Option<usize>,
+    pub cores: Vec<ProcessorPreview>,
+    pub average: Option<f32>,
+    pub std_dev: Option<f32>,
+    pub variance: Option<f32>,
+    pub history: Vec<HistoryPoint>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
 pub struct GpuPreview {
     pub name: String,
     pub utilization: f32,

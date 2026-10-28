@@ -1,3 +1,5 @@
 mod model;
+mod cpu;
 
-pub use model::{DashboardSnapshot, GpuPreview, HistoryPoint, NetworkPreview, ProcessorPreview};
+pub use cpu::generate_cpu;
+pub use model::{CpuPreview, DashboardSnapshot, GpuPreview, HistoryPoint, NetworkPreview, ProcessorPreview};
