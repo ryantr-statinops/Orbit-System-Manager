@@ -2,6 +2,7 @@ import { Theme } from "../theme.slint";
 import { CoreMatrix, CoreRow } from "core_matrix.slint";
 import { DashboardLinePlot, LinePlotSeries } from "line_plot.slint";
 import { SectionHeading } from "section_heading.slint";
+import { ScrollView } from "std-widgets.slint";
 
 export component DashboardLeftPanel inherits Rectangle {
     in property <float> cpu_avg: 0.0;
