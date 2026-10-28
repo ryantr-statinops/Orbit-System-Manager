@@ -2,7 +2,6 @@ import { Theme } from "../theme.slint";
 import { CoreMatrix, CoreRow } from "core_matrix.slint";
 import { DashboardLinePlot, LinePlotSeries } from "line_plot.slint";
 import { SectionHeading } from "section_heading.slint";
-import { ScrollView } from "std-widgets.slint";
 
 export component DashboardLeftPanel inherits Rectangle {
     in property <float> cpu_avg: 0.0;
@@ -18,15 +17,17 @@ export component DashboardLeftPanel inherits Rectangle {
     in property <string> cpu_physical_cores: "N/A";
     in property <int> cpu_logical_cores: 0;
     in property <[CoreRow]> core_rows: [];
+    in property <bool> show_cpu_summary: true;
+    in property <bool> show_logical_processors: true;
+    in property <bool> show_cpu_history: true;
 
     background: transparent;
-    ScrollView {
+    VerticalLayout {
         width: parent.width;
         height: parent.height;
-        VerticalLayout {
         spacing: Theme.space_sm;
 
-        Rectangle {
+        if root.show_cpu_summary: Rectangle {
             height: 170px;
             background: Theme.card_bg;
             border-radius: Theme.radius_sm;
@@ -67,7 +68,7 @@ export component DashboardLeftPanel inherits Rectangle {
             }
         }
 
-        Rectangle {
+        if root.show_logical_processors: Rectangle {
             vertical-stretch: 1;
             background: Theme.card_bg;
             border-radius: Theme.radius_sm;
@@ -87,7 +88,7 @@ export component DashboardLeftPanel inherits Rectangle {
             }
         }
 
-        Rectangle {
+        if root.show_cpu_history: Rectangle {
             height: 170px;
             background: Theme.card_bg;
             border-radius: Theme.radius_sm;
@@ -107,7 +108,6 @@ export component DashboardLeftPanel inherits Rectangle {
                     placeholder: "CPU history samples will appear here";
                 }
             }
-        }
         }
     }
 }

@@ -1,7 +1,6 @@
 import { Theme } from "../theme.slint";
 import { SectionHeading } from "section_heading.slint";
 import { DashboardLinePlot, LinePlotSeries } from "line_plot.slint";
-import { ScrollView } from "std-widgets.slint";
 
 export component DashboardRightPanel inherits Rectangle {
     in property <float> ram_percent: 0.0;
@@ -31,10 +30,9 @@ export component DashboardRightPanel inherits Rectangle {
     in property <float> gpu_clock_mhz: 0.0;
 
     background: transparent;
-    ScrollView {
+    VerticalLayout {
         width: parent.width;
         height: parent.height;
-        VerticalLayout {
         spacing: Theme.space_sm;
 
         Rectangle {
@@ -193,7 +191,6 @@ export component DashboardRightPanel inherits Rectangle {
                     placeholder: "Network history samples will appear here";
                 }
             }
-        }
         }
     }
 }

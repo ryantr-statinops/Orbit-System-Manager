@@ -222,7 +222,9 @@ export component AppWindow inherits Window {
                 padding: Theme.space_sm;
                 spacing: Theme.space_sm;
                 DashboardLeftPanel {
-                    height: 420px;
+                    height: 170px;
+                    show_logical_processors: false;
+                    show_cpu_history: false;
                     cpu_avg: root.cpu_avg;
                     cpu_std: root.cpu_std;
                     cpu_var: root.cpu_var;
@@ -255,8 +257,25 @@ export component AppWindow inherits Window {
                     resize_viewport(width, height) => { root.resize_viewport(width, height); }
                     reset_view() => { root.reset_3d_view(); }
                 }
+                DashboardLeftPanel {
+                    height: 430px;
+                    show_cpu_summary: false;
+                    cpu_avg: root.cpu_avg;
+                    cpu_std: root.cpu_std;
+                    cpu_var: root.cpu_var;
+                    cpu_history_area_commands: root.cpu_history_area_commands;
+                    cpu_history_series: root.cpu_history_series;
+                    cpu_history_has_data: root.cpu_history_has_data;
+                    cpu_available: root.cpu_available;
+                    cpu_status_text: root.cpu_status_text;
+                    cpu_name: root.cpu_name;
+                    cpu_frequency: root.cpu_frequency;
+                    cpu_physical_cores: root.cpu_physical_cores;
+                    cpu_logical_cores: root.cpu_logical_cores;
+                    core_rows: root.core_rows;
+                }
                 DashboardRightPanel {
-                    height: 680px;
+                    height: 556px;
                     ram_percent: root.ram_percent;
                     ram_available: root.ram_available;
                     ram_used_gb: root.ram_used_gb;
