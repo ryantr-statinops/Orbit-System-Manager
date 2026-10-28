@@ -184,6 +184,20 @@ mod tests {
     }
 
     #[test]
+    fn gpu_history_uses_the_fixed_utilization_percentage_scale() {
+        let gpu = crate::preview::generate_gpu(30);
+        let points = normalize_history(&gpu.history, 60, 100.0);
+        assert_eq!(points.len(), 61);
+        assert_eq!(points.first().unwrap().x, 0.0);
+        assert_eq!(points.last().unwrap().x, 1.0);
+        assert!(points.iter().all(|point| {
+            point
+                .y
+                .is_some_and(|normalized| (0.0..=1.0).contains(&normalized))
+        }));
+    }
+
+    #[test]
     fn line_path_starts_a_new_subpath_after_missing_data() {
         let commands = line_path_commands(&[
             NormalizedPoint {

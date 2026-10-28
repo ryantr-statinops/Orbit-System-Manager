@@ -43,6 +43,9 @@ export component AppWindow inherits Window {
     in property <bool> gpu_available: true;
     in property <string> gpu_status_text: "Demo data";
     in property <float> gpu_utilization: 0.0;
+    in property <string> gpu_history_area_commands: "";
+    in property <[LinePlotSeries]> gpu_history_series: [];
+    in property <bool> gpu_history_has_data: false;
     in property <float> gpu_vram_used_gib: 0.0;
     in property <float> gpu_vram_total_gib: 8.0;
     in property <float> gpu_temperature_c: 0.0;
@@ -198,6 +201,9 @@ export component AppWindow inherits Window {
                 gpu_available: root.gpu_available;
                 gpu_status_text: root.gpu_status_text;
                 gpu_utilization: root.gpu_utilization;
+                gpu_history_area_commands: root.gpu_history_area_commands;
+                gpu_history_series: root.gpu_history_series;
+                gpu_history_has_data: root.gpu_history_has_data;
                 gpu_vram_used_gib: root.gpu_vram_used_gib;
                 gpu_vram_total_gib: root.gpu_vram_total_gib;
                 gpu_temperature_c: root.gpu_temperature_c;
@@ -260,6 +266,9 @@ export component AppWindow inherits Window {
                     gpu_available: root.gpu_available;
                     gpu_status_text: root.gpu_status_text;
                     gpu_utilization: root.gpu_utilization;
+                    gpu_history_area_commands: root.gpu_history_area_commands;
+                    gpu_history_series: root.gpu_history_series;
+                    gpu_history_has_data: root.gpu_history_has_data;
                     gpu_vram_used_gib: root.gpu_vram_used_gib;
                     gpu_vram_total_gib: root.gpu_vram_total_gib;
                     gpu_temperature_c: root.gpu_temperature_c;

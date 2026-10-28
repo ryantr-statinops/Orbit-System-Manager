@@ -302,6 +302,26 @@ fn apply_snapshot(app: &AppWindow, snapshot: &DashboardSnapshot, columns: usize)
 
     app.set_gpu_available(snapshot.gpu.is_some());
     app.set_gpu_status_text(status_text.into());
+    let gpu_history = snapshot
+        .gpu
+        .as_ref()
+        .map(|gpu| preview::normalize_history(&gpu.history, preview::HISTORY_SECONDS, 100.0))
+        .unwrap_or_default();
+    let gpu_history_has_data = gpu_history.iter().any(|point| point.y.is_some());
+    let gpu_history_line = preview::line_path_commands(&gpu_history);
+    app.set_gpu_history_area_commands(preview::area_path_commands(&gpu_history).into());
+    app.set_gpu_history_series(
+        Rc::new(VecModel::from(if gpu_history_line.is_empty() {
+            Vec::new()
+        } else {
+            vec![LinePlotSeries {
+                commands: gpu_history_line.into(),
+                color: slint::Color::from_rgb_u8(99, 214, 232),
+            }]
+        }))
+        .into(),
+    );
+    app.set_gpu_history_has_data(gpu_history_has_data);
     if let Some(gpu) = &snapshot.gpu {
         app.set_gpu_name(gpu.name.clone().into());
         app.set_gpu_utilization(gpu.utilization);
