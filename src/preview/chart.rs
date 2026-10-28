@@ -100,7 +100,10 @@ mod tests {
 
     #[test]
     fn empty_history_produces_no_coordinates() {
-        assert!(normalize_history(&[], 60, 100.0).is_empty());
+        let points = normalize_history(&[], 60, 100.0);
+        assert!(points.is_empty());
+        assert!(line_path_commands(&points).is_empty());
+        assert!(area_path_commands(&points).is_empty());
     }
 
     #[test]

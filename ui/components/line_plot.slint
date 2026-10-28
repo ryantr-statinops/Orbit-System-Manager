@@ -24,6 +24,7 @@ export component DashboardLinePlot inherits Rectangle {
     }
 
     if root.area_commands != "": Path {
+        visible: root.has_data;
         x: 32px;
         y: 8px;
         width: Math.max(0px, root.width - 40px);
@@ -39,6 +40,7 @@ export component DashboardLinePlot inherits Rectangle {
     }
 
     for line in root.series: Path {
+        visible: root.has_data;
         x: 32px;
         y: 8px;
         width: Math.max(0px, root.width - 40px);
