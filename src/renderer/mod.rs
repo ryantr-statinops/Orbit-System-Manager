@@ -244,7 +244,7 @@ impl OffscreenRenderer {
                         + render_grid[row + 1][column]
                         + render_grid[row + 1][column + 1])
                         / 400.0;
-                    let shade = 0.68 + (row as f32 / row_count as f32) * 0.16;
+                    let shade = surface_light_factor(&render_grid, row, column, span_x, span_z);
                     let color = shade_color(viridis_color(load), shade);
                     raster_triangle(pixels, &mut depth_buffer, (w, h), a, b, c, color);
                     raster_triangle(pixels, &mut depth_buffer, (w, h), b, d, c, color);
@@ -262,7 +262,7 @@ impl OffscreenRenderer {
                         (w, h),
                         (p1.0, p1.1),
                         (p2.0, p2.1),
-                        [75, 104, 128, 255],
+                        [61, 117, 137, 255],
                     );
                 }
             }
@@ -277,7 +277,7 @@ impl OffscreenRenderer {
                         (w, h),
                         (p1.0, p1.1),
                         (p2.0, p2.1),
-                        [75, 104, 128, 255],
+                        [61, 117, 137, 255],
                     );
                 }
             }
@@ -408,6 +408,33 @@ fn shade_color(mut color: [u8; 4], factor: f32) -> [u8; 4] {
         *channel = (*channel as f32 * factor.clamp(0.0, 1.0)) as u8;
     }
     color
+}
+
+fn surface_light_factor(
+    grid: &[Vec<f32>],
+    row: usize,
+    column: usize,
+    span_x: f32,
+    span_z: f32,
+) -> f32 {
+    let row_count = grid.len();
+    let column_count = grid.first().map_or(0, Vec::len);
+    if row_count == 0 || column_count == 0 {
+        return 0.9;
+    }
+    let left = grid[row][column.saturating_sub(1)];
+    let right = grid[row][(column + 1).min(column_count - 1)];
+    let previous = grid[row.saturating_sub(1)][column];
+    let next = grid[(row + 1).min(row_count - 1)][column];
+    let sample_width = span_x / column_count.saturating_sub(1).max(1) as f32;
+    let sample_depth = span_z / row_count.saturating_sub(1).max(1) as f32;
+    let slope_x = ((right - left) / 100.0 * 12.0) / sample_width.max(f32::EPSILON);
+    let slope_z = ((next - previous) / 100.0 * 12.0) / sample_depth.max(f32::EPSILON);
+    let normal_length = (slope_x * slope_x + 1.0 + slope_z * slope_z).sqrt();
+    let light_length = (0.35_f32.powi(2) + 0.82_f32.powi(2) + 0.45_f32.powi(2)).sqrt();
+    let diffuse =
+        ((slope_x * 0.35 + 0.82 - slope_z * 0.45) / (normal_length * light_length)).clamp(0.0, 1.0);
+    0.62 + diffuse * 0.38
 }
 
 fn raster_triangle(
@@ -691,6 +718,17 @@ mod tests {
                 .iter()
                 .any(|pixel| { (pixel.r, pixel.g, pixel.b) == expected }));
         }
+    }
+
+    #[test]
+    fn surface_lighting_stays_bounded_and_responds_to_sample_slopes() {
+        let flat = vec![vec![50.0; 3]; 3];
+        let ridge = vec![vec![0.0, 50.0, 100.0]; 3];
+        let flat_shade = surface_light_factor(&flat, 1, 1, 34.0, 38.0);
+        let ridge_shade = surface_light_factor(&ridge, 1, 1, 34.0, 38.0);
+        assert!((0.62..=1.0).contains(&flat_shade));
+        assert!((0.62..=1.0).contains(&ridge_shade));
+        assert_ne!(flat_shade, ridge_shade);
     }
 
     #[test]
