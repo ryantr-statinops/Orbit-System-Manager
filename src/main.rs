@@ -4,7 +4,7 @@
 mod cli;
 
 use orbit_system_manager::preview::DashboardSnapshot;
-use orbit_system_manager::ui::{AppWindow, CoreItem, CoreRow};
+use orbit_system_manager::ui::{AppWindow, CoreItem, CoreRow, LinePlotSeries};
 use slint::{ModelRc, Timer, TimerMode, VecModel};
 use std::cell::Cell;
 use std::cell::RefCell;
@@ -228,6 +228,23 @@ fn apply_snapshot(app: &AppWindow, snapshot: &DashboardSnapshot, columns: usize)
     app.set_cpu_avg(snapshot.cpu_average.unwrap_or_default());
     app.set_cpu_std(snapshot.cpu_std_dev.unwrap_or_default());
     app.set_cpu_var(snapshot.cpu_variance.unwrap_or_default());
+    let cpu_history_points =
+        preview::normalize_history(&snapshot.cpu_history, preview::HISTORY_SECONDS, 100.0);
+    let cpu_history_has_data = cpu_history_points.iter().any(|point| point.y.is_some());
+    let cpu_history_line = preview::line_path_commands(&cpu_history_points);
+    app.set_cpu_history_area_commands(preview::area_path_commands(&cpu_history_points).into());
+    app.set_cpu_history_series(
+        Rc::new(VecModel::from(if cpu_history_line.is_empty() {
+            Vec::new()
+        } else {
+            vec![LinePlotSeries {
+                commands: cpu_history_line.into(),
+                color: slint::Color::from_rgb_u8(99, 214, 232),
+            }]
+        }))
+        .into(),
+    );
+    app.set_cpu_history_has_data(cpu_history_has_data);
     let cpu_name = match snapshot.scenario {
         preview::DemoScenario::Full | preview::DemoScenario::Single => snapshot.cpu_name.as_str(),
         preview::DemoScenario::Empty | preview::DemoScenario::Unavailable => status_text,

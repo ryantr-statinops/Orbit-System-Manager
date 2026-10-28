@@ -4,6 +4,7 @@ import { DashboardRightPanel } from "components/dashboard_right_panel.slint";
 import { Viewport3D } from "components/viewport_3d.slint";
 import { PanelSplitter } from "components/panel_splitter.slint";
 import { CoreRow } from "components/core_matrix.slint";
+import { LinePlotSeries } from "components/line_plot.slint";
 import { ScrollView } from "std-widgets.slint";
 
 export component AppWindow inherits Window {
@@ -17,6 +18,9 @@ export component AppWindow inherits Window {
     in property <float> cpu_avg: 0.0;
     in property <float> cpu_std: 0.0;
     in property <float> cpu_var: 0.0;
+    in property <string> cpu_history_area_commands: "";
+    in property <[LinePlotSeries]> cpu_history_series: [];
+    in property <bool> cpu_history_has_data: false;
     in property <bool> cpu_available: false;
     in property <string> cpu_status_text: "Waiting for telemetry";
     in property <string> cpu_name: "N/A";
@@ -129,6 +133,9 @@ export component AppWindow inherits Window {
                 cpu_avg: root.cpu_avg;
                 cpu_std: root.cpu_std;
                 cpu_var: root.cpu_var;
+                cpu_history_area_commands: root.cpu_history_area_commands;
+                cpu_history_series: root.cpu_history_series;
+                cpu_history_has_data: root.cpu_history_has_data;
                 cpu_available: root.cpu_available;
                 cpu_status_text: root.cpu_status_text;
                 cpu_name: root.cpu_name;
@@ -201,6 +208,9 @@ export component AppWindow inherits Window {
                     cpu_avg: root.cpu_avg;
                     cpu_std: root.cpu_std;
                     cpu_var: root.cpu_var;
+                    cpu_history_area_commands: root.cpu_history_area_commands;
+                    cpu_history_series: root.cpu_history_series;
+                    cpu_history_has_data: root.cpu_history_has_data;
                     cpu_available: root.cpu_available;
                     cpu_status_text: root.cpu_status_text;
                     cpu_name: root.cpu_name;

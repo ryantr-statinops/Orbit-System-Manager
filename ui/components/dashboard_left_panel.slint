@@ -1,6 +1,6 @@
 import { Theme } from "../theme.slint";
 import { CoreMatrix, CoreRow } from "core_matrix.slint";
-import { DashboardLinePlot } from "line_plot.slint";
+import { DashboardLinePlot, LinePlotSeries } from "line_plot.slint";
 import { SectionHeading } from "section_heading.slint";
 import { ScrollView } from "std-widgets.slint";
 
@@ -8,6 +8,9 @@ export component DashboardLeftPanel inherits Rectangle {
     in property <float> cpu_avg: 0.0;
     in property <float> cpu_std: 0.0;
     in property <float> cpu_var: 0.0;
+    in property <string> cpu_history_area_commands: "";
+    in property <[LinePlotSeries]> cpu_history_series: [];
+    in property <bool> cpu_history_has_data: false;
     in property <bool> cpu_available: false;
     in property <string> cpu_status_text: "Waiting for telemetry";
     in property <string> cpu_name: "N/A";
@@ -98,6 +101,9 @@ export component DashboardLeftPanel inherits Rectangle {
                 DashboardLinePlot {
                     horizontal-stretch: 1;
                     vertical-stretch: 1;
+                    area_commands: root.cpu_history_area_commands;
+                    series: root.cpu_history_series;
+                    has_data: root.cpu_history_has_data;
                     placeholder: "CPU history samples will appear here";
                 }
             }
