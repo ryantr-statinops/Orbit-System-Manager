@@ -36,6 +36,7 @@ export component AppWindow inherits Window {
     in property <int> history_samples: 0;
     in property <int> history_seconds: 0;
     in-out property <length> left_sidebar_width: 290px;
+    in-out property <length> right_sidebar_width: 290px;
 
     in property <image> viewport_3d_frame;
     in property <bool> has_3d_frame: true;
@@ -112,9 +113,15 @@ export component AppWindow inherits Window {
                 resize_viewport(width, height) => { root.resize_viewport(width, height); }
                 reset_view() => { root.reset_3d_view(); }
             }
-            Rectangle { width: 5px; height: root.height - 52px; background: Theme.border; }
+            PanelSplitter {
+                width: 5px;
+                height: root.height - 52px;
+                drag_delta(delta) => {
+                    root.right_sidebar_width = Math.max(290px, Math.min(root.width - 676px, Math.min(380px, root.right_sidebar_width - delta)));
+                }
+            }
             DashboardRightPanel {
-                width: 290px;
+                width: root.right_sidebar_width;
                 height: root.height - 52px;
                 ram_percent: root.ram_percent;
                 ram_available: root.ram_available;
