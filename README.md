@@ -2,17 +2,17 @@
 
 [![Release](https://img.shields.io/badge/Release-v2.1.2-blue?style=for-the-badge&logo=rust)](https://github.com/ryantr-statinops/Orbit-System-Manager/releases)
 
-A native desktop dashboard for live CPU, memory, and network telemetry, built with Rust and Slint.
+A native desktop dashboard built with Rust and Slint. It starts with deterministic demo telemetry so the full dashboard can be reviewed without depending on the host's hardware sensors.
 
 ## Dashboard
 
-- CPU utilization history displayed as a smoothed, shaded 3D surface. The surface interpolates only for presentation; reported samples remain the collected measurements.
+- CPU utilization history displayed as a smoothed, shaded 3D surface. Surface interpolation affects presentation only; stored preview measurements stay unchanged.
 - A responsive view of every logical processor.
 - Memory usage and aggregate network receive/send rates with explicit units.
-- GPU telemetry marked unavailable until GPU collection is implemented.
+- CPU, memory, GPU, and network use deterministic demo data by default; the `unavailable` scenario previews N/A states.
 - Rotate with left drag, pan with right drag, zoom with the scroll wheel, and reset the camera from the chart controls.
 
-CPU history retains up to 30 samples. System telemetry is collected once per second. Renderer frame rate is limited by the application redraw timer.
+The default preview starts with 60 seconds of history (61 one-second samples), then adds one sample per second. Pause holds the displayed values and histories. The 3D surface interpolation only affects presentation; the stored samples remain unchanged.
 
 ## Requirements
 
@@ -43,6 +43,10 @@ cargo build --locked --release
 ```
 
 The binary is written to `target/release/`.
+
+### Preview and screenshot
+
+Run the interactive demo with `cargo run --locked`. To capture a deterministic PNG at a chosen size and scenario, build with the optional screenshot feature. See [the dashboard preview workflow](docs/DASHBOARD-PREVIEW.md) for commands, supported fixture values, CI artifacts, and review steps.
 
 ## Release artifacts
 
