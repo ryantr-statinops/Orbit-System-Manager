@@ -172,46 +172,28 @@ impl Default for TerrainMesh {
     }
 }
 
-// Convert height factor (0.0 - 1.0) to Viridis Palette [R, G, B, A]
+pub const VIRIDIS_ANCHORS: [[u8; 3]; 5] = [
+    [68, 1, 84],
+    [59, 82, 139],
+    [33, 145, 140],
+    [94, 201, 98],
+    [253, 231, 37],
+];
+
+// Convert height factor (0.0 - 1.0) through the shared five-stop Viridis palette.
 pub fn viridis_color(t: f32) -> [u8; 4] {
     let t = t.clamp(0.0, 1.0);
-    // Key color anchors of the Viridis palette:
-    // 0.0 -> Dark Purple (68, 1, 84)
-    // 0.25 -> Deep Blue (59, 82, 139)
-    // 0.50 -> Viridis Teal (33, 145, 140)
-    // 0.75 -> Light Green (94, 201, 98)
-    // 1.00 -> Bright Yellow (253, 231, 37)
-    let (r, g, b) = if t < 0.25 {
-        let f = t / 0.25;
-        (
-            68.0 + f * (59.0 - 68.0),
-            1.0 + f * (82.0 - 1.0),
-            84.0 + f * (139.0 - 84.0),
-        )
-    } else if t < 0.50 {
-        let f = (t - 0.25) / 0.25;
-        (
-            59.0 + f * (33.0 - 59.0),
-            82.0 + f * (145.0 - 82.0),
-            139.0 + f * (140.0 - 139.0),
-        )
-    } else if t < 0.75 {
-        let f = (t - 0.50) / 0.25;
-        (
-            33.0 + f * (94.0 - 33.0),
-            145.0 + f * (201.0 - 145.0),
-            140.0 + f * (98.0 - 140.0),
-        )
-    } else {
-        let f = (t - 0.75) / 0.25;
-        (
-            94.0 + f * (253.0 - 94.0),
-            201.0 + f * (231.0 - 201.0),
-            98.0 + f * (37.0 - 98.0),
-        )
-    };
-
-    [r as u8, g as u8, b as u8, 255]
+    let scaled = t * 4.0;
+    let lower = (scaled.floor() as usize).min(VIRIDIS_ANCHORS.len() - 2);
+    let amount = scaled - lower as f32;
+    let first = VIRIDIS_ANCHORS[lower];
+    let second = VIRIDIS_ANCHORS[lower + 1];
+    let rgb = [
+        first[0] as f32 + (second[0] as f32 - first[0] as f32) * amount,
+        first[1] as f32 + (second[1] as f32 - first[1] as f32) * amount,
+        first[2] as f32 + (second[2] as f32 - first[2] as f32) * amount,
+    ];
+    [rgb[0] as u8, rgb[1] as u8, rgb[2] as u8, 255]
 }
 
 #[cfg(test)]

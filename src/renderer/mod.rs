@@ -42,12 +42,12 @@ impl OffscreenRenderer {
         let h = self.height;
         let pixels = self.buffer.make_mut_slice();
 
-        // 1. Clear background to Dark Slate (#090d13)
+        // Keep the renderer backdrop aligned with Theme.viewport_bg (#111111).
         for pixel in pixels.iter_mut() {
             *pixel = Rgba8Pixel {
-                r: 9,
-                g: 13,
-                b: 19,
+                r: 17,
+                g: 17,
+                b: 17,
                 a: 255,
             };
         }

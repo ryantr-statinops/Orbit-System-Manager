@@ -39,9 +39,14 @@ export global Theme {
     // -------------------------------------------------------------
     // Synchronized Gradient Spectrum Brushes
     // -------------------------------------------------------------
-    // Canonical 3D Viridis spectrum matching the 3D mesh shader
-    in-out property <brush> gradient_viridis: @linear-gradient(90deg, #440154 0%, #3b528b 25%, #21918c 50%, #5ec962 75%, #fde725 100%);
-    in-out property <brush> gradient_cpu: @linear-gradient(90deg, #3b528b 0%, #21918c 50%, #fde725 100%);
+    // Canonical Viridis stops shared by the UI gradient and Rust renderer.
+    in-out property <color> viridis_0: #440154;
+    in-out property <color> viridis_25: #3b528b;
+    in-out property <color> viridis_50: #21918c;
+    in-out property <color> viridis_75: #5ec962;
+    in-out property <color> viridis_100: #fde725;
+    in-out property <brush> gradient_viridis: @linear-gradient(90deg, viridis_0 0%, viridis_25 25%, viridis_50 50%, viridis_75 75%, viridis_100 100%);
+    in-out property <brush> gradient_cpu: @linear-gradient(90deg, viridis_25 0%, viridis_50 50%, viridis_100 100%);
     in-out property <brush> gradient_ram: @linear-gradient(90deg, #0969da 0%, #58a6ff 60%, #79c0ff 100%);
     in-out property <brush> gradient_gpu: @linear-gradient(90deg, #9e6a03 0%, #d29922 60%, #fde725 100%);
     in-out property <brush> gradient_net: @linear-gradient(90deg, #8957e5 0%, #bc8cff 60%, #e2c5ff 100%);
@@ -50,12 +55,21 @@ export global Theme {
     in-out property <color> viewport_bg: #111111;
     in-out property <color> viewport_border: #343434;
 
-    // Synchronized Viridis Color Calculator (Maps 0.0 - 100.0 load to Viridis Palette)
+    pure function interpolate_color(first: color, second: color, amount: float) -> color {
+        let amount_1000 = Math.round(Math.max(0.0, Math.min(1.0, amount)) * 1000.0);
+        return rgb(
+            (first.red * (1000 - amount_1000) + second.red * amount_1000 + 500) / 1000,
+            (first.green * (1000 - amount_1000) + second.green * amount_1000 + 500) / 1000,
+            (first.blue * (1000 - amount_1000) + second.blue * amount_1000 + 500) / 1000
+        );
+    }
+
+    // Interpolate through the same five stops used by the Rust surface renderer.
     public pure function viridis_color_for_load(load: float) -> color {
-        if (load >= 87.5) { return #fde725; }
-        if (load >= 62.5) { return #5ec962; }
-        if (load >= 37.5) { return #21918c; }
-        if (load >= 12.5) { return #3b528b; }
-        return #440154;
+        let value = Math.max(0.0, Math.min(100.0, load));
+        if (value < 25.0) { return interpolate_color(viridis_0, viridis_25, value / 25.0); }
+        if (value < 50.0) { return interpolate_color(viridis_25, viridis_50, (value - 25.0) / 25.0); }
+        if (value < 75.0) { return interpolate_color(viridis_50, viridis_75, (value - 50.0) / 25.0); }
+        return interpolate_color(viridis_75, viridis_100, (value - 75.0) / 25.0);
     }
 }
