@@ -24,6 +24,13 @@ pub struct CpuPreview {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+pub struct MemoryPreview {
+    pub used_gib: f32,
+    pub total_gib: f32,
+    pub history: Vec<HistoryPoint>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
 pub struct GpuPreview {
     pub name: String,
     pub utilization: f32,
