@@ -15,7 +15,10 @@ export component DashboardLeftPanel inherits Rectangle {
     in property <[CoreRow]> core_rows: [];
 
     background: transparent;
-    VerticalLayout {
+    ScrollView {
+        width: parent.width;
+        height: parent.height;
+        VerticalLayout {
         spacing: 8px;
 
         Rectangle {
@@ -100,6 +103,7 @@ export component DashboardLeftPanel inherits Rectangle {
                     horizontal-alignment: center;
                 }
             }
+        }
         }
     }
 }
