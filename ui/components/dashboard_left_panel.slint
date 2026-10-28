@@ -80,17 +80,25 @@ export component DashboardLeftPanel inherits Rectangle {
         }
 
         Rectangle {
-            height: 88px;
+            height: 170px;
             background: Theme.card_bg;
             border-radius: Theme.radius_sm;
             border-width: 1px;
             border-color: Theme.border;
             VerticalLayout {
                 padding: 12px;
-                spacing: 5px;
-                Text { text: "CPU HARDWARE"; font-size: 11px; font-weight: 700; color: Theme.text_secondary; }
-                Text { text: root.cpu_name; overflow: elide; font-size: 11px; color: Theme.text_primary; }
-                Text { text: root.cpu_frequency + "  •  " + root.cpu_physical_cores + " physical / " + root.cpu_logical_cores + " logical"; overflow: elide; font-size: 10px; color: Theme.text_muted; }
+                spacing: 8px;
+                Text { text: "CPU HISTORY"; font-size: 11px; font-weight: 700; color: Theme.text_secondary; }
+                Rectangle { height: 1px; background: Theme.border; }
+                Text {
+                    text: "CPU utilization history will appear here";
+                    wrap: word-wrap;
+                    font-size: 11px;
+                    color: Theme.text_muted;
+                    vertical-stretch: 1;
+                    vertical-alignment: center;
+                    horizontal-alignment: center;
+                }
             }
         }
     }
