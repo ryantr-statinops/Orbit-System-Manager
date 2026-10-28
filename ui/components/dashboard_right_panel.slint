@@ -1,5 +1,6 @@
 import { Theme } from "../theme.slint";
 import { SectionHeading } from "section_heading.slint";
+import { DashboardLinePlot, LinePlotSeries } from "line_plot.slint";
 import { ScrollView } from "std-widgets.slint";
 
 export component DashboardRightPanel inherits Rectangle {
@@ -8,6 +9,9 @@ export component DashboardRightPanel inherits Rectangle {
     in property <float> ram_used_gb: 0.0;
     in property <float> ram_total_gb: 0.0;
     in property <string> ram_status_text: "Waiting for samples";
+    in property <string> ram_history_area_commands: "";
+    in property <[LinePlotSeries]> ram_history_series: [];
+    in property <bool> ram_history_has_data: false;
     in property <float> net_sent_kib: 0.0;
     in property <float> net_recv_kib: 0.0;
     in property <bool> network_available: false;
@@ -29,7 +33,7 @@ export component DashboardRightPanel inherits Rectangle {
         spacing: Theme.space_sm;
 
         Rectangle {
-            min-height: 150px;
+            min-height: 210px;
             vertical-stretch: 1;
             background: Theme.card_bg;
             border-radius: Theme.radius_sm;
@@ -67,7 +71,15 @@ export component DashboardRightPanel inherits Rectangle {
                         animate width { duration: 250ms; easing: ease-out; }
                     }
                 }
-                Text { text: root.ram_available ? "Memory usage" : ""; font-size: 11px; color: Theme.text_muted; }
+                DashboardLinePlot {
+                    horizontal-stretch: 1;
+                    height: 76px;
+                    area_commands: root.ram_history_area_commands;
+                    area_brush: Theme.teal_primary.transparentize(0.84);
+                    series: root.ram_history_series;
+                    has_data: root.ram_history_has_data;
+                    placeholder: "Memory history samples will appear here";
+                }
             }
         }
 

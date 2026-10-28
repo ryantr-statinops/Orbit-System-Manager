@@ -32,6 +32,9 @@ export component AppWindow inherits Window {
     in property <float> ram_used_gb: 0.0;
     in property <float> ram_total_gb: 0.0;
     in property <string> ram_status_text: "Waiting for samples";
+    in property <string> ram_history_area_commands: "";
+    in property <[LinePlotSeries]> ram_history_series: [];
+    in property <bool> ram_history_has_data: false;
     in property <float> net_sent_kib: 0.0;
     in property <float> net_recv_kib: 0.0;
     in property <bool> network_available: false;
@@ -184,6 +187,9 @@ export component AppWindow inherits Window {
                 ram_used_gb: root.ram_used_gb;
                 ram_total_gb: root.ram_total_gb;
                 ram_status_text: root.ram_status_text;
+                ram_history_area_commands: root.ram_history_area_commands;
+                ram_history_series: root.ram_history_series;
+                ram_history_has_data: root.ram_history_has_data;
                 net_sent_kib: root.net_sent_kib;
                 net_recv_kib: root.net_recv_kib;
                 network_available: root.network_available;
@@ -243,6 +249,9 @@ export component AppWindow inherits Window {
                     ram_used_gb: root.ram_used_gb;
                     ram_total_gb: root.ram_total_gb;
                     ram_status_text: root.ram_status_text;
+                    ram_history_area_commands: root.ram_history_area_commands;
+                    ram_history_series: root.ram_history_series;
+                    ram_history_has_data: root.ram_history_has_data;
                     net_sent_kib: root.net_sent_kib;
                     net_recv_kib: root.net_recv_kib;
                     network_available: root.network_available;

@@ -158,6 +158,32 @@ mod tests {
     }
 
     #[test]
+    fn memory_history_uses_total_capacity_as_its_vertical_scale() {
+        let points = normalize_history(
+            &[
+                HistoryPoint {
+                    seconds_ago: 60,
+                    value: Some(0.0),
+                },
+                HistoryPoint {
+                    seconds_ago: 30,
+                    value: Some(8.0),
+                },
+                HistoryPoint {
+                    seconds_ago: 0,
+                    value: Some(16.0),
+                },
+            ],
+            60,
+            16.0,
+        );
+        assert_eq!(
+            points.iter().map(|point| point.y).collect::<Vec<_>>(),
+            vec![Some(1.0), Some(0.5), Some(0.0)]
+        );
+    }
+
+    #[test]
     fn line_path_starts_a_new_subpath_after_missing_data() {
         let commands = line_path_commands(&[
             NormalizedPoint {
