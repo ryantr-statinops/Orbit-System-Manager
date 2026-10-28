@@ -1,4 +1,5 @@
 use super::model::HistoryPoint;
+use std::fmt::Write;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct NormalizedPoint {
@@ -28,9 +29,63 @@ pub fn normalize_history(
         .collect()
 }
 
+pub fn line_path_commands(points: &[NormalizedPoint]) -> String {
+    let mut commands = String::new();
+    let mut start_segment = true;
+    for point in points {
+        let Some(y) = point.y else {
+            start_segment = true;
+            continue;
+        };
+        if start_segment {
+            if !commands.is_empty() {
+                commands.push(' ');
+            }
+            let _ = write!(commands, "M {:.6} {:.6}", point.x, y);
+            start_segment = false;
+        } else {
+            let _ = write!(commands, " L {:.6} {:.6}", point.x, y);
+        }
+    }
+    commands
+}
+
+pub fn area_path_commands(points: &[NormalizedPoint]) -> String {
+    let mut commands = String::new();
+    let mut segment = Vec::new();
+
+    for point in points {
+        if let Some(y) = point.y {
+            segment.push((point.x, y));
+        } else {
+            append_area_segment(&mut commands, &segment);
+            segment.clear();
+        }
+    }
+    append_area_segment(&mut commands, &segment);
+    commands
+}
+
+fn append_area_segment(commands: &mut String, segment: &[(f32, f32)]) {
+    if segment.len() < 2 {
+        return;
+    }
+    let (first_x, first_y) = segment[0];
+    let (last_x, _) = segment[segment.len() - 1];
+    let _ = write!(commands, "M {:.6} {:.6}", first_x, first_y);
+    for (x, y) in &segment[1..] {
+        let _ = write!(commands, " L {:.6} {:.6}", x, y);
+    }
+    let _ = write!(
+        commands,
+        " L {:.6} 1.000000 L {:.6} 1.000000 Z ",
+        last_x, first_x
+    );
+}
+
 #[cfg(test)]
 mod tests {
-    use super::normalize_history;
+    use super::{area_path_commands, line_path_commands, normalize_history, NormalizedPoint};
     use crate::preview::HistoryPoint;
 
     #[test]
@@ -100,5 +155,50 @@ mod tests {
             assert_eq!(points[0].x, 1.0);
             assert_eq!(points[0].y, None);
         }
+    }
+
+    #[test]
+    fn line_path_starts_a_new_subpath_after_missing_data() {
+        let commands = line_path_commands(&[
+            NormalizedPoint {
+                x: 0.0,
+                y: Some(0.25),
+            },
+            NormalizedPoint { x: 0.5, y: None },
+            NormalizedPoint {
+                x: 1.0,
+                y: Some(0.75),
+            },
+        ]);
+        assert_eq!(commands, "M 0.000000 0.250000 M 1.000000 0.750000");
+    }
+
+    #[test]
+    fn area_path_closes_only_contiguous_segments_with_two_or_more_points() {
+        let commands = area_path_commands(&[
+            NormalizedPoint {
+                x: 0.0,
+                y: Some(0.25),
+            },
+            NormalizedPoint {
+                x: 0.25,
+                y: Some(0.5),
+            },
+            NormalizedPoint { x: 0.5, y: None },
+            NormalizedPoint {
+                x: 0.75,
+                y: Some(0.5),
+            },
+            NormalizedPoint {
+                x: 1.0,
+                y: Some(0.25),
+            },
+        ]);
+        assert_eq!(commands.matches('Z').count(), 2);
+        assert!(area_path_commands(&[NormalizedPoint {
+            x: 1.0,
+            y: Some(0.5),
+        }])
+        .is_empty());
     }
 }

@@ -6,7 +6,7 @@ mod memory;
 mod model;
 mod network;
 
-pub use chart::{normalize_history, NormalizedPoint};
+pub use chart::{area_path_commands, line_path_commands, normalize_history, NormalizedPoint};
 pub use cpu::generate_cpu;
 pub use demo::{snapshot_at, DemoSource, PreviewState};
 pub use gpu::generate_gpu;

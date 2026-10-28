@@ -1,0 +1,70 @@
+import { Theme } from "../theme.slint";
+
+export struct LinePlotSeries {
+    commands: string,
+    color: color,
+}
+
+export component DashboardLinePlot inherits Rectangle {
+    in property <[LinePlotSeries]> series: [];
+    in property <string> area_commands: "";
+    in property <brush> area_brush: Theme.accent_cyan.transparentize(0.82);
+    in property <bool> has_data: false;
+    in property <string> placeholder: "No samples yet";
+
+    background: transparent;
+    clip: true;
+
+    for tick in [0.0, 0.25, 0.5, 0.75, 1.0]: Rectangle {
+        x: 32px;
+        y: 8px + (root.height - 28px) * tick;
+        width: Math.max(0px, root.width - 40px);
+        height: 1px;
+        background: Theme.divider;
+    }
+
+    if root.area_commands != "": Path {
+        x: 32px;
+        y: 8px;
+        width: Math.max(0px, root.width - 40px);
+        height: Math.max(0px, root.height - 28px);
+        viewbox-x: 0;
+        viewbox-y: 0;
+        viewbox-width: 1;
+        viewbox-height: 1;
+        commands: root.area_commands;
+        fill: root.area_brush;
+        stroke: transparent;
+        clip: true;
+    }
+
+    for line in root.series: Path {
+        x: 32px;
+        y: 8px;
+        width: Math.max(0px, root.width - 40px);
+        height: Math.max(0px, root.height - 28px);
+        viewbox-x: 0;
+        viewbox-y: 0;
+        viewbox-width: 1;
+        viewbox-height: 1;
+        commands: line.commands;
+        fill: transparent;
+        stroke: line.color;
+        stroke-width: 1.5px;
+        stroke-line-join: round;
+        clip: true;
+    }
+
+    if !root.has_data: Text {
+        x: 32px;
+        y: 8px;
+        width: Math.max(0px, root.width - 40px);
+        height: Math.max(0px, root.height - 28px);
+        text: root.placeholder;
+        color: Theme.text_muted;
+        font-size: 11px;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+        wrap: word-wrap;
+    }
+}
