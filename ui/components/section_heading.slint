@@ -1,0 +1,47 @@
+import { Theme } from "../theme.slint";
+
+export component SectionHeading inherits HorizontalLayout {
+    in property <string> title;
+    in property <string> icon;
+
+    spacing: Theme.space_sm;
+
+    if root.icon == "cpu": Image {
+        source: @image-url("../assets/icons/cpu.svg");
+        width: 16px;
+        height: 16px;
+        image-fit: contain;
+    }
+    if root.icon == "processor": Image {
+        source: @image-url("../assets/icons/processor.svg");
+        width: 16px;
+        height: 16px;
+        image-fit: contain;
+    }
+    if root.icon == "memory": Image {
+        source: @image-url("../assets/icons/memory.svg");
+        width: 16px;
+        height: 16px;
+        image-fit: contain;
+    }
+    if root.icon == "gpu": Image {
+        source: @image-url("../assets/icons/gpu.svg");
+        width: 16px;
+        height: 16px;
+        image-fit: contain;
+    }
+    if root.icon == "network": Image {
+        source: @image-url("../assets/icons/network.svg");
+        width: 16px;
+        height: 16px;
+        image-fit: contain;
+    }
+
+    Text {
+        text: root.title;
+        font-size: 13px;
+        font-weight: 700;
+        color: Theme.text_secondary;
+        vertical-alignment: center;
+    }
+}
