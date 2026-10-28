@@ -349,6 +349,17 @@ impl OffscreenRenderer {
             );
         }
 
+        if row_count == 1 && core_count == 1 {
+            if let Some((x, y, _)) = projected[0][0] {
+                draw_point(
+                    pixels,
+                    (w, h),
+                    (x, y),
+                    viridis_color(render_grid[0][0] / 100.0),
+                );
+            }
+        }
+
         Image::from_rgba8(self.buffer.clone())
     }
 }
@@ -544,6 +555,29 @@ fn draw_line(
         if e2 <= dx {
             err += dx;
             y0 += sy;
+        }
+    }
+}
+
+fn draw_point(pixels: &mut [Rgba8Pixel], viewport: (u32, u32), center: (i32, i32), color: [u8; 4]) {
+    let (width, height) = viewport;
+    for offset_y in -2..=2 {
+        for offset_x in -2..=2 {
+            if offset_x * offset_x + offset_y * offset_y > 4 {
+                continue;
+            }
+            let x = center.0 + offset_x;
+            let y = center.1 + offset_y;
+            if x < 0 || y < 0 || x >= width as i32 || y >= height as i32 {
+                continue;
+            }
+            let pixel = &mut pixels[(y as u32 * width + x as u32) as usize];
+            *pixel = Rgba8Pixel {
+                r: color[0],
+                g: color[1],
+                b: color[2],
+                a: color[3],
+            };
         }
     }
 }
@@ -761,6 +795,19 @@ mod tests {
                 }));
             }
         }
+    }
+
+    #[test]
+    fn single_processor_sample_draws_a_point_without_a_surface() {
+        let mut renderer = OffscreenRenderer::new(320, 180);
+        renderer.mesh.push_sample(&[50.0]);
+        renderer.fit_camera_to_viewport();
+        let frame = renderer.render_frame();
+        let pixels: SharedPixelBuffer<Rgba8Pixel> = frame.to_rgba8().unwrap();
+        assert!(pixels
+            .as_slice()
+            .iter()
+            .any(|pixel| (pixel.r, pixel.g, pixel.b) == (33, 145, 140)));
     }
 
     #[test]

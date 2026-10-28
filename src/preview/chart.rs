@@ -41,23 +41,38 @@ pub fn network_history_max_value(received: &[HistoryPoint], sent: &[HistoryPoint
 
 pub fn line_path_commands(points: &[NormalizedPoint]) -> String {
     let mut commands = String::new();
-    let mut start_segment = true;
+    let mut segment = Vec::new();
     for point in points {
         let Some(y) = point.y else {
-            start_segment = true;
+            append_line_segment(&mut commands, &segment);
+            segment.clear();
             continue;
         };
-        if start_segment {
-            if !commands.is_empty() {
-                commands.push(' ');
-            }
-            let _ = write!(commands, "M {:.6} {:.6}", point.x, y);
-            start_segment = false;
-        } else {
-            let _ = write!(commands, " L {:.6} {:.6}", point.x, y);
-        }
+        segment.push((point.x, y));
     }
+    append_line_segment(&mut commands, &segment);
     commands
+}
+
+fn append_line_segment(commands: &mut String, segment: &[(f32, f32)]) {
+    let Some(&(first_x, first_y)) = segment.first() else {
+        return;
+    };
+    if !commands.is_empty() {
+        commands.push(' ');
+    }
+    let _ = write!(commands, "M {:.6} {:.6}", first_x, first_y);
+    for (x, y) in &segment[1..] {
+        let _ = write!(commands, " L {:.6} {:.6}", x, y);
+    }
+    if segment.len() == 1 {
+        let marker_end = if first_x >= 0.992 {
+            first_x - 0.008
+        } else {
+            first_x + 0.008
+        };
+        let _ = write!(commands, " L {:.6} {:.6}", marker_end, first_y);
+    }
 }
 
 pub fn area_path_commands(points: &[NormalizedPoint]) -> String {
@@ -247,7 +262,24 @@ mod tests {
                 y: Some(0.75),
             },
         ]);
-        assert_eq!(commands, "M 0.000000 0.250000 M 1.000000 0.750000");
+        assert_eq!(
+            commands,
+            "M 0.000000 0.250000 L 0.008000 0.250000 M 1.000000 0.750000 L 0.992000 0.750000"
+        );
+    }
+
+    #[test]
+    fn single_history_sample_is_rendered_as_a_small_visible_mark() {
+        let commands = line_path_commands(&[NormalizedPoint {
+            x: 1.0,
+            y: Some(0.4),
+        }]);
+        assert_eq!(commands, "M 1.000000 0.400000 L 0.992000 0.400000");
+        assert!(area_path_commands(&[NormalizedPoint {
+            x: 1.0,
+            y: Some(0.4),
+        }])
+        .is_empty());
     }
 
     #[test]
