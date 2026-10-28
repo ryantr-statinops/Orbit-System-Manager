@@ -1,3 +1,4 @@
+mod chart;
 mod cpu;
 mod demo;
 mod gpu;
@@ -5,6 +6,7 @@ mod memory;
 mod model;
 mod network;
 
+pub use chart::{normalize_history, NormalizedPoint};
 pub use cpu::generate_cpu;
 pub use demo::{snapshot_at, DemoSource, PreviewState};
 pub use gpu::generate_gpu;
