@@ -101,29 +101,6 @@ export component Viewport3D inherits Rectangle {
                         Text { text: "VIRIDIS THERMAL"; font-size: 10px; font-weight: 600; color: Theme.teal_primary; }
                     }
                 }
-                Rectangle {
-                    background: Theme.hover_bg;
-                    border-radius: Theme.radius_sm;
-                    border-width: 1px;
-                    border-color: Theme.border;
-                    HorizontalLayout {
-                        padding-left: Theme.space_sm;
-                        padding-right: Theme.space_sm;
-                        padding-top: Theme.space_xs;
-                        padding-bottom: Theme.space_xs;
-                        Text {
-                        text: "Reset view";
-                            font-size: 11px;
-                            font-weight: 600;
-                        color: Theme.text_primary;
-                        }
-                    }
-                    TouchArea {
-                        width: parent.width;
-                        height: parent.height;
-                        clicked => { root.reset_view(); }
-                    }
-                }
             }
         }
 
@@ -251,11 +228,35 @@ export component Viewport3D inherits Rectangle {
             }
             Text { text: "100%"; font-size: 9px; color: Theme.viridis_100; }
         }
-        Text {
-            text: "Left drag to rotate • Right drag to pan • Scroll to zoom";
-            font-size: 11px;
-            color: Theme.text_muted;
-            horizontal-alignment: center;
+        HorizontalLayout {
+            alignment: space-between;
+            Text {
+                text: "Left drag rotate • Right drag pan • Scroll zoom";
+                font-size: 10px;
+                color: Theme.text_secondary;
+                vertical-alignment: center;
+            }
+            Rectangle {
+                width: 68px;
+                height: 22px;
+                background: Theme.active_bg;
+                border-radius: Theme.radius_sm;
+                border-width: 1px;
+                border-color: Theme.border_focus;
+                Text {
+                    text: "Reset view";
+                    font-size: 10px;
+                    font-weight: 600;
+                    color: Theme.text_primary;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+                TouchArea {
+                    width: parent.width;
+                    height: parent.height;
+                    clicked => { root.reset_view(); }
+                }
+            }
         }
     }
 }
