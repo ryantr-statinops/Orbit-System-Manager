@@ -65,7 +65,7 @@ export component DashboardRightPanel inherits Rectangle {
                     }
                 }
                 Text { text: root.ram_available ? "of " + Math.round(root.ram_total_gb * 10.0) / 10.0 + " GiB total" : root.ram_status_text; font-size: 11px; color: Theme.text_secondary; }
-                Rectangle {
+                if root.ram_available: Rectangle {
                     height: 18px;
                     background: Theme.progress_track;
                     clip: true;
@@ -83,7 +83,7 @@ export component DashboardRightPanel inherits Rectangle {
                     area_brush: Theme.teal_primary.transparentize(0.84);
                     series: root.ram_history_series;
                     has_data: root.ram_history_has_data;
-                    placeholder: "Memory history samples will appear here";
+                    placeholder: root.ram_available ? "Memory history samples will appear here" : root.ram_status_text;
                 }
             }
         }
@@ -160,7 +160,7 @@ export component DashboardRightPanel inherits Rectangle {
                         spacing: Theme.space_xs;
                         Text { text: "RECEIVE"; font-size: 11px; font-weight: 700; color: Theme.accent_cyan; }
                         Text {
-                            text: root.network_available ? Math.round(root.net_recv_kib * 10.0) / 10.0 + " KiB/s" : root.network_status_text;
+                            text: root.network_available ? Math.round(root.net_recv_kib * 10.0) / 10.0 + " KiB/s" : "N/A";
                             overflow: elide;
                             font-size: 18px;
                             font-weight: 700;
@@ -180,8 +180,12 @@ export component DashboardRightPanel inherits Rectangle {
                         }
                     }
                 }
-                Text { text: "Aggregate across all interfaces"; font-size: 10px; color: Theme.text_muted; }
-                DashboardLinePlot {
+                Text {
+                    text: root.network_available ? "Aggregate across all interfaces" : root.network_status_text;
+                    font-size: 10px;
+                    color: Theme.text_muted;
+                }
+                if root.network_available: DashboardLinePlot {
                     horizontal-stretch: 1;
                     height: 76px;
                     series: root.network_history_series;

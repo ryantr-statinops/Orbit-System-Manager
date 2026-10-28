@@ -51,7 +51,7 @@ export component DashboardLeftPanel inherits Rectangle {
                         Text { text: root.cpu_available ? Math.round(root.cpu_var * 100.0) / 100.0 + " pp²" : "N/A"; font-size: 12px; font-weight: 700; color: Theme.text_primary; horizontal-alignment: right; }
                     }
                 }
-                Rectangle {
+                if root.cpu_available: Rectangle {
                     height: 5px;
                     background: Theme.progress_track;
                     border-radius: 2px;
