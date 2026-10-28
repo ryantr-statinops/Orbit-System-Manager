@@ -38,7 +38,9 @@ export component SectionHeading inherits HorizontalLayout {
     }
 
     Text {
+        width: Math.max(0px, root.width - 24px);
         text: root.title;
+        overflow: elide;
         font-size: 13px;
         font-weight: 700;
         color: Theme.text_secondary;

@@ -59,7 +59,7 @@ export component Viewport3D inherits Rectangle {
             }
 
             // Top-right status tags
-            HorizontalLayout {
+            if root.width >= 520px: HorizontalLayout {
                 spacing: Theme.space_xs;
                 alignment: center;
                 Rectangle {
