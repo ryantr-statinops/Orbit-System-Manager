@@ -16,7 +16,8 @@ fn main() -> Result<(), slint::PlatformError> {
     let app = AppWindow::new()?;
     let app_weak = app.as_weak();
     let core_columns = Rc::new(Cell::new(8usize));
-    let snapshot = preview::snapshot_at(0, 16);
+    let demo_source = Rc::new(RefCell::new(preview::DemoSource::new(16)));
+    let snapshot = demo_source.borrow().snapshot();
 
     {
         let columns = core_columns.clone();
@@ -132,6 +133,39 @@ fn main() -> Result<(), slint::PlatformError> {
         app.set_viewport_3d_frame(frame);
         app.set_has_3d_frame(true);
         frame_dirty.set(false);
+    }
+
+    let demo_timer = Timer::default();
+    {
+        let source = demo_source.clone();
+        let app_weak = app_weak.clone();
+        let columns = core_columns.clone();
+        let renderer_ref = renderer.clone();
+        let dirty = frame_dirty.clone();
+        let animation = animation_timer.clone();
+        demo_timer.start(TimerMode::Repeated, Duration::from_secs(1), move || {
+            let Some(app) = app_weak.upgrade() else {
+                return;
+            };
+            let snapshot = source.borrow_mut().tick();
+            let core_values = apply_snapshot(&app, &snapshot, columns.get());
+            {
+                let mut ren = renderer_ref.borrow_mut();
+                ren.mesh.push_sample(&core_values);
+                dirty.set(true);
+            }
+            {
+                let ren = renderer_ref.borrow();
+                app.set_history_samples(ren.mesh.sample_count() as i32);
+                app.set_history_seconds(ren.mesh.history_seconds() as i32);
+            }
+            schedule_animation(
+                app_weak.clone(),
+                renderer_ref.clone(),
+                dirty.clone(),
+                animation.clone(),
+            );
+        });
     }
 
     app.run()

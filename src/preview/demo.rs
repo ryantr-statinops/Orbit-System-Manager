@@ -22,6 +22,29 @@ pub fn snapshot_at(elapsed_seconds: u64, core_count: usize) -> DashboardSnapshot
     }
 }
 
+pub struct DemoSource {
+    elapsed_seconds: u64,
+    core_count: usize,
+}
+
+impl DemoSource {
+    pub fn new(core_count: usize) -> Self {
+        Self {
+            elapsed_seconds: 0,
+            core_count,
+        }
+    }
+
+    pub fn snapshot(&self) -> DashboardSnapshot {
+        snapshot_at(self.elapsed_seconds, self.core_count)
+    }
+
+    pub fn tick(&mut self) -> DashboardSnapshot {
+        self.elapsed_seconds = self.elapsed_seconds.saturating_add(1);
+        self.snapshot()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::snapshot_at;
@@ -54,6 +77,38 @@ mod tests {
         assert_eq!(
             network.sent_history.last().unwrap().value,
             Some(network.sent_kib_per_sec)
+        );
+    }
+
+    #[test]
+    fn demo_source_advances_all_channels_on_one_second_ticks() {
+        let mut source = super::DemoSource::new(16);
+        assert_eq!(source.snapshot().elapsed_seconds, 0);
+
+        let snapshot = source.tick();
+        assert_eq!(snapshot.elapsed_seconds, 1);
+        assert_eq!(
+            snapshot.cpu_history.last().unwrap().value,
+            snapshot.cpu_average
+        );
+        assert_eq!(
+            snapshot.ram_history.last().unwrap().value,
+            snapshot.ram_used_gib
+        );
+        assert_eq!(
+            snapshot.gpu.as_ref().unwrap().history.last().unwrap().value,
+            Some(snapshot.gpu.as_ref().unwrap().utilization)
+        );
+        assert_eq!(
+            snapshot
+                .network
+                .as_ref()
+                .unwrap()
+                .received_history
+                .last()
+                .unwrap()
+                .seconds_ago,
+            0
         );
     }
 }
