@@ -79,6 +79,8 @@ Recorded on 2026-10-29 for the local implementation checkout:
 | `cargo fmt --all -- --check` | Passed |
 | `cargo metadata --locked --offline --format-version 1 --no-deps` | Passed |
 | `cargo check --locked` | Blocked before project compilation: `link.exe` is missing from the installed Windows MSVC target environment. |
+| `cargo test --locked` | Same `link.exe` blocker; tests did not run. |
+| `cargo clippy --locked --all-targets -- -D warnings` | Same `link.exe` blocker; Clippy did not run. |
 | `cargo check --locked --features dashboard-screenshot` | Same `link.exe` blocker; screenshot feature has not been compiled locally. |
 | CI screenshot artifact | Pending a CI run for a pushed commit or pull request. |
 | Native Windows scaling and interaction review | Not run in this environment. |
