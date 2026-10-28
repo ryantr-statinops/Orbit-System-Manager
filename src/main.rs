@@ -38,6 +38,7 @@ fn main() -> Result<(), slint::PlatformError> {
     // Initialize the native 3D renderer with the initial demo sample.
     let renderer = Rc::new(RefCell::new(OffscreenRenderer::new(640, 380)));
     let frame_dirty = Rc::new(Cell::new(false));
+    let viewport_active = Rc::new(Cell::new(true));
     let animation_timer = Rc::new(Timer::default());
 
     apply_snapshot(&app, &snapshot, core_columns.get());
@@ -64,6 +65,7 @@ fn main() -> Result<(), slint::PlatformError> {
     {
         let renderer_ref = renderer.clone();
         let dirty = frame_dirty.clone();
+        let active = viewport_active.clone();
         let timer = animation_timer.clone();
         let app_weak = app_weak.clone();
         app.on_rotate_3d(move |dx, dy| {
@@ -73,6 +75,7 @@ fn main() -> Result<(), slint::PlatformError> {
                 app_weak.clone(),
                 renderer_ref.clone(),
                 dirty.clone(),
+                active.clone(),
                 timer.clone(),
             );
         });
@@ -81,6 +84,7 @@ fn main() -> Result<(), slint::PlatformError> {
     {
         let renderer_ref = renderer.clone();
         let dirty = frame_dirty.clone();
+        let active = viewport_active.clone();
         let timer = animation_timer.clone();
         let app_weak = app_weak.clone();
         app.on_pan_3d(move |dx, dy| {
@@ -90,6 +94,7 @@ fn main() -> Result<(), slint::PlatformError> {
                 app_weak.clone(),
                 renderer_ref.clone(),
                 dirty.clone(),
+                active.clone(),
                 timer.clone(),
             );
         });
@@ -98,6 +103,7 @@ fn main() -> Result<(), slint::PlatformError> {
     {
         let renderer_ref = renderer.clone();
         let dirty = frame_dirty.clone();
+        let active = viewport_active.clone();
         let timer = animation_timer.clone();
         let app_weak = app_weak.clone();
         app.on_zoom_3d(move |delta| {
@@ -107,6 +113,7 @@ fn main() -> Result<(), slint::PlatformError> {
                 app_weak.clone(),
                 renderer_ref.clone(),
                 dirty.clone(),
+                active.clone(),
                 timer.clone(),
             );
         });
@@ -115,17 +122,36 @@ fn main() -> Result<(), slint::PlatformError> {
     {
         let renderer_ref = renderer.clone();
         let dirty = frame_dirty.clone();
+        let active = viewport_active.clone();
         let timer = animation_timer.clone();
         let app_weak = app_weak.clone();
         app.on_resize_viewport(move |width, height| {
-            renderer_ref
+            if width <= 0.0 || height <= 0.0 {
+                active.set(false);
+                dirty.set(true);
+                timer.stop();
+                return;
+            }
+            let scale_factor = app_weak
+                .upgrade()
+                .map(|app| app.window().scale_factor())
+                .unwrap_or(1.0);
+            if !renderer_ref
                 .borrow_mut()
-                .resize(width.round() as u32, height.round() as u32);
+                .resize_scaled(width, height, scale_factor)
+            {
+                active.set(false);
+                dirty.set(true);
+                timer.stop();
+                return;
+            }
+            active.set(true);
             dirty.set(true);
             schedule_animation(
                 app_weak.clone(),
                 renderer_ref.clone(),
                 dirty.clone(),
+                active.clone(),
                 timer.clone(),
             );
         });
@@ -134,6 +160,7 @@ fn main() -> Result<(), slint::PlatformError> {
     {
         let renderer_ref = renderer.clone();
         let dirty = frame_dirty.clone();
+        let active = viewport_active.clone();
         let timer = animation_timer.clone();
         let app_weak = app_weak.clone();
         app.on_reset_3d_view(move || {
@@ -146,6 +173,7 @@ fn main() -> Result<(), slint::PlatformError> {
                 app_weak.clone(),
                 renderer_ref.clone(),
                 dirty.clone(),
+                active.clone(),
                 timer.clone(),
             );
         });
@@ -168,6 +196,7 @@ fn main() -> Result<(), slint::PlatformError> {
         let columns = core_columns.clone();
         let renderer_ref = renderer.clone();
         let dirty = frame_dirty.clone();
+        let active = viewport_active.clone();
         let animation = animation_timer.clone();
         demo_timer.start(TimerMode::Repeated, Duration::from_secs(1), move || {
             let Some(app) = app_weak.upgrade() else {
@@ -193,6 +222,7 @@ fn main() -> Result<(), slint::PlatformError> {
                 app_weak.clone(),
                 renderer_ref.clone(),
                 dirty.clone(),
+                active.clone(),
                 animation.clone(),
             );
         });
@@ -432,9 +462,16 @@ fn schedule_animation(
     app_weak: slint::Weak<AppWindow>,
     renderer: Rc<RefCell<OffscreenRenderer>>,
     dirty: Rc<Cell<bool>>,
+    active: Rc<Cell<bool>>,
     timer: Rc<Timer>,
 ) {
+    if !active.get() {
+        dirty.set(true);
+        timer.stop();
+        return;
+    }
     let callback_timer = timer.clone();
+    let callback_active = active.clone();
     timer.start(
         TimerMode::SingleShot,
         Duration::from_millis(33),
@@ -442,6 +479,10 @@ fn schedule_animation(
             let Some(app) = app_weak.upgrade() else {
                 return;
             };
+            if !callback_active.get() {
+                dirty.set(true);
+                return;
+            }
             let mut ren = renderer.borrow_mut();
             let moving = ren.mesh.update_interpolation(0.12);
             if moving || dirty.replace(false) {
@@ -456,6 +497,7 @@ fn schedule_animation(
                     app_weak.clone(),
                     renderer.clone(),
                     dirty.clone(),
+                    callback_active.clone(),
                     callback_timer.clone(),
                 );
             }
@@ -464,13 +506,14 @@ fn schedule_animation(
 }
 
 fn apply_terrain_axis_labels(app: &AppWindow, renderer: &OffscreenRenderer) {
+    let (scale_x, scale_y) = renderer.label_scale();
     let labels = renderer
         .projected_axis_labels()
         .into_iter()
         .map(|label| TerrainAxisLabel {
-            x: label.x as f32,
-            y: label.y as f32,
-            width: label.width as f32,
+            x: label.x as f32 / scale_x,
+            y: label.y as f32 / scale_y,
+            width: label.width as f32 / scale_x,
             text: label.text.into(),
             color: slint::Color::from_rgb_u8(label.color[0], label.color[1], label.color[2]),
             is_axis_title: label.is_axis_title,

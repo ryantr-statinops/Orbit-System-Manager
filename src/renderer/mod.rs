@@ -9,6 +9,7 @@ const PROCESSOR_AXIS_COLOR: [u8; 4] = [99, 214, 232, 255];
 const TIME_AXIS_COLOR: [u8; 4] = [103, 183, 255, 255];
 const UTILIZATION_AXIS_COLOR: [u8; 4] = [253, 231, 37, 255];
 const AXIS_TICK_COLOR: [u8; 3] = [179, 192, 210];
+const MAX_BUFFER_EDGE: u32 = 1920;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct TerrainAxisLabel {
@@ -34,6 +35,8 @@ pub struct OffscreenRenderer {
     pub mesh: TerrainMesh,
     width: u32,
     height: u32,
+    logical_to_buffer_x: f32,
+    logical_to_buffer_y: f32,
     buffer: SharedPixelBuffer<Rgba8Pixel>,
 }
 
@@ -47,19 +50,47 @@ impl OffscreenRenderer {
             mesh: TerrainMesh::new(),
             width,
             height,
+            logical_to_buffer_x: 1.0,
+            logical_to_buffer_y: 1.0,
             buffer,
         }
     }
 
     pub fn resize(&mut self, width: u32, height: u32) {
-        let width = width.clamp(1, 1920);
-        let height = height.clamp(1, 1920);
+        let width = width.clamp(1, MAX_BUFFER_EDGE);
+        let height = height.clamp(1, MAX_BUFFER_EDGE);
         if (width, height) != (self.width, self.height) {
             self.width = width;
             self.height = height;
             self.buffer = SharedPixelBuffer::new(width, height);
             self.fit_camera_to_viewport();
         }
+    }
+
+    /// Resize the physical pixel buffer from Slint logical dimensions and the window scale.
+    /// A zero-sized viewport is treated as hidden and leaves the current buffer untouched.
+    pub fn resize_scaled(
+        &mut self,
+        logical_width: f32,
+        logical_height: f32,
+        scale_factor: f32,
+    ) -> bool {
+        let Some((width, height)) = scaled_buffer_size(logical_width, logical_height, scale_factor)
+        else {
+            return false;
+        };
+        self.resize(width, height);
+        self.logical_to_buffer_x = width as f32 / logical_width;
+        self.logical_to_buffer_y = height as f32 / logical_height;
+        true
+    }
+
+    pub fn buffer_size(&self) -> (u32, u32) {
+        (self.width, self.height)
+    }
+
+    pub fn label_scale(&self) -> (f32, f32) {
+        (self.logical_to_buffer_x, self.logical_to_buffer_y)
     }
 
     pub fn fit_camera_to_viewport(&mut self) {
@@ -363,6 +394,40 @@ impl OffscreenRenderer {
 
         Image::from_rgba8(self.buffer.clone())
     }
+}
+
+fn scaled_buffer_size(
+    logical_width: f32,
+    logical_height: f32,
+    scale_factor: f32,
+) -> Option<(u32, u32)> {
+    if !logical_width.is_finite()
+        || !logical_height.is_finite()
+        || logical_width <= 0.0
+        || logical_height <= 0.0
+    {
+        return None;
+    }
+    let scale = if scale_factor.is_finite() && scale_factor > 0.0 {
+        scale_factor
+    } else {
+        1.0
+    };
+    let mut width = logical_width * scale;
+    let mut height = logical_height * scale;
+    if !width.is_finite() || !height.is_finite() {
+        return None;
+    }
+    let largest_edge = width.max(height);
+    if largest_edge > MAX_BUFFER_EDGE as f32 {
+        let fit_scale = MAX_BUFFER_EDGE as f32 / largest_edge;
+        width *= fit_scale;
+        height *= fit_scale;
+    }
+    Some((
+        width.round().clamp(1.0, MAX_BUFFER_EDGE as f32) as u32,
+        height.round().clamp(1.0, MAX_BUFFER_EDGE as f32) as u32,
+    ))
 }
 
 fn terrain_spans(width: u32, height: u32) -> (f32, f32) {
@@ -684,7 +749,7 @@ fn clip_line(
 
 #[cfg(test)]
 mod tests {
-    use super::{clip_line, raster_triangle, OffscreenRenderer};
+    use super::{clip_line, raster_triangle, scaled_buffer_size, OffscreenRenderer};
     use slint::{Rgba8Pixel, SharedPixelBuffer};
 
     #[test]
@@ -736,6 +801,24 @@ mod tests {
             .as_slice()
             .iter()
             .any(|pixel| { (pixel.r, pixel.g, pixel.b) != (9, 13, 19) }));
+    }
+
+    #[test]
+    fn scaled_viewport_buffers_follow_display_scale_and_respect_limits() {
+        assert_eq!(scaled_buffer_size(800.0, 400.0, 1.0), Some((800, 400)));
+        assert_eq!(scaled_buffer_size(800.0, 400.0, 1.5), Some((1200, 600)));
+        assert_eq!(scaled_buffer_size(1200.0, 600.0, 2.0), Some((1920, 960)));
+        assert_eq!(scaled_buffer_size(0.0, 400.0, 2.0), None);
+        assert_eq!(scaled_buffer_size(800.0, f32::NAN, 2.0), None);
+
+        let mut renderer = OffscreenRenderer::new(320, 180);
+        assert!(!renderer.resize_scaled(0.0, 180.0, 2.0));
+        assert_eq!(renderer.buffer_size(), (320, 180));
+        assert!(renderer.resize_scaled(400.0, 200.0, 1.5));
+        assert_eq!(renderer.buffer_size(), (600, 300));
+        let (scale_x, scale_y) = renderer.label_scale();
+        assert!((scale_x - 1.5).abs() < f32::EPSILON);
+        assert!((scale_y - 1.5).abs() < f32::EPSILON);
     }
 
     #[test]
