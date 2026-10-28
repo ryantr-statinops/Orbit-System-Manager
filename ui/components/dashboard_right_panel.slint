@@ -1,4 +1,5 @@
 import { Theme } from "../theme.slint";
+import { ScrollView } from "std-widgets.slint";
 
 export component DashboardRightPanel inherits Rectangle {
     in property <float> ram_percent: 0.0;
@@ -11,7 +12,10 @@ export component DashboardRightPanel inherits Rectangle {
     in property <string> network_status_text: "Collecting first sample";
 
     background: transparent;
-    VerticalLayout {
+    ScrollView {
+        width: parent.width;
+        height: parent.height;
+        VerticalLayout {
         spacing: 8px;
 
         Rectangle {
@@ -79,6 +83,7 @@ export component DashboardRightPanel inherits Rectangle {
                 Text { text: root.network_available ? Math.round(root.net_recv_kib * 10.0) / 10.0 + " KiB/s" : root.network_status_text; font-size: 17px; font-weight: 700; color: Theme.purple; }
                 Text { text: root.network_available ? "SEND  " + Math.round(root.net_sent_kib * 10.0) / 10.0 + " KiB/s • all interfaces" : "Send unavailable"; overflow: elide; font-size: 10px; color: Theme.text_secondary; }
             }
+        }
         }
     }
 }
