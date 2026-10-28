@@ -42,6 +42,7 @@ fn main() -> Result<(), slint::PlatformError> {
 
     apply_snapshot(&app, &snapshot, core_columns.get());
     seed_terrain_history(&mut renderer.borrow_mut(), &snapshot.cores);
+    renderer.borrow_mut().fit_camera_to_viewport();
     {
         let mesh = renderer.borrow();
         app.set_history_samples(mesh.mesh.sample_count() as i32);
@@ -136,7 +137,10 @@ fn main() -> Result<(), slint::PlatformError> {
         let timer = animation_timer.clone();
         let app_weak = app_weak.clone();
         app.on_reset_3d_view(move || {
-            renderer_ref.borrow_mut().camera.reset();
+            let mut renderer = renderer_ref.borrow_mut();
+            renderer.camera.reset();
+            renderer.fit_camera_to_viewport();
+            drop(renderer);
             dirty.set(true);
             schedule_animation(
                 app_weak.clone(),

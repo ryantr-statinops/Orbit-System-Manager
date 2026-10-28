@@ -34,7 +34,15 @@ impl OffscreenRenderer {
             self.width = width;
             self.height = height;
             self.buffer = SharedPixelBuffer::new(width, height);
+            self.fit_camera_to_viewport();
         }
+    }
+
+    pub fn fit_camera_to_viewport(&mut self) {
+        let aspect = self.width as f32 / self.height.max(1) as f32;
+        let span_x = 34.0 * aspect.sqrt().clamp(1.0, 1.8);
+        self.camera
+            .fit_to_bounds(self.width, self.height, span_x, 38.0, 12.0);
     }
 
     pub fn render_frame(&mut self) -> Image {
