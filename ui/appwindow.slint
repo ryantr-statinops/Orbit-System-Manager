@@ -37,6 +37,7 @@ export component AppWindow inherits Window {
     in property <int> history_seconds: 0;
     in-out property <length> left_sidebar_width: 290px;
     in-out property <length> right_sidebar_width: 290px;
+    in-out property <bool> left_sidebar_visible: true;
 
     in property <image> viewport_3d_frame;
     in property <bool> has_3d_frame: true;
@@ -62,6 +63,14 @@ export component AppWindow inherits Window {
                 HorizontalLayout {
                     spacing: 8px;
                     alignment: center;
+                    Rectangle {
+                        width: 22px;
+                        height: 22px;
+                        background: Theme.hover_bg;
+                        border-radius: 4px;
+                        Text { text: root.left_sidebar_visible ? "<" : ">"; color: Theme.text_secondary; horizontal-alignment: center; vertical-alignment: center; }
+                        TouchArea { width: parent.width; height: parent.height; clicked => { root.left_sidebar_visible = !root.left_sidebar_visible; } }
+                    }
                     Rectangle { width: 8px; height: 8px; border-radius: 4px; background: Theme.success; }
                     Text { text: "LIVE"; font-size: 11px; color: Theme.success; }
                 }
@@ -74,7 +83,7 @@ export component AppWindow inherits Window {
         if root.width >= 1060px: HorizontalLayout {
             padding: 8px;
             spacing: 0px;
-            DashboardLeftPanel {
+            if root.left_sidebar_visible: DashboardLeftPanel {
                 width: root.left_sidebar_width;
                 height: root.height - 52px;
                 cpu_avg: root.cpu_avg;
@@ -88,7 +97,7 @@ export component AppWindow inherits Window {
                 cpu_logical_cores: root.cpu_logical_cores;
                 core_rows: root.core_rows;
             }
-            PanelSplitter {
+            if root.left_sidebar_visible: PanelSplitter {
                 width: 5px;
                 height: root.height - 52px;
                 drag_delta(delta) => {
