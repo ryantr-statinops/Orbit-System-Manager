@@ -19,7 +19,7 @@ export component DashboardLeftPanel inherits Rectangle {
         spacing: 8px;
 
         Rectangle {
-            height: 132px;
+            height: 170px;
             background: Theme.card_bg;
             border-radius: Theme.radius_sm;
             border-width: 1px;
@@ -27,7 +27,8 @@ export component DashboardLeftPanel inherits Rectangle {
             VerticalLayout {
                 padding: 12px;
                 spacing: 8px;
-                Text { text: "ENVIRONMENT MONITOR"; font-size: 11px; font-weight: 700; color: Theme.text_secondary; }
+                Text { text: "CPU SUMMARY"; font-size: 11px; font-weight: 700; color: Theme.text_secondary; }
+                Text { text: root.cpu_name; overflow: elide; font-size: 11px; color: Theme.text_primary; }
                 HorizontalLayout {
                     spacing: 8px;
                     VerticalLayout {
@@ -48,6 +49,12 @@ export component DashboardLeftPanel inherits Rectangle {
                     border-radius: 2px;
                     clip: true;
                     Rectangle { width: parent.width * Math.max(0.0, Math.min(100.0, root.cpu_avg)) / 100.0; height: parent.height; background: Theme.teal_primary; }
+                }
+                Text {
+                    text: root.cpu_frequency + "  •  " + root.cpu_physical_cores + " physical / " + root.cpu_logical_cores + " logical";
+                    overflow: elide;
+                    font-size: 10px;
+                    color: Theme.text_muted;
                 }
             }
         }
