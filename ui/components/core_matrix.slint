@@ -9,6 +9,7 @@ export struct CoreRow {
 export component CoreCell inherits Rectangle {
     in property <int> id: 0;
     in property <float> load: 0.0;
+    in property <string> sparkline: "";
 
     height: 28px;
     min-width: 96px;
@@ -51,6 +52,19 @@ export component CoreCell inherits Rectangle {
             horizontal-alignment: right;
             vertical-alignment: center;
         }
+        Path {
+            width: 52px;
+            height: 16px;
+            viewbox-x: 0;
+            viewbox-y: 0;
+            viewbox-width: 1;
+            viewbox-height: 1;
+            commands: root.sparkline;
+            fill: transparent;
+            stroke: Theme.accent_cyan;
+            stroke-width: 1px;
+            clip: true;
+        }
     }
 }
 
@@ -63,6 +77,7 @@ export component CoreMatrix inherits VerticalLayout {
         for item in row.cells: CoreCell {
             id: item.id;
             load: item.load;
+            sparkline: item.sparkline;
         }
     }
 }

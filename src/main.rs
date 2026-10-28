@@ -201,7 +201,7 @@ fn columns_for_width(width: f32) -> usize {
     if width >= 1060.0 {
         1
     } else {
-        ((width - 48.0) / 108.0).floor().clamp(1.0, 8.0) as usize
+        ((width - 48.0) / 148.0).floor().clamp(1.0, 8.0) as usize
     }
 }
 
@@ -248,7 +248,7 @@ fn apply_snapshot(app: &AppWindow, snapshot: &DashboardSnapshot, columns: usize)
             .into(),
     );
     app.set_cpu_logical_cores(snapshot.cores.len() as i32);
-    app.set_core_rows(Rc::new(VecModel::from(build_core_rows(&core_values, columns))).into());
+    app.set_core_rows(Rc::new(VecModel::from(build_core_rows(&snapshot.cores, columns))).into());
 
     let ram_available = snapshot.ram_used_gib.zip(snapshot.ram_total_gib);
     app.set_ram_available(ram_available.is_some());
@@ -295,19 +295,23 @@ fn apply_snapshot(app: &AppWindow, snapshot: &DashboardSnapshot, columns: usize)
     core_values
 }
 
-fn build_core_rows(cores: &[f32], columns: usize) -> Vec<CoreRow> {
+fn build_core_rows(cores: &[preview::ProcessorPreview], columns: usize) -> Vec<CoreRow> {
     let columns = columns.max(1);
     cores
         .chunks(columns)
-        .enumerate()
-        .map(|(row, values)| CoreRow {
+        .map(|values| CoreRow {
             cells: ModelRc::from(Rc::new(VecModel::from(
                 values
                     .iter()
-                    .enumerate()
-                    .map(|(column, &load)| CoreItem {
-                        id: (row * columns + column) as i32,
-                        load,
+                    .map(|core| CoreItem {
+                        id: core.id as i32,
+                        load: core.utilization,
+                        sparkline: preview::line_path_commands(&preview::normalize_history(
+                            &core.history,
+                            preview::HISTORY_SECONDS,
+                            100.0,
+                        ))
+                        .into(),
                     })
                     .collect::<Vec<_>>(),
             ))),
@@ -351,12 +355,13 @@ fn schedule_animation(
 #[cfg(test)]
 mod tests {
     use super::{build_core_rows, columns_for_width};
+    use orbit_system_manager::preview;
     use slint::Model;
 
     #[test]
     fn processor_columns_adapt_to_window_width() {
-        assert_eq!(columns_for_width(720.0), 6);
-        assert_eq!(columns_for_width(1059.0), 8);
+        assert_eq!(columns_for_width(720.0), 4);
+        assert_eq!(columns_for_width(1059.0), 6);
         assert_eq!(columns_for_width(1060.0), 1);
         assert_eq!(columns_for_width(1280.0), 1);
         assert_eq!(columns_for_width(1600.0), 1);
@@ -365,12 +370,21 @@ mod tests {
     #[test]
     fn processor_rows_cover_all_supported_core_counts() {
         for count in [0, 1, 4, 16, 32, 64] {
-            let cores = vec![42.0; count];
+            let cores = preview::generate_cpu(0, count).cores;
             let rows = build_core_rows(&cores, 6);
             assert_eq!(
                 rows.iter().map(|row| row.cells.row_count()).sum::<usize>(),
                 count
             );
         }
+    }
+
+    #[test]
+    fn processor_rows_include_their_own_timestamped_sparkline() {
+        let cores = preview::generate_cpu(12, 4).cores;
+        let rows = build_core_rows(&cores, 2);
+        let first = rows[0].cells.row_data(0).unwrap();
+        assert_eq!(first.id, 0);
+        assert!(first.sparkline.to_string().starts_with("M "));
     }
 }
