@@ -72,7 +72,7 @@ export component Viewport3D inherits Rectangle {
                         padding-right: Theme.space_sm;
                         padding-top: Theme.space_xs;
                         padding-bottom: Theme.space_xs;
-                        Text { text: root.cpu_logical_count + " CORES"; font-size: 10px; font-weight: 600; color: Theme.text_secondary; }
+                        Text { text: root.width < 760px ? root.cpu_logical_count + " CPU" : root.cpu_logical_count + " CORES"; font-size: 10px; font-weight: 600; color: Theme.text_secondary; }
                     }
                 }
                 Rectangle {
@@ -85,10 +85,10 @@ export component Viewport3D inherits Rectangle {
                         padding-right: Theme.space_sm;
                         padding-top: Theme.space_xs;
                         padding-bottom: Theme.space_xs;
-                        Text { text: root.history_samples > 0 ? root.history_seconds + "s WINDOW" : "WAITING"; font-size: 10px; font-weight: 600; color: Theme.text_secondary; }
+                        Text { text: root.history_samples > 0 ? (root.width < 760px ? root.history_seconds + "s" : root.history_seconds + "s WINDOW") : "WAITING"; font-size: 10px; font-weight: 600; color: Theme.text_secondary; }
                     }
                 }
-                Rectangle {
+                if root.width >= 760px: Rectangle {
                     background: Theme.hover_bg;
                     border-radius: Theme.radius_sm;
                     border-width: 1px;
@@ -244,15 +244,15 @@ export component Viewport3D inherits Rectangle {
                 vertical-alignment: center;
             }
             Rectangle {
-                width: 68px;
-                height: 22px;
+                width: 84px;
+                height: 30px;
                 background: Theme.active_bg;
                 border-radius: Theme.radius_sm;
                 border-width: 1px;
                 border-color: Theme.border_focus;
                 Text {
-                    text: "Reset view";
-                    font-size: 10px;
+                    text: root.width < 760px ? "Reset" : "Reset view";
+                    font-size: 11px;
                     font-weight: 600;
                     color: Theme.text_primary;
                     horizontal-alignment: center;
