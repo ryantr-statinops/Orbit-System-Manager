@@ -39,12 +39,23 @@ export component DashboardRightPanel inherits Rectangle {
                 padding: Theme.space_md;
                 spacing: Theme.space_sm;
                 SectionHeading { title: "System Memory (RAM)"; icon: "memory"; }
-                Text {
-                    text: root.ram_available ? Math.round(root.ram_used_gb * 10.0) / 10.0 + " / " + Math.round(root.ram_total_gb * 10.0) / 10.0 + " GiB (" + Math.round(root.ram_percent) + "%)" : root.ram_status_text;
-                    overflow: elide;
-                    font-size: 20px;
-                    color: Theme.text_primary;
+                HorizontalLayout {
+                    alignment: space-between;
+                    Text {
+                        text: root.ram_available ? Math.round(root.ram_used_gb * 10.0) / 10.0 + " GiB" : "N/A";
+                        font-size: 22px;
+                        font-weight: 700;
+                        color: Theme.teal_primary;
+                    }
+                    Text {
+                        text: root.ram_available ? Math.round(root.ram_percent) + "%" : "";
+                        font-size: 16px;
+                        font-weight: 700;
+                        color: Theme.text_primary;
+                        vertical-alignment: center;
+                    }
                 }
+                Text { text: root.ram_available ? "of " + Math.round(root.ram_total_gb * 10.0) / 10.0 + " GiB total" : root.ram_status_text; font-size: 11px; color: Theme.text_secondary; }
                 Rectangle {
                     height: 18px;
                     background: Theme.progress_track;
@@ -56,7 +67,7 @@ export component DashboardRightPanel inherits Rectangle {
                         animate width { duration: 250ms; easing: ease-out; }
                     }
                 }
-                Text { text: root.ram_available ? "Memory usage" : root.ram_status_text; font-size: 11px; color: Theme.text_muted; }
+                Text { text: root.ram_available ? "Memory usage" : ""; font-size: 11px; color: Theme.text_muted; }
             }
         }
 
