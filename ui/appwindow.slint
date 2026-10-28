@@ -2,6 +2,7 @@ import { Theme } from "theme.slint";
 import { DashboardLeftPanel } from "components/dashboard_left_panel.slint";
 import { DashboardRightPanel } from "components/dashboard_right_panel.slint";
 import { Viewport3D } from "components/viewport_3d.slint";
+import { PanelSplitter } from "components/panel_splitter.slint";
 import { CoreRow } from "components/core_matrix.slint";
 import { ScrollView } from "std-widgets.slint";
 
@@ -34,6 +35,7 @@ export component AppWindow inherits Window {
     in property <[CoreRow]> core_rows: [];
     in property <int> history_samples: 0;
     in property <int> history_seconds: 0;
+    in-out property <length> left_sidebar_width: 290px;
 
     in property <image> viewport_3d_frame;
     in property <bool> has_3d_frame: true;
@@ -72,7 +74,7 @@ export component AppWindow inherits Window {
             padding: 8px;
             spacing: 0px;
             DashboardLeftPanel {
-                width: 290px;
+                width: root.left_sidebar_width;
                 height: root.height - 52px;
                 cpu_avg: root.cpu_avg;
                 cpu_std: root.cpu_std;
@@ -85,7 +87,13 @@ export component AppWindow inherits Window {
                 cpu_logical_cores: root.cpu_logical_cores;
                 core_rows: root.core_rows;
             }
-            Rectangle { width: 5px; height: root.height - 52px; background: Theme.border; }
+            PanelSplitter {
+                width: 5px;
+                height: root.height - 52px;
+                drag_delta(delta) => {
+                    root.left_sidebar_width = Math.max(290px, Math.min(root.width - 676px, Math.min(380px, root.left_sidebar_width + delta)));
+                }
+            }
             Viewport3D {
                 horizontal-stretch: 1;
                 height: root.height - 52px;

@@ -1,0 +1,28 @@
+import { Theme } from "../theme.slint";
+
+export component PanelSplitter inherits Rectangle {
+    callback drag_delta(length);
+
+    background: Theme.border;
+    TouchArea {
+        property <length> last_x: 0px;
+        property <bool> dragging: false;
+
+        pointer-event(event) => {
+            if (event.kind == PointerEventKind.down) {
+                self.last_x = self.mouse-x;
+                self.dragging = true;
+            }
+            if (event.kind == PointerEventKind.up) {
+                self.dragging = false;
+            }
+        }
+
+        moved => {
+            if (self.pressed && self.dragging) {
+                root.drag_delta(self.mouse-x - self.last_x);
+                self.last_x = self.mouse-x;
+            }
+        }
+    }
+}
