@@ -5,6 +5,29 @@ use camera::OrbitCamera;
 use mesh::{viridis_color, TerrainMesh};
 use slint::{Image, Rgba8Pixel, SharedPixelBuffer};
 
+const PROCESSOR_AXIS_COLOR: [u8; 4] = [99, 214, 232, 255];
+const TIME_AXIS_COLOR: [u8; 4] = [103, 183, 255, 255];
+const UTILIZATION_AXIS_COLOR: [u8; 4] = [253, 231, 37, 255];
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct TerrainAxisLabel {
+    pub x: i32,
+    pub y: i32,
+    pub width: i32,
+    pub text: String,
+    pub color: [u8; 3],
+    pub is_axis_title: bool,
+}
+
+struct AxisLabelSpec {
+    point: (f32, f32, f32),
+    text: String,
+    width: i32,
+    offset: (i32, i32),
+    color: [u8; 3],
+    is_axis_title: bool,
+}
+
 pub struct OffscreenRenderer {
     pub camera: OrbitCamera,
     pub mesh: TerrainMesh,
@@ -39,10 +62,132 @@ impl OffscreenRenderer {
     }
 
     pub fn fit_camera_to_viewport(&mut self) {
-        let aspect = self.width as f32 / self.height.max(1) as f32;
-        let span_x = 34.0 * aspect.sqrt().clamp(1.0, 1.8);
+        let (span_x, span_z) = terrain_spans(self.width, self.height);
         self.camera
-            .fit_to_bounds(self.width, self.height, span_x, 38.0, 12.0);
+            .fit_to_bounds(self.width, self.height, span_x, span_z, 12.0);
+    }
+
+    pub fn projected_axis_labels(&self) -> Vec<TerrainAxisLabel> {
+        let row_count = self.mesh.sample_count();
+        let core_count = self.mesh.grid.first().map_or(0, Vec::len);
+        if row_count == 0 || core_count == 0 {
+            return Vec::new();
+        }
+        let (span_x, span_z) = terrain_spans(self.width, self.height);
+        let floor_y = -0.75;
+        let floor_half_x = span_x * 0.54;
+        let floor_half_z = span_z * 0.54;
+        let mut labels = Vec::new();
+
+        for percent in [0, 25, 50, 75, 100] {
+            let height = floor_y + (12.0 - floor_y) * percent as f32 / 100.0;
+            append_projected_label(
+                &mut labels,
+                &self.camera,
+                (self.width, self.height),
+                AxisLabelSpec {
+                    point: (-floor_half_x, height, floor_half_z),
+                    text: format!("{percent}%"),
+                    width: 38,
+                    offset: (-40, -7),
+                    color: [173, 187, 204],
+                    is_axis_title: false,
+                },
+            );
+        }
+        let mut processor_ticks = vec![0, core_count / 2, core_count - 1];
+        processor_ticks.dedup();
+        for processor_id in processor_ticks {
+            let amount = if core_count > 1 {
+                processor_id as f32 / (core_count - 1) as f32
+            } else {
+                0.5
+            };
+            let x = (amount - 0.5) * span_x;
+            append_projected_label(
+                &mut labels,
+                &self.camera,
+                (self.width, self.height),
+                AxisLabelSpec {
+                    point: (x, floor_y, floor_half_z),
+                    text: processor_id.to_string(),
+                    width: 28,
+                    offset: (-14, 4),
+                    color: [173, 187, 204],
+                    is_axis_title: false,
+                },
+            );
+        }
+        let history_seconds = self.mesh.history_seconds();
+        let time_ticks = if history_seconds >= 2 {
+            vec![history_seconds, history_seconds / 2, 0]
+        } else if history_seconds == 1 {
+            vec![1, 0]
+        } else {
+            vec![0]
+        };
+        for seconds_ago in time_ticks {
+            let amount = if history_seconds > 0 {
+                1.0 - seconds_ago as f32 / history_seconds as f32
+            } else {
+                1.0
+            };
+            let z = (amount - 0.5) * span_z;
+            append_projected_label(
+                &mut labels,
+                &self.camera,
+                (self.width, self.height),
+                AxisLabelSpec {
+                    point: (-floor_half_x, floor_y, z),
+                    text: format!("{seconds_ago}s"),
+                    width: 36,
+                    offset: (-18, 4),
+                    color: [173, 187, 204],
+                    is_axis_title: false,
+                },
+            );
+        }
+
+        append_projected_label(
+            &mut labels,
+            &self.camera,
+            (self.width, self.height),
+            AxisLabelSpec {
+                point: (0.0, floor_y, floor_half_z + 4.0),
+                text: "Processor".into(),
+                width: 86,
+                offset: (-43, 17),
+                color: [99, 214, 232],
+                is_axis_title: true,
+            },
+        );
+        append_projected_label(
+            &mut labels,
+            &self.camera,
+            (self.width, self.height),
+            AxisLabelSpec {
+                point: (-floor_half_x - 4.0, floor_y, 0.0),
+                text: "Time".into(),
+                width: 56,
+                offset: (-28, 16),
+                color: [103, 183, 255],
+                is_axis_title: true,
+            },
+        );
+        append_projected_label(
+            &mut labels,
+            &self.camera,
+            (self.width, self.height),
+            AxisLabelSpec {
+                point: (-floor_half_x, 12.0, floor_half_z),
+                text: "Utilization".into(),
+                width: 88,
+                offset: (-90, -20),
+                color: [253, 231, 37],
+                is_axis_title: true,
+            },
+        );
+        labels
     }
 
     pub fn render_frame(&mut self) -> Image {
@@ -68,9 +213,7 @@ impl OffscreenRenderer {
         }
         let mut projected = vec![vec![None; core_count]; row_count];
 
-        let aspect = w as f32 / h.max(1) as f32;
-        let span_x = 34.0 * aspect.sqrt().clamp(1.0, 1.8);
-        let span_z = 38.0;
+        let (span_x, span_z) = terrain_spans(w, h);
 
         for (z, row) in projected.iter_mut().enumerate() {
             for (x, point) in row.iter_mut().enumerate() {
@@ -161,9 +304,6 @@ impl OffscreenRenderer {
             }
         }
 
-        let processor_axis_color = [99, 214, 232, 255];
-        let time_axis_color = [103, 183, 255, 255];
-        let utilization_axis_color = [253, 231, 37, 255];
         if let (Some(start), Some(end)) = (
             self.camera
                 .project(-span_x * 0.5, floor_y, floor_half_z, w, h),
@@ -176,7 +316,7 @@ impl OffscreenRenderer {
                 (w, h),
                 start,
                 end,
-                processor_axis_color,
+                PROCESSOR_AXIS_COLOR,
             );
         }
         if let (Some(start), Some(end)) = (
@@ -191,7 +331,7 @@ impl OffscreenRenderer {
                 (w, h),
                 start,
                 end,
-                time_axis_color,
+                TIME_AXIS_COLOR,
             );
         }
         if let (Some(start), Some(end)) = (
@@ -205,11 +345,61 @@ impl OffscreenRenderer {
                 (w, h),
                 start,
                 end,
-                utilization_axis_color,
+                UTILIZATION_AXIS_COLOR,
             );
         }
 
         Image::from_rgba8(self.buffer.clone())
+    }
+}
+
+fn terrain_spans(width: u32, height: u32) -> (f32, f32) {
+    let aspect = width as f32 / height.max(1) as f32;
+    (34.0 * aspect.sqrt().clamp(1.0, 1.8), 38.0)
+}
+
+fn append_projected_label(
+    labels: &mut Vec<TerrainAxisLabel>,
+    camera: &OrbitCamera,
+    viewport: (u32, u32),
+    spec: AxisLabelSpec,
+) {
+    let (viewport_width, viewport_height) = viewport;
+    let Some((projected_x, projected_y, _)) = camera.project(
+        spec.point.0,
+        spec.point.1,
+        spec.point.2,
+        viewport_width,
+        viewport_height,
+    ) else {
+        return;
+    };
+    let x = (projected_x + spec.offset.0)
+        .max(0)
+        .min((viewport_width as i32 - spec.width).max(0));
+    let preferred_y = (projected_y + spec.offset.1)
+        .max(0)
+        .min((viewport_height as i32 - 14).max(0));
+    let max_y = (viewport_height as i32 - 14).max(0);
+    for offset in [0, 14, -14, 28, -28, 42, -42] {
+        let y = (preferred_y + offset).clamp(0, max_y);
+        let overlaps = labels.iter().any(|label| {
+            x < label.x + label.width
+                && x + spec.width > label.x
+                && y < label.y + 14
+                && y + 14 > label.y
+        });
+        if !overlaps {
+            labels.push(TerrainAxisLabel {
+                x,
+                y,
+                width: spec.width,
+                text: spec.text,
+                color: spec.color,
+                is_axis_title: spec.is_axis_title,
+            });
+            return;
+        }
     }
 }
 
@@ -500,6 +690,38 @@ mod tests {
                 .as_slice()
                 .iter()
                 .any(|pixel| { (pixel.r, pixel.g, pixel.b) == expected }));
+        }
+    }
+
+    #[test]
+    fn projected_axis_labels_use_dynamic_processor_ticks_and_fit_viewport() {
+        for core_count in [1, 16, 64] {
+            let mut renderer = OffscreenRenderer::new(640, 380);
+            renderer.mesh.push_sample(&vec![42.0; core_count]);
+            renderer.fit_camera_to_viewport();
+            let labels = renderer.projected_axis_labels();
+            assert!(labels.iter().any(|label| label.text == "Processor"));
+            assert!(labels.iter().any(|label| label.text == "Time"));
+            assert!(labels.iter().any(|label| label.text == "Utilization"));
+            assert!(labels.iter().any(|label| label.text == "0%"));
+            assert!(labels.iter().any(|label| label.text == "100%"));
+            assert!(labels
+                .iter()
+                .any(|label| label.text == (core_count - 1).to_string()));
+            assert!(labels.iter().all(|label| {
+                label.x >= 0
+                    && label.y >= 0
+                    && label.x + label.width <= renderer.width as i32
+                    && label.y + 14 <= renderer.height as i32
+            }));
+            for (index, label) in labels.iter().enumerate() {
+                assert!(labels[index + 1..].iter().all(|other| {
+                    label.x + label.width <= other.x
+                        || other.x + other.width <= label.x
+                        || label.y + 14 <= other.y
+                        || other.y + 14 <= label.y
+                }));
+            }
         }
     }
 

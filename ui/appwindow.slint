@@ -1,7 +1,7 @@
 import { Theme } from "theme.slint";
 import { DashboardLeftPanel } from "components/dashboard_left_panel.slint";
 import { DashboardRightPanel } from "components/dashboard_right_panel.slint";
-import { Viewport3D } from "components/viewport_3d.slint";
+import { Viewport3D, TerrainAxisLabel } from "components/viewport_3d.slint";
 import { PanelSplitter } from "components/panel_splitter.slint";
 import { CoreRow } from "components/core_matrix.slint";
 import { LinePlotSeries } from "components/line_plot.slint";
@@ -56,6 +56,7 @@ export component AppWindow inherits Window {
     in property <[CoreRow]> core_rows: [];
     in property <int> history_samples: 0;
     in property <int> history_seconds: 0;
+    in property <[TerrainAxisLabel]> terrain_axis_labels: [];
     in-out property <length> left_sidebar_width: 290px;
     in-out property <length> right_sidebar_width: 290px;
     in-out property <bool> left_sidebar_visible: true;
@@ -171,6 +172,7 @@ export component AppWindow inherits Window {
                 cpu_logical_count: root.cpu_logical_cores;
                 history_samples: root.history_samples;
                 history_seconds: root.history_seconds;
+                axis_labels: root.terrain_axis_labels;
                 rotate_drag(dx, dy) => { root.rotate_3d(dx, dy); }
                 pan_drag(dx, dy) => { root.pan_3d(dx, dy); }
                 zoom_scroll(delta) => { root.zoom_3d(delta); }
@@ -246,6 +248,7 @@ export component AppWindow inherits Window {
                     cpu_logical_count: root.cpu_logical_cores;
                     history_samples: root.history_samples;
                     history_seconds: root.history_seconds;
+                    axis_labels: root.terrain_axis_labels;
                     rotate_drag(dx, dy) => { root.rotate_3d(dx, dy); }
                     pan_drag(dx, dy) => { root.pan_3d(dx, dy); }
                     zoom_scroll(delta) => { root.zoom_3d(delta); }

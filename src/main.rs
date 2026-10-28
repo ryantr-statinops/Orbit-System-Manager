@@ -4,7 +4,7 @@
 mod cli;
 
 use orbit_system_manager::preview::DashboardSnapshot;
-use orbit_system_manager::ui::{AppWindow, CoreItem, CoreRow, LinePlotSeries};
+use orbit_system_manager::ui::{AppWindow, CoreItem, CoreRow, LinePlotSeries, TerrainAxisLabel};
 use slint::{ModelRc, Timer, TimerMode, VecModel};
 use std::cell::Cell;
 use std::cell::RefCell;
@@ -153,9 +153,11 @@ fn main() -> Result<(), slint::PlatformError> {
 
     // 4. Initial 3D frame render
     {
-        let frame = renderer.borrow_mut().render_frame();
+        let mut renderer = renderer.borrow_mut();
+        let frame = renderer.render_frame();
         app.set_viewport_3d_frame(frame);
         app.set_has_3d_frame(true);
+        apply_terrain_axis_labels(&app, &renderer);
         frame_dirty.set(false);
     }
 
@@ -443,8 +445,10 @@ fn schedule_animation(
             let mut ren = renderer.borrow_mut();
             let moving = ren.mesh.update_interpolation(0.12);
             if moving || dirty.replace(false) {
-                app.set_viewport_3d_frame(ren.render_frame());
+                let frame = ren.render_frame();
+                app.set_viewport_3d_frame(frame);
                 app.set_has_3d_frame(true);
+                apply_terrain_axis_labels(&app, &ren);
             }
             drop(ren);
             if moving {
@@ -457,6 +461,22 @@ fn schedule_animation(
             }
         },
     );
+}
+
+fn apply_terrain_axis_labels(app: &AppWindow, renderer: &OffscreenRenderer) {
+    let labels = renderer
+        .projected_axis_labels()
+        .into_iter()
+        .map(|label| TerrainAxisLabel {
+            x: label.x as f32,
+            y: label.y as f32,
+            width: label.width as f32,
+            text: label.text.into(),
+            color: slint::Color::from_rgb_u8(label.color[0], label.color[1], label.color[2]),
+            is_axis_title: label.is_axis_title,
+        })
+        .collect::<Vec<_>>();
+    app.set_terrain_axis_labels(Rc::new(VecModel::from(labels)).into());
 }
 
 #[cfg(test)]
