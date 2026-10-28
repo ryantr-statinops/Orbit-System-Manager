@@ -26,10 +26,8 @@ pub fn generate_network(elapsed_seconds: u64) -> NetworkPreview {
 }
 
 fn rates_at(time: f32) -> (f32, f32) {
-    let receive = (420.0 + (time * 0.27).sin() * 160.0 + (time * 0.071).sin() * 95.0)
-        .max(0.0);
-    let send = (105.0 + (time * 0.19 + 0.8).sin() * 62.0 + (time * 0.083).sin() * 31.0)
-        .max(0.0);
+    let receive = (420.0 + (time * 0.27).sin() * 160.0 + (time * 0.071).sin() * 95.0).max(0.0);
+    let send = (105.0 + (time * 0.19 + 0.8).sin() * 62.0 + (time * 0.083).sin() * 31.0).max(0.0);
     (receive, send)
 }
 

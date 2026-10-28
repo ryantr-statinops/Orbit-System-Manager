@@ -19,8 +19,7 @@ pub fn generate_memory(elapsed_seconds: u64) -> MemoryPreview {
 }
 
 fn memory_at(time: f32) -> f32 {
-    (12.2 + (time * 0.043).sin() * 1.25 + (time * 0.13).sin() * 0.32)
-        .clamp(0.0, TOTAL_GIB)
+    (12.2 + (time * 0.043).sin() * 1.25 + (time * 0.13).sin() * 0.32).clamp(0.0, TOTAL_GIB)
 }
 
 #[cfg(test)]
@@ -33,7 +32,9 @@ mod tests {
         assert_eq!(memory.history.len(), 61);
         assert_eq!(memory.history.last().unwrap().value, Some(memory.used_gib));
         assert!(memory.history.iter().all(|point| {
-            point.value.is_some_and(|value| (0.0..=memory.total_gib).contains(&value))
+            point
+                .value
+                .is_some_and(|value| (0.0..=memory.total_gib).contains(&value))
         }));
     }
 
