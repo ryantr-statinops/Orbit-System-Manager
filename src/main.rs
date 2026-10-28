@@ -1,6 +1,8 @@
 // Orbit System Manager — Pure Native Rust & Slint Main Application
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod cli;
+
 use orbit_system_manager::preview::DashboardSnapshot;
 use orbit_system_manager::ui::{AppWindow, CoreItem, CoreRow};
 use slint::{ModelRc, Timer, TimerMode, VecModel};
@@ -13,10 +15,17 @@ use orbit_system_manager::{preview, renderer};
 use renderer::OffscreenRenderer;
 
 fn main() -> Result<(), slint::PlatformError> {
+    let options = cli::parse_demo_args(std::env::args().skip(1)).unwrap_or_else(|error| {
+        eprintln!("{error}");
+        std::process::exit(2);
+    });
     let app = AppWindow::new()?;
     let app_weak = app.as_weak();
     let core_columns = Rc::new(Cell::new(8usize));
-    let demo_source = Rc::new(RefCell::new(preview::PreviewState::new(16)));
+    let demo_source = Rc::new(RefCell::new(preview::PreviewState::with_scenario(
+        16,
+        options.scenario,
+    )));
     let snapshot = demo_source.borrow().snapshot();
 
     {
@@ -32,7 +41,9 @@ fn main() -> Result<(), slint::PlatformError> {
     let animation_timer = Rc::new(Timer::default());
 
     let core_values = apply_snapshot(&app, &snapshot, core_columns.get());
-    renderer.borrow_mut().mesh.push_sample(&core_values);
+    if !core_values.is_empty() {
+        renderer.borrow_mut().mesh.push_sample(&core_values);
+    }
     {
         let mesh = renderer.borrow();
         app.set_history_samples(mesh.mesh.sample_count() as i32);
@@ -199,12 +210,21 @@ fn apply_snapshot(app: &AppWindow, snapshot: &DashboardSnapshot, columns: usize)
         .map(|core| core.utilization)
         .collect::<Vec<_>>();
 
+    let status_text = match snapshot.scenario {
+        preview::DemoScenario::Full | preview::DemoScenario::Single => "Demo data",
+        preview::DemoScenario::Empty => "Waiting for samples",
+        preview::DemoScenario::Unavailable => "Unavailable",
+    };
     app.set_cpu_available(snapshot.cpu_average.is_some());
-    app.set_cpu_status_text("Demo data".into());
+    app.set_cpu_status_text(status_text.into());
     app.set_cpu_avg(snapshot.cpu_average.unwrap_or_default());
     app.set_cpu_std(snapshot.cpu_std_dev.unwrap_or_default());
     app.set_cpu_var(snapshot.cpu_variance.unwrap_or_default());
-    app.set_cpu_name(snapshot.cpu_name.clone().into());
+    let cpu_name = match snapshot.scenario {
+        preview::DemoScenario::Full | preview::DemoScenario::Single => snapshot.cpu_name.as_str(),
+        preview::DemoScenario::Empty | preview::DemoScenario::Unavailable => status_text,
+    };
+    app.set_cpu_name(cpu_name.into());
     app.set_cpu_frequency(
         snapshot
             .cpu_frequency_ghz
@@ -224,6 +244,7 @@ fn apply_snapshot(app: &AppWindow, snapshot: &DashboardSnapshot, columns: usize)
 
     let ram_available = snapshot.ram_used_gib.zip(snapshot.ram_total_gib);
     app.set_ram_available(ram_available.is_some());
+    app.set_ram_status_text(status_text.into());
     app.set_ram_used_gb(snapshot.ram_used_gib.unwrap_or_default());
     app.set_ram_total_gb(snapshot.ram_total_gib.unwrap_or_default());
     app.set_ram_percent(
@@ -233,6 +254,8 @@ fn apply_snapshot(app: &AppWindow, snapshot: &DashboardSnapshot, columns: usize)
             .unwrap_or_default(),
     );
 
+    app.set_gpu_available(snapshot.gpu.is_some());
+    app.set_gpu_status_text(status_text.into());
     if let Some(gpu) = &snapshot.gpu {
         app.set_gpu_name(gpu.name.clone().into());
         app.set_gpu_utilization(gpu.utilization);
@@ -240,6 +263,13 @@ fn apply_snapshot(app: &AppWindow, snapshot: &DashboardSnapshot, columns: usize)
         app.set_gpu_vram_total_gib(gpu.vram_total_gib);
         app.set_gpu_temperature_c(gpu.temperature_c);
         app.set_gpu_clock_mhz(gpu.clock_mhz);
+    } else {
+        app.set_gpu_name(status_text.into());
+        app.set_gpu_utilization(0.0);
+        app.set_gpu_vram_used_gib(0.0);
+        app.set_gpu_vram_total_gib(0.0);
+        app.set_gpu_temperature_c(0.0);
+        app.set_gpu_clock_mhz(0.0);
     }
 
     if let Some(network) = &snapshot.network {
@@ -247,6 +277,11 @@ fn apply_snapshot(app: &AppWindow, snapshot: &DashboardSnapshot, columns: usize)
         app.set_network_status_text("Demo data".into());
         app.set_net_recv_kib(network.received_kib_per_sec);
         app.set_net_sent_kib(network.sent_kib_per_sec);
+    } else {
+        app.set_network_available(false);
+        app.set_network_status_text(status_text.into());
+        app.set_net_recv_kib(0.0);
+        app.set_net_sent_kib(0.0);
     }
 
     core_values

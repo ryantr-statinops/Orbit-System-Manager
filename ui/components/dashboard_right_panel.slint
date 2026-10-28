@@ -6,11 +6,14 @@ export component DashboardRightPanel inherits Rectangle {
     in property <bool> ram_available: false;
     in property <float> ram_used_gb: 0.0;
     in property <float> ram_total_gb: 0.0;
+    in property <string> ram_status_text: "Waiting for samples";
     in property <float> net_sent_kib: 0.0;
     in property <float> net_recv_kib: 0.0;
     in property <bool> network_available: false;
     in property <string> network_status_text: "Collecting first sample";
     in property <string> gpu_name: "Demo GPU";
+    in property <bool> gpu_available: true;
+    in property <string> gpu_status_text: "Demo data";
     in property <float> gpu_utilization: 0.0;
     in property <float> gpu_vram_used_gib: 0.0;
     in property <float> gpu_vram_total_gib: 8.0;
@@ -36,7 +39,7 @@ export component DashboardRightPanel inherits Rectangle {
                 spacing: 10px;
                 Text { text: "SYSTEM MEMORY (RAM)"; font-size: 11px; font-weight: 700; color: Theme.text_secondary; }
                 Text {
-                    text: root.ram_available ? Math.round(root.ram_used_gb * 10.0) / 10.0 + " / " + Math.round(root.ram_total_gb * 10.0) / 10.0 + " GiB (" + Math.round(root.ram_percent) + "%)" : "Unavailable";
+                    text: root.ram_available ? Math.round(root.ram_used_gb * 10.0) / 10.0 + " / " + Math.round(root.ram_total_gb * 10.0) / 10.0 + " GiB (" + Math.round(root.ram_percent) + "%)" : root.ram_status_text;
                     overflow: elide;
                     font-size: 12px;
                     color: Theme.text_primary;
@@ -52,7 +55,7 @@ export component DashboardRightPanel inherits Rectangle {
                         animate width { duration: 250ms; easing: ease-out; }
                     }
                 }
-                Text { text: root.ram_available ? "Memory usage" : "Memory telemetry unavailable"; font-size: 10px; color: Theme.text_muted; }
+                Text { text: root.ram_available ? "Memory usage" : root.ram_status_text; font-size: 10px; color: Theme.text_muted; }
             }
         }
 
@@ -67,11 +70,15 @@ export component DashboardRightPanel inherits Rectangle {
                 padding: 12px;
                 spacing: 10px;
                 Text { text: "GPU TELEMETRY"; font-size: 11px; font-weight: 700; color: Theme.text_secondary; }
-                Text { text: root.gpu_name; font-size: 11px; color: Theme.text_muted; }
-                Text { text: Math.round(root.gpu_utilization) + "%"; font-size: 20px; font-weight: 700; color: Theme.accent_cyan; }
-                Rectangle { height: 1px; background: Theme.border; }
-                Text { text: "VRAM " + Math.round(root.gpu_vram_used_gib * 10.0) / 10.0 + " / " + Math.round(root.gpu_vram_total_gib * 10.0) / 10.0 + " GiB"; font-size: 11px; color: Theme.text_secondary; }
-                Text { text: Math.round(root.gpu_temperature_c) + " °C  •  " + Math.round(root.gpu_clock_mhz) + " MHz"; font-size: 11px; color: Theme.text_secondary; }
+                if root.gpu_available: VerticalLayout {
+                    spacing: 10px;
+                    Text { text: root.gpu_name; font-size: 11px; color: Theme.text_muted; }
+                    Text { text: Math.round(root.gpu_utilization) + "%"; font-size: 20px; font-weight: 700; color: Theme.accent_cyan; }
+                    Rectangle { height: 1px; background: Theme.border; }
+                    Text { text: "VRAM " + Math.round(root.gpu_vram_used_gib * 10.0) / 10.0 + " / " + Math.round(root.gpu_vram_total_gib * 10.0) / 10.0 + " GiB"; font-size: 11px; color: Theme.text_secondary; }
+                    Text { text: Math.round(root.gpu_temperature_c) + " °C  •  " + Math.round(root.gpu_clock_mhz) + " MHz"; font-size: 11px; color: Theme.text_secondary; }
+                }
+                if !root.gpu_available: Text { text: root.gpu_status_text; font-size: 12px; color: Theme.text_muted; }
             }
         }
 

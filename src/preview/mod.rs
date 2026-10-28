@@ -10,7 +10,7 @@ pub use demo::{snapshot_at, DemoSource, PreviewState};
 pub use gpu::generate_gpu;
 pub use memory::generate_memory;
 pub use model::{
-    CpuPreview, DashboardSnapshot, GpuPreview, HistoryPoint, MemoryPreview, NetworkPreview,
-    ProcessorPreview,
+    CpuPreview, DashboardSnapshot, DemoScenario, GpuPreview, HistoryPoint, MemoryPreview,
+    NetworkPreview, ProcessorPreview,
 };
 pub use network::generate_network;

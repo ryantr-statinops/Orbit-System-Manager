@@ -52,6 +52,7 @@ pub struct NetworkPreview {
 #[derive(Clone, Debug, PartialEq)]
 pub struct DashboardSnapshot {
     pub elapsed_seconds: u64,
+    pub scenario: DemoScenario,
     pub cpu_name: String,
     pub cpu_frequency_ghz: Option<f32>,
     pub physical_cores: Option<usize>,
@@ -65,4 +66,24 @@ pub struct DashboardSnapshot {
     pub ram_history: Vec<HistoryPoint>,
     pub gpu: Option<GpuPreview>,
     pub network: Option<NetworkPreview>,
+}
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum DemoScenario {
+    #[default]
+    Full,
+    Empty,
+    Single,
+    Unavailable,
+}
+
+impl DemoScenario {
+    pub fn parse(value: &str) -> Option<Self> {
+        match value {
+            "full" => Some(Self::Full),
+            "empty" => Some(Self::Empty),
+            "single" => Some(Self::Single),
+            "unavailable" => Some(Self::Unavailable),
+            _ => None,
+        }
+    }
 }
