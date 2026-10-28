@@ -37,6 +37,8 @@ export component AppWindow inherits Window {
     in property <bool> ram_history_has_data: false;
     in property <float> net_sent_kib: 0.0;
     in property <float> net_recv_kib: 0.0;
+    in property <[LinePlotSeries]> network_history_series: [];
+    in property <bool> network_history_has_data: false;
     in property <bool> network_available: false;
     in property <string> network_status_text: "Collecting first sample";
     in property <string> gpu_name: "Demo GPU";
@@ -195,6 +197,8 @@ export component AppWindow inherits Window {
                 ram_history_has_data: root.ram_history_has_data;
                 net_sent_kib: root.net_sent_kib;
                 net_recv_kib: root.net_recv_kib;
+                network_history_series: root.network_history_series;
+                network_history_has_data: root.network_history_has_data;
                 network_available: root.network_available;
                 network_status_text: root.network_status_text;
                 gpu_name: root.gpu_name;
@@ -260,6 +264,8 @@ export component AppWindow inherits Window {
                     ram_history_has_data: root.ram_history_has_data;
                     net_sent_kib: root.net_sent_kib;
                     net_recv_kib: root.net_recv_kib;
+                    network_history_series: root.network_history_series;
+                    network_history_has_data: root.network_history_has_data;
                     network_available: root.network_available;
                     network_status_text: root.network_status_text;
                     gpu_name: root.gpu_name;

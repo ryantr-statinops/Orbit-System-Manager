@@ -29,6 +29,16 @@ pub fn normalize_history(
         .collect()
 }
 
+pub fn network_history_max_value(received: &[HistoryPoint], sent: &[HistoryPoint]) -> f32 {
+    let maximum = received
+        .iter()
+        .chain(sent)
+        .filter_map(|point| point.value)
+        .filter(|value| value.is_finite())
+        .fold(0.0_f32, f32::max);
+    (maximum * 1.1).max(1.0)
+}
+
 pub fn line_path_commands(points: &[NormalizedPoint]) -> String {
     let mut commands = String::new();
     let mut start_segment = true;
@@ -195,6 +205,30 @@ mod tests {
                 .y
                 .is_some_and(|normalized| (0.0..=1.0).contains(&normalized))
         }));
+    }
+
+    #[test]
+    fn network_history_scale_adds_headroom_and_has_a_minimum() {
+        let received = [HistoryPoint {
+            seconds_ago: 0,
+            value: Some(10.0),
+        }];
+        let sent = [HistoryPoint {
+            seconds_ago: 0,
+            value: Some(20.0),
+        }];
+        assert!((network_history_max_value(&received, &sent) - 22.0).abs() < f32::EPSILON);
+        assert_eq!(network_history_max_value(&[], &[]), 1.0);
+        assert_eq!(
+            network_history_max_value(
+                &[HistoryPoint {
+                    seconds_ago: 0,
+                    value: None,
+                }],
+                &[]
+            ),
+            1.0
+        );
     }
 
     #[test]

@@ -343,11 +343,40 @@ fn apply_snapshot(app: &AppWindow, snapshot: &DashboardSnapshot, columns: usize)
         app.set_network_status_text("Demo data".into());
         app.set_net_recv_kib(network.received_kib_per_sec);
         app.set_net_sent_kib(network.sent_kib_per_sec);
+        let maximum =
+            preview::network_history_max_value(&network.received_history, &network.sent_history);
+        let received = preview::line_path_commands(&preview::normalize_history(
+            &network.received_history,
+            preview::HISTORY_SECONDS,
+            maximum,
+        ));
+        let sent = preview::line_path_commands(&preview::normalize_history(
+            &network.sent_history,
+            preview::HISTORY_SECONDS,
+            maximum,
+        ));
+        let mut series = Vec::new();
+        if !received.is_empty() {
+            series.push(LinePlotSeries {
+                commands: received.into(),
+                color: slint::Color::from_rgb_u8(99, 214, 232),
+            });
+        }
+        if !sent.is_empty() {
+            series.push(LinePlotSeries {
+                commands: sent.into(),
+                color: slint::Color::from_rgb_u8(100, 215, 161),
+            });
+        }
+        app.set_network_history_has_data(!series.is_empty());
+        app.set_network_history_series(Rc::new(VecModel::from(series)).into());
     } else {
         app.set_network_available(false);
         app.set_network_status_text(status_text.into());
         app.set_net_recv_kib(0.0);
         app.set_net_sent_kib(0.0);
+        app.set_network_history_has_data(false);
+        app.set_network_history_series(Rc::new(VecModel::from(Vec::new())).into());
     }
 
     core_values

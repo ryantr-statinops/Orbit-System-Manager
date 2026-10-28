@@ -6,7 +6,10 @@ mod memory;
 mod model;
 mod network;
 
-pub use chart::{area_path_commands, line_path_commands, normalize_history, NormalizedPoint};
+pub use chart::{
+    area_path_commands, line_path_commands, network_history_max_value, normalize_history,
+    NormalizedPoint,
+};
 pub use cpu::generate_cpu;
 pub const HISTORY_SECONDS: u8 = cpu::HISTORY_SECONDS;
 pub use demo::{snapshot_at, DemoSource, PreviewState};

@@ -14,6 +14,8 @@ export component DashboardRightPanel inherits Rectangle {
     in property <bool> ram_history_has_data: false;
     in property <float> net_sent_kib: 0.0;
     in property <float> net_recv_kib: 0.0;
+    in property <[LinePlotSeries]> network_history_series: [];
+    in property <bool> network_history_has_data: false;
     in property <bool> network_available: false;
     in property <string> network_status_text: "Collecting first sample";
     in property <string> gpu_name: "Demo GPU";
@@ -179,6 +181,13 @@ export component DashboardRightPanel inherits Rectangle {
                     }
                 }
                 Text { text: "Aggregate across all interfaces"; font-size: 10px; color: Theme.text_muted; }
+                DashboardLinePlot {
+                    horizontal-stretch: 1;
+                    height: 76px;
+                    series: root.network_history_series;
+                    has_data: root.network_history_has_data;
+                    placeholder: "Network history samples will appear here";
+                }
             }
         }
         }
