@@ -32,6 +32,12 @@ export component AppWindow inherits Window {
     in property <float> net_recv_kib: 0.0;
     in property <bool> network_available: false;
     in property <string> network_status_text: "Collecting first sample";
+    in property <string> gpu_name: "Demo GPU";
+    in property <float> gpu_utilization: 0.0;
+    in property <float> gpu_vram_used_gib: 0.0;
+    in property <float> gpu_vram_total_gib: 8.0;
+    in property <float> gpu_temperature_c: 0.0;
+    in property <float> gpu_clock_mhz: 0.0;
     in property <[CoreRow]> core_rows: [];
     in property <int> history_samples: 0;
     in property <int> history_seconds: 0;
@@ -73,7 +79,7 @@ export component AppWindow inherits Window {
                         TouchArea { width: parent.width; height: parent.height; clicked => { root.left_sidebar_visible = !root.left_sidebar_visible; } }
                     }
                     Rectangle { width: 8px; height: 8px; border-radius: 4px; background: Theme.success; }
-                    Text { text: "LIVE"; font-size: 11px; color: Theme.success; }
+                    Text { text: "DEMO DATA"; font-size: 11px; color: Theme.warning; }
                 }
                 Text { text: "ORBIT SYSTEM MANAGER"; font-size: 14px; font-weight: 700; color: Theme.text_primary; }
                 HorizontalLayout {
@@ -153,6 +159,12 @@ export component AppWindow inherits Window {
                 net_recv_kib: root.net_recv_kib;
                 network_available: root.network_available;
                 network_status_text: root.network_status_text;
+                gpu_name: root.gpu_name;
+                gpu_utilization: root.gpu_utilization;
+                gpu_vram_used_gib: root.gpu_vram_used_gib;
+                gpu_vram_total_gib: root.gpu_vram_total_gib;
+                gpu_temperature_c: root.gpu_temperature_c;
+                gpu_clock_mhz: root.gpu_clock_mhz;
             }
         }
 
@@ -200,6 +212,12 @@ export component AppWindow inherits Window {
                     net_recv_kib: root.net_recv_kib;
                     network_available: root.network_available;
                     network_status_text: root.network_status_text;
+                    gpu_name: root.gpu_name;
+                    gpu_utilization: root.gpu_utilization;
+                    gpu_vram_used_gib: root.gpu_vram_used_gib;
+                    gpu_vram_total_gib: root.gpu_vram_total_gib;
+                    gpu_temperature_c: root.gpu_temperature_c;
+                    gpu_clock_mhz: root.gpu_clock_mhz;
                 }
             }
         }

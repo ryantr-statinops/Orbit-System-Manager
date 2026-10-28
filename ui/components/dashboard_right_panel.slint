@@ -10,6 +10,12 @@ export component DashboardRightPanel inherits Rectangle {
     in property <float> net_recv_kib: 0.0;
     in property <bool> network_available: false;
     in property <string> network_status_text: "Collecting first sample";
+    in property <string> gpu_name: "Demo GPU";
+    in property <float> gpu_utilization: 0.0;
+    in property <float> gpu_vram_used_gib: 0.0;
+    in property <float> gpu_vram_total_gib: 8.0;
+    in property <float> gpu_temperature_c: 0.0;
+    in property <float> gpu_clock_mhz: 0.0;
 
     background: transparent;
     ScrollView {
@@ -61,9 +67,11 @@ export component DashboardRightPanel inherits Rectangle {
                 padding: 12px;
                 spacing: 10px;
                 Text { text: "GPU TELEMETRY"; font-size: 11px; font-weight: 700; color: Theme.text_secondary; }
-                Text { text: "Unavailable"; font-size: 15px; font-weight: 700; color: Theme.warning; }
+                Text { text: root.gpu_name; font-size: 11px; color: Theme.text_muted; }
+                Text { text: Math.round(root.gpu_utilization) + "%"; font-size: 20px; font-weight: 700; color: Theme.accent_cyan; }
                 Rectangle { height: 1px; background: Theme.border; }
-                Text { text: "GPU monitoring is not supported by the current collector."; wrap: word-wrap; font-size: 11px; color: Theme.text_muted; }
+                Text { text: "VRAM " + Math.round(root.gpu_vram_used_gib * 10.0) / 10.0 + " / " + Math.round(root.gpu_vram_total_gib * 10.0) / 10.0 + " GiB"; font-size: 11px; color: Theme.text_secondary; }
+                Text { text: Math.round(root.gpu_temperature_c) + " °C  •  " + Math.round(root.gpu_clock_mhz) + " MHz"; font-size: 11px; color: Theme.text_secondary; }
             }
         }
 

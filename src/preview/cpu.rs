@@ -7,17 +7,24 @@ pub fn generate_cpu(elapsed_seconds: u64, core_count: usize) -> CpuPreview {
         .map(|id| ProcessorPreview {
             id,
             utilization: core_load(id, elapsed_seconds as f32),
-            history: history(|seconds| core_load(id, seconds)),
+            history: history(elapsed_seconds, |seconds| core_load(id, seconds)),
         })
         .collect::<Vec<_>>();
 
-    let values = cores.iter().map(|core| core.utilization).collect::<Vec<_>>();
+    let values = cores
+        .iter()
+        .map(|core| core.utilization)
+        .collect::<Vec<_>>();
     let average = (!values.is_empty()).then(|| values.iter().sum::<f32>() / values.len() as f32);
     let variance = average.map(|mean| {
-        values.iter().map(|value| (value - mean).powi(2)).sum::<f32>() / values.len() as f32
+        values
+            .iter()
+            .map(|value| (value - mean).powi(2))
+            .sum::<f32>()
+            / values.len() as f32
     });
 
-    let cpu_history = history(|seconds| {
+    let cpu_history = history(elapsed_seconds, |seconds| {
         let values = (0..core_count)
             .map(|id| core_load(id, seconds))
             .collect::<Vec<_>>();
@@ -40,12 +47,12 @@ pub fn generate_cpu(elapsed_seconds: u64, core_count: usize) -> CpuPreview {
     }
 }
 
-fn history(mut value_at: impl FnMut(f32) -> f32) -> Vec<HistoryPoint> {
+fn history(elapsed_seconds: u64, mut value_at: impl FnMut(f32) -> f32) -> Vec<HistoryPoint> {
     (0..=HISTORY_SECONDS)
         .rev()
         .map(|seconds_ago| HistoryPoint {
             seconds_ago,
-            value: Some(value_at(-(seconds_ago as f32))),
+            value: Some(value_at(elapsed_seconds as f32 - seconds_ago as f32)),
         })
         .collect()
 }
@@ -89,6 +96,15 @@ mod tests {
         assert!((cpu.average.unwrap() - mean).abs() < 0.001);
         assert!((cpu.variance.unwrap() - variance).abs() < 0.001);
         assert!((cpu.std_dev.unwrap() - variance.sqrt()).abs() < 0.001);
+    }
+
+    #[test]
+    fn current_history_sample_matches_the_current_processor_loads() {
+        let cpu = generate_cpu(23, 16);
+        for core in &cpu.cores {
+            assert_eq!(core.history.last().unwrap().value, Some(core.utilization));
+        }
+        assert_eq!(cpu.history.last().unwrap().value, cpu.average);
     }
 
     #[test]

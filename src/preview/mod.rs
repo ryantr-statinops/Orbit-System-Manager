@@ -1,11 +1,16 @@
-mod model;
 mod cpu;
-mod memory;
+mod demo;
 mod gpu;
+mod memory;
+mod model;
 mod network;
 
 pub use cpu::generate_cpu;
-pub use memory::generate_memory;
+pub use demo::snapshot_at;
 pub use gpu::generate_gpu;
+pub use memory::generate_memory;
+pub use model::{
+    CpuPreview, DashboardSnapshot, GpuPreview, HistoryPoint, MemoryPreview, NetworkPreview,
+    ProcessorPreview,
+};
 pub use network::generate_network;
-pub use model::{CpuPreview, DashboardSnapshot, GpuPreview, HistoryPoint, MemoryPreview, NetworkPreview, ProcessorPreview};

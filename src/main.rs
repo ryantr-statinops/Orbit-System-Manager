@@ -1,23 +1,22 @@
 // Orbit System Manager — Pure Native Rust & Slint Main Application
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use slint::{ModelRc, Timer, TimerMode, VecModel};
+use orbit_system_manager::preview::DashboardSnapshot;
 use orbit_system_manager::ui::{AppWindow, CoreItem, CoreRow};
+use slint::{ModelRc, Timer, TimerMode, VecModel};
 use std::cell::Cell;
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
-use std::thread;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
-use orbit_system_manager::{renderer, telemetry};
+use orbit_system_manager::{preview, renderer};
 use renderer::OffscreenRenderer;
 
 fn main() -> Result<(), slint::PlatformError> {
     let app = AppWindow::new()?;
     let app_weak = app.as_weak();
     let core_columns = Rc::new(Cell::new(8usize));
+    let snapshot = preview::snapshot_at(0, 16);
 
     {
         let columns = core_columns.clone();
@@ -26,29 +25,18 @@ fn main() -> Result<(), slint::PlatformError> {
         });
     }
 
-    // 1. Initialize hardware telemetry collector
-    let latest_payload = Arc::new(Mutex::new(None));
-    let stop_worker = Arc::new(AtomicBool::new(false));
-    let worker_payload = latest_payload.clone();
-    let worker_stop = stop_worker.clone();
-    let telemetry_worker = thread::spawn(move || {
-        let mut collector = telemetry::collector::TelemetryCollector::new();
-        thread::sleep(Duration::from_secs(1));
-        while !worker_stop.load(Ordering::Relaxed) {
-            let started = Instant::now();
-            let payload = collector.collect();
-            if let Ok(mut latest) = worker_payload.lock() {
-                *latest = Some(payload);
-            }
-            let remaining = Duration::from_secs(1).saturating_sub(started.elapsed());
-            thread::sleep(remaining);
-        }
-    });
-
-    // 2. Initialize native 3D renderer (640x380 viewport resolution)
+    // Initialize the native 3D renderer with the initial demo sample.
     let renderer = Rc::new(RefCell::new(OffscreenRenderer::new(640, 380)));
     let frame_dirty = Rc::new(Cell::new(false));
     let animation_timer = Rc::new(Timer::default());
+
+    let core_values = apply_snapshot(&app, &snapshot, core_columns.get());
+    renderer.borrow_mut().mesh.push_sample(&core_values);
+    {
+        let mesh = renderer.borrow();
+        app.set_history_samples(mesh.mesh.sample_count() as i32);
+        app.set_history_seconds(mesh.mesh.history_seconds() as i32);
+    }
 
     // Camera callbacks only update state. The animation timer coalesces redraws.
     {
@@ -146,94 +134,7 @@ fn main() -> Result<(), slint::PlatformError> {
         frame_dirty.set(false);
     }
 
-    // Poll the latest worker snapshot on the UI thread.
-    let telemetry_timer = Timer::default();
-    {
-        let app_weak_ref = app_weak.clone();
-        let payload_ref = latest_payload.clone();
-        let renderer_ref = renderer.clone();
-        let dirty = frame_dirty.clone();
-        let animation_timer = animation_timer.clone();
-        let core_columns = core_columns.clone();
-
-        telemetry_timer.start(TimerMode::Repeated, Duration::from_millis(100), move || {
-            if let Some(app) = app_weak_ref.upgrade() {
-                let payload = payload_ref.lock().ok().and_then(|mut p| p.take());
-                let Some(payload) = payload else {
-                    return;
-                };
-
-                // CPU metrics
-                let cpu = &payload.cpu_detail;
-                app.set_cpu_available(cpu.status == telemetry::models::MetricStatus::Available);
-                let cpu_status_text = match cpu.status {
-                    telemetry::models::MetricStatus::Available => "Available",
-                    telemetry::models::MetricStatus::WarmingUp => "Collecting first sample",
-                    telemetry::models::MetricStatus::Unavailable => "CPU telemetry unavailable",
-                };
-                app.set_cpu_status_text(cpu_status_text.into());
-                app.set_cpu_avg(cpu.avg_utilization.unwrap_or_default());
-                app.set_cpu_std(cpu.std_dev.unwrap_or_default());
-                app.set_cpu_var(cpu.variance.unwrap_or_default());
-                app.set_cpu_name(cpu.name.clone().unwrap_or_else(|| "N/A".into()).into());
-                app.set_cpu_frequency(
-                    cpu.frequency_ghz
-                        .map(|f| format!("{f:.2} GHz"))
-                        .unwrap_or_else(|| "N/A".into())
-                        .into(),
-                );
-                app.set_cpu_physical_cores(
-                    cpu.physical_core_count
-                        .map(|n| n.to_string())
-                        .unwrap_or_else(|| "N/A".into())
-                        .into(),
-                );
-                app.set_cpu_logical_cores(cpu.cores.len() as i32);
-
-                let rows = build_core_rows(&cpu.cores, core_columns.get());
-                app.set_core_rows(Rc::new(VecModel::from(rows)).into());
-
-                // Push cores to 3D terrain heightmap
-                renderer_ref.borrow_mut().mesh.push_sample(&cpu.cores);
-                dirty.set(true);
-
-                // Memory metrics
-                app.set_ram_available(payload.memory_detail.percent.is_some());
-                app.set_ram_percent(payload.memory_detail.percent.unwrap_or_default() as f32);
-                app.set_ram_used_gb(payload.memory_detail.used_gib as f32);
-                app.set_ram_total_gb(payload.memory_detail.total_gib as f32);
-
-                // Network speeds
-                let network = &payload.network_speed;
-                app.set_network_available(
-                    network.status == telemetry::models::MetricStatus::Available,
-                );
-                let network_status_text = match network.status {
-                    telemetry::models::MetricStatus::Available => "Available",
-                    telemetry::models::MetricStatus::WarmingUp => "Collecting first sample",
-                    telemetry::models::MetricStatus::Unavailable => "No network interface",
-                };
-                app.set_network_status_text(network_status_text.into());
-                app.set_net_sent_kib(network.sent_kib_per_sec.unwrap_or_default() as f32);
-                app.set_net_recv_kib(network.received_kib_per_sec.unwrap_or_default() as f32);
-                let ren = renderer_ref.borrow();
-                app.set_history_samples(ren.mesh.sample_count() as i32);
-                app.set_history_seconds(ren.mesh.history_seconds() as i32);
-                drop(ren);
-                schedule_animation(
-                    app_weak_ref.clone(),
-                    renderer_ref.clone(),
-                    dirty.clone(),
-                    animation_timer.clone(),
-                );
-            }
-        });
-    }
-
-    let result = app.run();
-    stop_worker.store(true, Ordering::Relaxed);
-    let _ = telemetry_worker.join();
-    result
+    app.run()
 }
 
 fn columns_for_width(width: f32) -> usize {
@@ -242,6 +143,66 @@ fn columns_for_width(width: f32) -> usize {
     } else {
         ((width - 48.0) / 108.0).floor().clamp(1.0, 8.0) as usize
     }
+}
+
+fn apply_snapshot(app: &AppWindow, snapshot: &DashboardSnapshot, columns: usize) -> Vec<f32> {
+    let core_values = snapshot
+        .cores
+        .iter()
+        .map(|core| core.utilization)
+        .collect::<Vec<_>>();
+
+    app.set_cpu_available(snapshot.cpu_average.is_some());
+    app.set_cpu_status_text("Demo data".into());
+    app.set_cpu_avg(snapshot.cpu_average.unwrap_or_default());
+    app.set_cpu_std(snapshot.cpu_std_dev.unwrap_or_default());
+    app.set_cpu_var(snapshot.cpu_variance.unwrap_or_default());
+    app.set_cpu_name(snapshot.cpu_name.clone().into());
+    app.set_cpu_frequency(
+        snapshot
+            .cpu_frequency_ghz
+            .map(|frequency| format!("{frequency:.2} GHz"))
+            .unwrap_or_else(|| "N/A".into())
+            .into(),
+    );
+    app.set_cpu_physical_cores(
+        snapshot
+            .physical_cores
+            .map(|count| count.to_string())
+            .unwrap_or_else(|| "N/A".into())
+            .into(),
+    );
+    app.set_cpu_logical_cores(snapshot.cores.len() as i32);
+    app.set_core_rows(Rc::new(VecModel::from(build_core_rows(&core_values, columns))).into());
+
+    let ram_available = snapshot.ram_used_gib.zip(snapshot.ram_total_gib);
+    app.set_ram_available(ram_available.is_some());
+    app.set_ram_used_gb(snapshot.ram_used_gib.unwrap_or_default());
+    app.set_ram_total_gb(snapshot.ram_total_gib.unwrap_or_default());
+    app.set_ram_percent(
+        ram_available
+            .filter(|(_, total)| *total > 0.0)
+            .map(|(used, total)| used / total * 100.0)
+            .unwrap_or_default(),
+    );
+
+    if let Some(gpu) = &snapshot.gpu {
+        app.set_gpu_name(gpu.name.clone().into());
+        app.set_gpu_utilization(gpu.utilization);
+        app.set_gpu_vram_used_gib(gpu.vram_used_gib);
+        app.set_gpu_vram_total_gib(gpu.vram_total_gib);
+        app.set_gpu_temperature_c(gpu.temperature_c);
+        app.set_gpu_clock_mhz(gpu.clock_mhz);
+    }
+
+    if let Some(network) = &snapshot.network {
+        app.set_network_available(true);
+        app.set_network_status_text("Demo data".into());
+        app.set_net_recv_kib(network.received_kib_per_sec);
+        app.set_net_sent_kib(network.sent_kib_per_sec);
+    }
+
+    core_values
 }
 
 fn build_core_rows(cores: &[f32], columns: usize) -> Vec<CoreRow> {
