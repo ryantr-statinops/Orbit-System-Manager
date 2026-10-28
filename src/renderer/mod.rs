@@ -8,6 +8,7 @@ use slint::{Image, Rgba8Pixel, SharedPixelBuffer};
 const PROCESSOR_AXIS_COLOR: [u8; 4] = [99, 214, 232, 255];
 const TIME_AXIS_COLOR: [u8; 4] = [103, 183, 255, 255];
 const UTILIZATION_AXIS_COLOR: [u8; 4] = [253, 231, 37, 255];
+const AXIS_TICK_COLOR: [u8; 3] = [179, 192, 210];
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct TerrainAxisLabel {
@@ -90,7 +91,7 @@ impl OffscreenRenderer {
                     text: format!("{percent}%"),
                     width: 38,
                     offset: (-40, -7),
-                    color: [173, 187, 204],
+                    color: AXIS_TICK_COLOR,
                     is_axis_title: false,
                 },
             );
@@ -113,7 +114,7 @@ impl OffscreenRenderer {
                     text: processor_id.to_string(),
                     width: 28,
                     offset: (-14, 4),
-                    color: [173, 187, 204],
+                    color: AXIS_TICK_COLOR,
                     is_axis_title: false,
                 },
             );
@@ -142,7 +143,7 @@ impl OffscreenRenderer {
                     text: format!("{seconds_ago}s"),
                     width: 36,
                     offset: (-18, 4),
-                    color: [173, 187, 204],
+                    color: AXIS_TICK_COLOR,
                     is_axis_title: false,
                 },
             );
