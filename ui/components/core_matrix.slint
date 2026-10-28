@@ -22,7 +22,7 @@ export component CoreCell inherits Rectangle {
         Text {
             text: root.id < 10 ? "C0" + root.id : "C" + root.id;
             width: 26px;
-            font-size: 10px;
+            font-size: 12px;
             font-weight: 700;
             color: Theme.text_muted;
             vertical-alignment: center;
@@ -43,7 +43,7 @@ export component CoreCell inherits Rectangle {
         Text {
             text: Math.round(root.load) + "%";
             width: 36px;
-            font-size: 10px;
+            font-size: 12px;
             font-weight: 700;
             color: Theme.viridis_color_for_load(root.load);
             horizontal-alignment: right;

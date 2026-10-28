@@ -35,14 +35,14 @@ export component Viewport3D inherits Rectangle {
                     spacing: 12px;
                     Text {
                         text: "ORBIT SYSTEM MANAGER // 3D TOPOLOGY";
-                        font-size: 11px;
+                        font-size: 14px;
                         font-weight: 700;
                         color: Theme.text_primary;
                     }
                 }
                 Text {
                     text: root.history_samples > 0 ? "" + root.history_samples + " of 30 samples • " + root.history_seconds + "s history • " + root.cpu_logical_count + " processors" : "Waiting for CPU data";
-                    font-size: 11px;
+                    font-size: 12px;
                     color: Theme.text_muted;
                 }
             }
@@ -61,7 +61,7 @@ export component Viewport3D inherits Rectangle {
                         padding-right: 8px;
                         padding-top: 4px;
                         padding-bottom: 4px;
-                        Text { text: root.cpu_logical_count + " CORES"; font-size: 9px; font-weight: 600; color: Theme.text_secondary; }
+                        Text { text: root.cpu_logical_count + " CORES"; font-size: 10px; font-weight: 600; color: Theme.text_secondary; }
                     }
                 }
                 Rectangle {
@@ -74,7 +74,7 @@ export component Viewport3D inherits Rectangle {
                         padding-right: 8px;
                         padding-top: 4px;
                         padding-bottom: 4px;
-                        Text { text: root.history_samples > 0 ? root.history_seconds + "s WINDOW" : "WAITING"; font-size: 9px; font-weight: 600; color: Theme.text_secondary; }
+                        Text { text: root.history_samples > 0 ? root.history_seconds + "s WINDOW" : "WAITING"; font-size: 10px; font-weight: 600; color: Theme.text_secondary; }
                     }
                 }
                 Rectangle {
@@ -87,7 +87,7 @@ export component Viewport3D inherits Rectangle {
                         padding-right: 10px;
                         padding-top: 4px;
                         padding-bottom: 4px;
-                        Text { text: "VIRIDIS THERMAL"; font-size: 9px; font-weight: 600; color: Theme.teal_primary; }
+                        Text { text: "VIRIDIS THERMAL"; font-size: 10px; font-weight: 600; color: Theme.teal_primary; }
                     }
                 }
                 Rectangle {
@@ -102,7 +102,7 @@ export component Viewport3D inherits Rectangle {
                         padding-bottom: 3px;
                         Text {
                         text: "Reset view";
-                            font-size: 10px;
+                            font-size: 11px;
                             font-weight: 600;
                         color: Theme.text_primary;
                         }
@@ -197,13 +197,13 @@ export component Viewport3D inherits Rectangle {
             alignment: space-between;
             Text {
                 text: "LOGICAL PROCESSORS →";
-                font-size: 9px;
+                font-size: 10px;
                 font-weight: 700;
                 color: Theme.text_secondary;
             }
             Text {
                 text: root.history_samples > 0 ? "TIME → LAST " + root.history_seconds + "s" : "TIME → WAITING FOR SAMPLES";
-                font-size: 9px;
+                font-size: 10px;
                 font-weight: 700;
                 color: Theme.text_secondary;
             }
@@ -211,14 +211,14 @@ export component Viewport3D inherits Rectangle {
         HorizontalLayout {
             spacing: 8px;
             alignment: center;
-            Text { text: "UTILIZATION"; font-size: 9px; font-weight: 700; color: Theme.text_secondary; }
-            Text { text: "0%"; font-size: 9px; color: #440154; }
+            Text { text: "UTILIZATION"; font-size: 10px; font-weight: 700; color: Theme.text_secondary; }
+            Text { text: "0%"; font-size: 10px; color: #440154; }
             Rectangle { width: 180px; height: 5px; border-radius: 2px; background: Theme.gradient_viridis; }
-            Text { text: "100%"; font-size: 9px; color: #fde725; }
+            Text { text: "100%"; font-size: 10px; color: #fde725; }
         }
         Text {
             text: "Left drag to rotate • Right drag to pan • Scroll to zoom";
-            font-size: 9px;
+            font-size: 11px;
             color: Theme.text_muted;
             horizontal-alignment: center;
         }
