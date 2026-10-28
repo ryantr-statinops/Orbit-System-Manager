@@ -23,7 +23,7 @@ fn main() -> Result<(), slint::PlatformError> {
     let app_weak = app.as_weak();
     let core_columns = Rc::new(Cell::new(8usize));
     let demo_source = Rc::new(RefCell::new(preview::PreviewState::with_scenario(
-        16,
+        options.core_count,
         options.scenario,
     )));
     let snapshot = demo_source.borrow().snapshot();
@@ -175,7 +175,9 @@ fn main() -> Result<(), slint::PlatformError> {
             let core_values = apply_snapshot(&app, &snapshot, columns.get());
             {
                 let mut ren = renderer_ref.borrow_mut();
-                ren.mesh.push_sample(&core_values);
+                if !core_values.is_empty() {
+                    ren.mesh.push_sample(&core_values);
+                }
                 dirty.set(true);
             }
             {
@@ -216,7 +218,13 @@ fn apply_snapshot(app: &AppWindow, snapshot: &DashboardSnapshot, columns: usize)
         preview::DemoScenario::Unavailable => "Unavailable",
     };
     app.set_cpu_available(snapshot.cpu_average.is_some());
-    app.set_cpu_status_text(status_text.into());
+    let cpu_status_text =
+        if snapshot.scenario == preview::DemoScenario::Full && snapshot.cores.is_empty() {
+            "No logical processors"
+        } else {
+            status_text
+        };
+    app.set_cpu_status_text(cpu_status_text.into());
     app.set_cpu_avg(snapshot.cpu_average.unwrap_or_default());
     app.set_cpu_std(snapshot.cpu_std_dev.unwrap_or_default());
     app.set_cpu_var(snapshot.cpu_variance.unwrap_or_default());

@@ -7,7 +7,7 @@ pub fn generate_cpu(elapsed_seconds: u64, core_count: usize) -> CpuPreview {
         .map(|id| ProcessorPreview {
             id,
             utilization: core_load(id, elapsed_seconds as f32),
-            history: history(elapsed_seconds, |seconds| core_load(id, seconds)),
+            history: history(elapsed_seconds, |seconds| Some(core_load(id, seconds))),
         })
         .collect::<Vec<_>>();
 
@@ -29,9 +29,9 @@ pub fn generate_cpu(elapsed_seconds: u64, core_count: usize) -> CpuPreview {
             .map(|id| core_load(id, seconds))
             .collect::<Vec<_>>();
         if values.is_empty() {
-            0.0
+            None
         } else {
-            values.iter().sum::<f32>() / values.len() as f32
+            Some(values.iter().sum::<f32>() / values.len() as f32)
         }
     });
 
@@ -47,12 +47,15 @@ pub fn generate_cpu(elapsed_seconds: u64, core_count: usize) -> CpuPreview {
     }
 }
 
-fn history(elapsed_seconds: u64, mut value_at: impl FnMut(f32) -> f32) -> Vec<HistoryPoint> {
+fn history(
+    elapsed_seconds: u64,
+    mut value_at: impl FnMut(f32) -> Option<f32>,
+) -> Vec<HistoryPoint> {
     (0..=HISTORY_SECONDS)
         .rev()
         .map(|seconds_ago| HistoryPoint {
             seconds_ago,
-            value: Some(value_at(elapsed_seconds as f32 - seconds_ago as f32)),
+            value: value_at(elapsed_seconds as f32 - seconds_ago as f32),
         })
         .collect()
 }
@@ -112,8 +115,22 @@ mod tests {
         let empty = generate_cpu(0, 0);
         assert!(empty.cores.is_empty());
         assert_eq!(empty.average, None);
+        assert!(empty.history.iter().all(|point| point.value.is_none()));
         let single = generate_cpu(0, 1);
         assert_eq!(single.cores.len(), 1);
         assert!(single.average.is_some());
+    }
+
+    #[test]
+    fn cpu_preview_produces_every_supported_processor_id() {
+        for count in [0, 1, 4, 16, 32, 64] {
+            let cpu = generate_cpu(7, count);
+            assert_eq!(cpu.cores.len(), count);
+            assert!(cpu
+                .cores
+                .iter()
+                .enumerate()
+                .all(|(expected, core)| core.id == expected));
+        }
     }
 }
