@@ -5,7 +5,7 @@ mod cli;
 
 use orbit_system_manager::preview::DashboardSnapshot;
 use orbit_system_manager::ui::{AppWindow, CoreItem, CoreRow, LinePlotSeries, TerrainAxisLabel};
-use slint::{ModelRc, Timer, TimerMode, VecModel};
+use slint::{ComponentHandle, ModelRc, Timer, TimerMode, VecModel};
 use std::cell::Cell;
 use std::cell::RefCell;
 #[cfg(feature = "dashboard-screenshot")]
@@ -64,6 +64,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Initialize the native 3D renderer with the initial demo sample.
     let renderer = Rc::new(RefCell::new(OffscreenRenderer::new(640, 380)));
+    #[cfg(feature = "dashboard-screenshot")]
     if options.capture_path.is_some() {
         let (width, height) = capture_canvas_size(options.capture_size);
         renderer
