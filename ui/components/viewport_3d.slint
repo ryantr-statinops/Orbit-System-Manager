@@ -240,7 +240,7 @@ export component Viewport3D inherits Rectangle {
             DashboardAction {
                 width: 84px;
                 height: 30px;
-                text: root.width < 760px ? "Reset" : "Reset view";
+                text: "Reset view";
                 accessible_name: "Reset terrain camera view";
                 button_background: Theme.active_bg;
                 activated => { root.reset_view(); }
