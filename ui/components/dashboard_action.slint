@@ -7,6 +7,8 @@ export component DashboardAction inherits Rectangle {
     callback activated();
 
     background: root.button_background;
+    min-width: 0px;
+    min-height: 0px;
     border-width: keyboard_focus.has-focus ? 2px : 1px;
     border-color: keyboard_focus.has-focus ? Theme.accent_cyan : Theme.border;
     border-radius: 4px;

@@ -31,10 +31,11 @@ export component DashboardRightPanel inherits Rectangle {
     in property <float> gpu_clock_mhz: 0.0;
 
     background: transparent;
+    min-width: 0px;
     ScrollView {
         width: parent.width;
         height: parent.height;
-        content-width: self.width;
+        content-width: root.width;
         VerticalLayout {
             spacing: Theme.space_sm;
 

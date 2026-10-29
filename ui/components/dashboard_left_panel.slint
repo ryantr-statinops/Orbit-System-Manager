@@ -23,9 +23,8 @@ export component DashboardLeftPanel inherits Rectangle {
     in property <bool> show_cpu_history: true;
 
     background: transparent;
+    min-width: 0px;
     VerticalLayout {
-        width: parent.width;
-        height: parent.height;
         spacing: Theme.space_sm;
 
         if root.show_cpu_summary: Rectangle {
@@ -86,6 +85,7 @@ export component DashboardLeftPanel inherits Rectangle {
                 ScrollView {
                     horizontal-stretch: 1;
                     vertical-stretch: 1;
+                    content-width: self.width;
                     CoreMatrix { rows: root.core_rows; }
                 }
             }

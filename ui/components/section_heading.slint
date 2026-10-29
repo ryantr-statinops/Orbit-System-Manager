@@ -4,6 +4,7 @@ export component SectionHeading inherits HorizontalLayout {
     in property <string> title;
     in property <string> icon;
 
+    min-width: 0px;
     spacing: Theme.space_sm;
 
     if root.icon == "cpu": Image {
