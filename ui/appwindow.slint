@@ -211,7 +211,7 @@ export component AppWindow inherits Window {
         if root.width < 1060px: ScrollView {
             horizontal-stretch: 1;
             vertical-stretch: 1;
-            content-width: width;
+            content-width: self.width;
             VerticalLayout {
                 padding: Theme.space_sm;
                 spacing: Theme.space_sm;
