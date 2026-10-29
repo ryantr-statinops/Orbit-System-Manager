@@ -124,11 +124,11 @@ export component AppWindow inherits Window {
         Rectangle { height: 1px; background: Theme.border; }
 
         if root.width >= 1060px: HorizontalLayout {
+            vertical-stretch: 1;
             padding: Theme.space_sm;
             spacing: 0px;
             if root.left_sidebar_visible: DashboardLeftPanel {
                 width: root.left_sidebar_width;
-                height: root.height - 52px;
                 cpu_avg: root.cpu_avg;
                 cpu_std: root.cpu_std;
                 cpu_var: root.cpu_var;
@@ -145,7 +145,6 @@ export component AppWindow inherits Window {
             }
             if root.left_sidebar_visible: PanelSplitter {
                 width: 5px;
-                height: root.height - 52px;
                 drag_delta(delta) => {
                     root.left_sidebar_width = Math.max(290px, Math.min(root.width - 676px, Math.min(380px, root.left_sidebar_width + delta)));
                 }
@@ -154,7 +153,6 @@ export component AppWindow inherits Window {
             }
             Viewport3D {
                 horizontal-stretch: 1;
-                height: root.height - 52px;
                 frame: root.viewport_3d_frame;
                 has_frame: root.has_3d_frame;
                 cpu_avg: root.cpu_avg;
@@ -173,7 +171,6 @@ export component AppWindow inherits Window {
             }
             if root.right_sidebar_visible: PanelSplitter {
                 width: 5px;
-                height: root.height - 52px;
                 drag_delta(delta) => {
                     root.right_sidebar_width = Math.max(290px, Math.min(root.width - 676px, Math.min(380px, root.right_sidebar_width - delta)));
                 }
@@ -183,7 +180,6 @@ export component AppWindow inherits Window {
             }
             if root.right_sidebar_visible: DashboardRightPanel {
                 width: root.right_sidebar_width;
-                height: root.height - 52px;
                 ram_percent: root.ram_percent;
                 ram_available: root.ram_available;
                 ram_used_gb: root.ram_used_gb;
@@ -213,6 +209,9 @@ export component AppWindow inherits Window {
         }
 
         if root.width < 1060px: ScrollView {
+            horizontal-stretch: 1;
+            vertical-stretch: 1;
+            content-width: width;
             VerticalLayout {
                 padding: Theme.space_sm;
                 spacing: Theme.space_sm;
