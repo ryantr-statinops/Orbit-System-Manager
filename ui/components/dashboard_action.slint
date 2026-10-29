@@ -31,8 +31,8 @@ export component DashboardAction inherits Rectangle {
     }
 
     Text {
-        width: 100%;
-        height: 100%;
+        x: (root.width - self.width) / 2;
+        y: (root.height - self.height) / 2;
         text: root.text;
         color: Theme.text_primary;
         font-size: 11px;
