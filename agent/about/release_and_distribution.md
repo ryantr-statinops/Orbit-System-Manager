@@ -1,6 +1,6 @@
 # Release and distribution
 
-Current target version: `v2.1.2`.
+Current target version: `v2.2.0`.
 
 Orbit System Manager releases are built and published by `.github/workflows/release.yml`. A pushed Git tag matching `v*` starts the four-platform build matrix:
 
@@ -17,7 +17,7 @@ Each build uses the committed lockfile. The publish job waits for all four build
 
 1. Update the package version and lockfile, then run formatting, check, tests, and Clippy.
 2. Confirm the cross-platform CI and release build results.
-3. Create and push the version tag, for example `v2.1.2`.
+3. Create and push the version tag, for example `v2.2.0`.
 4. Confirm the Release page contains all four archives and `SHA256SUMS.txt`.
 
 The repository does not claim binary size, startup time, or memory benchmarks without recorded measurements. The release workflow builds and uploads artifacts; it does not perform platform-specific GUI runtime validation.

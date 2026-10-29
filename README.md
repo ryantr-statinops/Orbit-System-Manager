@@ -1,6 +1,6 @@
 # Orbit System Manager
 
-[![Release](https://img.shields.io/badge/Release-v2.1.2-blue?style=for-the-badge&logo=rust)](https://github.com/ryantr-statinops/Orbit-System-Manager/releases)
+[![Release](https://img.shields.io/badge/Release-v2.2.0-blue?style=for-the-badge&logo=rust)](https://github.com/ryantr-statinops/Orbit-System-Manager/releases)
 
 A native desktop dashboard built with Rust and Slint. It starts with deterministic demo telemetry so the full dashboard can be reviewed without depending on the host's hardware sensors.
 
@@ -50,4 +50,4 @@ Run the interactive demo with `cargo run --locked`. To capture a deterministic P
 
 ## Release artifacts
 
-Pushing a version tag such as `v2.1.2` starts `.github/workflows/release.yml`. The workflow builds Windows x86_64, Linux x86_64, macOS Intel, and macOS Apple Silicon archives, then attaches them and `SHA256SUMS.txt` to the GitHub Release.
+Pushing a version tag such as `v2.2.0` starts `.github/workflows/release.yml`. The workflow builds Windows x86_64, Linux x86_64, macOS Intel, and macOS Apple Silicon archives, then attaches them and `SHA256SUMS.txt` to the GitHub Release.
