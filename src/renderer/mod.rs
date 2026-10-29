@@ -749,7 +749,9 @@ fn clip_line(
 
 #[cfg(test)]
 mod tests {
-    use super::{clip_line, raster_triangle, scaled_buffer_size, OffscreenRenderer};
+    use super::{
+        clip_line, raster_triangle, scaled_buffer_size, surface_light_factor, OffscreenRenderer,
+    };
     use slint::{Rgba8Pixel, SharedPixelBuffer};
 
     #[test]

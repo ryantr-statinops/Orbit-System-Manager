@@ -110,7 +110,10 @@ fn append_area_segment(commands: &mut String, segment: &[(f32, f32)]) {
 
 #[cfg(test)]
 mod tests {
-    use super::{area_path_commands, line_path_commands, normalize_history, NormalizedPoint};
+    use super::{
+        area_path_commands, line_path_commands, network_history_max_value, normalize_history,
+        NormalizedPoint,
+    };
     use crate::preview::HistoryPoint;
 
     #[test]
