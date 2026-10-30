@@ -1,8 +1,10 @@
 # Task 01 — Foundation & Cleanup Checklist
 
+> Tài liệu lịch sử, không phải chỉ dẫn triển khai hiện hành. Xem `AGENTS.md` và `docs/plan/implementation/README.md` ở gốc repository.
+
 > **Phase:** Foundation
 > **Bắt đầu:** 15/06/2026
-> **Plan tham chiếu:** `agent/plan/plan_01.md`
+> **Plan tham chiếu:** `docs/archive/legacy-agent/plan/plan_01.md`
 
 ---
 
@@ -43,7 +45,7 @@
 
 - [ ] Mở `.git/info/exclude`
 - [ ] Xoá dòng `/agent` trong block `# kanban-managed-symlinked-ignored-paths`
-- [ ] Kiểm tra: `git status` — file mới trong `agent/` hiện ra
+- [ ] Kiểm tra: `git status` — file mới trong `docs/archive/legacy-agent/` hiện ra
 
 ### [ ] 2.2 Cập nhật remote URL
 
@@ -108,7 +110,7 @@ asyncio.run(test())
 
 ### [ ] 4.1 Viridis/Jet colormap cho 3D Surface
 
-- [ ] Đọc spec: `agent/promts/05_ui_layout_rules.md`
+- [ ] Đọc spec: `docs/archive/legacy-agent/prompts/05_ui_layout_rules.md`
 - [ ] Mở `src/threeScene.js`
 - [ ] Thêm vertex colors với BufferAttribute
 - [ ] Map độ cao Y → Jet hoặc Viridis gradient
@@ -116,20 +118,20 @@ asyncio.run(test())
 
 ### [ ] 4.2 Z-axis smooth scrolling
 
-- [ ] Đọc spec: `agent/promts/06_interpolation_and_smoothing_rules.md`
+- [ ] Đọc spec: `docs/archive/legacy-agent/prompts/06_interpolation_and_smoothing_rules.md`
 - [ ] Mở `src/threeScene.js` + `src/constants.js`
 - [ ] Thêm `THREE.Clock`
 - [ ] Implement scroll mượt theo deltaTime
 
 ### [ ] 4.3 Axis labels + Bounding box
 
-- [ ] Đọc spec: `agent/promts/05_ui_layout_rules.md` (phần MATLAB)
+- [ ] Đọc spec: `docs/archive/legacy-agent/prompts/05_ui_layout_rules.md` (phần MATLAB)
 - [ ] Vẽ dotted bounding box với LineDashedMaterial
 - [ ] Thêm axis labels
 
 ### [ ] 4.4 Vertex coloring (Terrain Heatmap)
 
-- [ ] Đọc spec: `agent/promts/03_threejs_3d_timeseries.md`
+- [ ] Đọc spec: `docs/archive/legacy-agent/prompts/03_threejs_3d_timeseries.md`
 - [ ] Update màu trong `updateVertices()`
 - [ ] Gradient Viridis từ 0-100%
 

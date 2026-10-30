@@ -1,5 +1,7 @@
 # Plan — Responsive Auto-Fit khi Resize Window
 
+> Tài liệu lịch sử, không phải chỉ dẫn triển khai hiện hành. Xem `AGENTS.md` và `docs/plan/implementation/README.md` ở gốc repository.
+
 > **Mục tiêu:** App tự động co giãn (auto-fit) tất cả thành phần UI khi người dùng resize cửa sổ desktop hoặc kéo splitter thay đổi kích thước 3 cột.
 
 ---

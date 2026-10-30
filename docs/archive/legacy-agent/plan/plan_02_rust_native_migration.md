@@ -1,5 +1,7 @@
 # Plan 02 — Pure Rust Native Telemetry & Cross-Platform Migration
 
+> Tài liệu lịch sử, không phải chỉ dẫn triển khai hiện hành. Xem `AGENTS.md` và `docs/plan/implementation/README.md` ở gốc repository.
+
 > **Mục tiêu:** Chuyển đổi 100% backend từ Python sidecar (`app.py` + WebSockets) sang module Rust native tích hợp trực tiếp trong Tauri v2. Ứng dụng xuất ra một file nhị phân duy nhất, khởi động < 100ms, tiêu thụ < 40MB RAM và tương thích hoàn toàn trên Windows, Linux, macOS.
 
 ---

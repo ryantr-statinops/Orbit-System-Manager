@@ -1,5 +1,7 @@
 # Plan 01 — Foundation & Cleanup
 
+> Tài liệu lịch sử, không phải chỉ dẫn triển khai hiện hành. Xem `AGENTS.md` và `docs/plan/implementation/README.md` ở gốc repository.
+
 > **Mục tiêu:** Đưa dự án về trạng thái "chạy được" và "sạch" trước khi phát triển tính năng mới.
 
 ---
@@ -76,7 +78,7 @@ rm libs/plotly.min.js
 **File:** `.git/info/exclude`
 **Dòng cần xoá:** `/agent` (nằm trong block `# kanban-managed-symlinked-ignored-paths`)
 
-**Vấn đề:** Rule này ngăn Git theo dõi file mới trong thư mục `agent/`, buộc phải `git add -f` mỗi lần thêm file.
+**Vấn đề:** Rule này ngăn Git theo dõi file mới trong thư mục `docs/archive/legacy-agent/`, buộc phải `git add -f` mỗi lần thêm file.
 
 **Cách fix:** Xoá dòng `/agent` khỏi file.
 
@@ -165,12 +167,12 @@ npm run dev
 
 ## Phase 4: 📋 Implement spec còn thiếu
 
-Các tính năng đã được spec trong `agent/promts/` nhưng chưa implement:
+Các tính năng đã được spec trong `docs/archive/legacy-agent/prompts/` nhưng chưa implement:
 
 ### 4.1 Viridis/Jet colormap cho 3D Surface
 
 **File:** `src/threeScene.js`
-**Spec:** `agent/promts/05_ui_layout_rules.md` (phần 2 — MATLAB-style)
+**Spec:** `docs/archive/legacy-agent/prompts/05_ui_layout_rules.md` (phần 2 — MATLAB-style)
 
 **Cần làm:**
 - Thay thế `MeshBasicMaterial` màu đơn `#21918c` bằng vertex coloring
@@ -180,7 +182,7 @@ Các tính năng đã được spec trong `agent/promts/` nhưng chưa implement
 ### 4.2 Z-axis smooth scrolling
 
 **File:** `src/threeScene.js`, `src/constants.js`
-**Spec:** `agent/promts/06_interpolation_and_smoothing_rules.md`
+**Spec:** `docs/archive/legacy-agent/prompts/06_interpolation_and_smoothing_rules.md`
 
 **Cần làm:**
 - Thêm `THREE.Clock` để lấy `deltaTime` giữa các frame
@@ -190,7 +192,7 @@ Các tính năng đã được spec trong `agent/promts/` nhưng chưa implement
 ### 4.3 Axis labels + Bounding box cho 3D scene
 
 **File:** `src/threeScene.js`
-**Spec:** `agent/promts/05_ui_layout_rules.md`
+**Spec:** `docs/archive/legacy-agent/prompts/05_ui_layout_rules.md`
 
 **Cần làm:**
 - Vẽ khung hộp dotted line bao quanh mesh (`LineSegments` + `LineDashedMaterial`)
@@ -200,7 +202,7 @@ Các tính năng đã được spec trong `agent/promts/` nhưng chưa implement
 ### 4.4 Vertex coloring theo độ cao (Terrain Heatmap)
 
 **File:** `src/threeScene.js`
-**Spec:** `agent/promts/03_threejs_3d_timeseries.md`
+**Spec:** `docs/archive/legacy-agent/prompts/03_threejs_3d_timeseries.md`
 
 **Cần làm:**
 - Sử dụng `BufferAttribute` cho màu sắc (`geometry.setAttribute('color', ...)`)
@@ -211,7 +213,7 @@ Các tính năng đã được spec trong `agent/promts/` nhưng chưa implement
 
 ## Phase 5: 🚀 Roadmap features
 
-Từ `agent/promts/04_lively_integration_plan.md`:
+Từ `docs/archive/legacy-agent/prompts/04_desktop_app_integration_plan.md`:
 
 - [ ] **Process Manager Cluster:** Top processes → 3D Point Cloud với K-means clustering
 - [ ] **Global Keyboard Search:** Command palette tìm kiếm file/process
@@ -244,4 +246,4 @@ Phase 5 — Roadmap features     [□□□□□□□□□□] 0/7 tasks
 | `src/websocket.js` | WebSocket client + mock |
 | `src-tauri/` | Rust/Tauri desktop shell |
 | `.git/info/exclude` | Local git exclude rules |
-| `agent/promts/*.md` | Specification documents |
+| `docs/archive/legacy-agent/prompts/*.md` | Specification documents |

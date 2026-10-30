@@ -1,6 +1,8 @@
 # Task Plan 02 — Implementation Checklist: Pure Rust Native Migration
 
-> **Plan tham chiếu:** `agent/plan/plan_02_rust_native_migration.md`
+> Tài liệu lịch sử, không phải chỉ dẫn triển khai hiện hành. Xem `AGENTS.md` và `docs/plan/implementation/README.md` ở gốc repository.
+
+> **Plan tham chiếu:** `docs/archive/legacy-agent/plan/plan_02_rust_native_migration.md`
 
 ---
 
