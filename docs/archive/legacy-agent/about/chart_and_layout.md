@@ -1,5 +1,7 @@
 # Slint Modular UI Architecture & Native 3D Pipeline
 
+> Tài liệu lịch sử, không phải chỉ dẫn triển khai hiện hành. Xem `AGENTS.md` và `docs/plan/implementation/README.md` ở gốc repository.
+
 Tài liệu này mô tả chi tiết kiến trúc giao diện native của **Orbit System Manager (v2.0)**:
 1. Hệ thống thành phần module hoá (**Modular Slint Components**).
 2. Hệ thống Design Tokens Dark Theme có thể tuỳ biến (**`ui/theme.slint`**).

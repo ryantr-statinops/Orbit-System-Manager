@@ -1,4 +1,6 @@
 # 🚀 Tên Dự Án (Project Title)
+
+> Tài liệu lịch sử, không phải chỉ dẫn triển khai hiện hành. Xem `AGENTS.md` và `docs/plan/implementation/README.md` ở gốc repository.
 <!-- Chèn Badge (Huy hiệu) hoặc Ảnh Banner đại diện ở đây nếu có -->
 Một câu mô tả ngắn gọn, súc tích về mục đích và giá trị cốt lõi của dự án (1-2 câu).
 

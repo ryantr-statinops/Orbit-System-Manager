@@ -1,5 +1,7 @@
 # Release and distribution
 
+> Tài liệu lịch sử, không phải chỉ dẫn triển khai hiện hành. Xem `AGENTS.md` và `docs/plan/implementation/README.md` ở gốc repository.
+
 Current target version: `v2.2.0`.
 
 Orbit System Manager releases are built and published by `.github/workflows/release.yml`. A pushed Git tag matching `v*` starts the four-platform build matrix:

@@ -1,5 +1,7 @@
 # Rust Environment Setup & Developer Guide
 
+> Tài liệu lịch sử, không phải chỉ dẫn triển khai hiện hành. Xem `AGENTS.md` và `docs/plan/implementation/README.md` ở gốc repository.
+
 ## 📖 Giới thiệu
 
 Dự án **Orbit System Manager (v2.0)** được xây dựng hoàn toàn bằng **Rust** và **Slint GUI Framework**. 
