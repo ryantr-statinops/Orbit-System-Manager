@@ -1,5 +1,7 @@
 # Interpolation & Smoothing Rules for Time-Series Jitter Reduction
 
+> Tài liệu lịch sử, không phải chỉ dẫn triển khai hiện hành. Xem `AGENTS.md` và `docs/plan/implementation/README.md` ở gốc repository.
+
 ## 1. Objective
 
 Giải quyết hiện tượng giật cục (jitter) và chuyển động không mượt mà trong biểu đồ chuỗi thời gian 3D. Vấn đề cốt lõi là sự không khớp giữa tần số cập nhật dữ liệu hệ thống thấp (1Hz) và tần số render màn hình cao (60FPS).

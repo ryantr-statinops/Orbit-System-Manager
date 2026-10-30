@@ -1,5 +1,7 @@
 # Backend System Monitor Service: Specifications
 
+> Tài liệu lịch sử, không phải chỉ dẫn triển khai hiện hành. Xem `AGENTS.md` và `docs/plan/implementation/README.md` ở gốc repository.
+
 > ⚠️ **ARCHIVE NOTE (v2.0):** Tài liệu này thuộc giai đoạn thử nghiệm (PoC/Python). Dự án hiện đã chuyển sang **100% Rust Native Collector (`src/telemetry/collector.rs`)** dùng crate `sysinfo`, không còn sử dụng Python hoặc `psutil`.
 
 ## 1. Objective

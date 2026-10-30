@@ -1,5 +1,7 @@
 # 3D Time-Series Visualization Engine
 
+> Tài liệu lịch sử, không phải chỉ dẫn triển khai hiện hành. Xem `AGENTS.md` và `docs/plan/implementation/README.md` ở gốc repository.
+
 > ⚠️ **ARCHIVE NOTE (v2.0):** Mô hình dựng hình Three.js/WebGL trên trình duyệt đã được chuyển đổi sang **Slint GPU Hardware Pipeline / Native 3D Viewport** trong `ui/appwindow.slint`.
 
 ## 1. Visual Concept: 3D Terrain Grid / Ribbon Plot

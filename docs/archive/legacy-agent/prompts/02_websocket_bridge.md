@@ -1,5 +1,7 @@
 # Network Protocol & Data Bridge Specification
 
+> Tài liệu lịch sử, không phải chỉ dẫn triển khai hiện hành. Xem `AGENTS.md` và `docs/plan/implementation/README.md` ở gốc repository.
+
 > ⚠️ **ARCHIVE NOTE (v2.0):** Cơ chế WebSocket server cục bộ đã được thay thế bằng **Slint Native Event Loop Timer** trực tiếp trong bộ nhớ. Không còn sử dụng giao thức WebSocket TCP hay mở cổng mạng `8080`.
 
 ## 1. Protocol Definition

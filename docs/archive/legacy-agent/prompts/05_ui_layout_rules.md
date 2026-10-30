@@ -1,5 +1,7 @@
 # UI Layout Rules: Positron IDE & Tidyverse Light Aesthetic
 
+> Tài liệu lịch sử, không phải chỉ dẫn triển khai hiện hành. Xem `AGENTS.md` và `docs/plan/implementation/README.md` ở gốc repository.
+
 ## 1. Objective
 
 Tái cấu trúc toàn bộ giao diện Frontend thành **Giao diện nền sáng (Light Theme)**, mô phỏng chính xác không gian làm việc học thuật của **Positron IDE** và ngôn ngữ trực quan hóa dữ liệu của các gói **Tidyverse (ggplot2 / RStudio)**. Loại bỏ hoàn toàn phong cách Cyberpunk/Dark-mode cũ. Đảm bảo bố cục phẳng, sạch sẽ, sử dụng viền mảnh và font chữ Monospace đều tăm tắp, không chồng lấp.

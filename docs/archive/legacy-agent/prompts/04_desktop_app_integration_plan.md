@@ -1,5 +1,7 @@
 # Desktop App Integration & Architecture (Pure Rust & Slint)
 
+> Tài liệu lịch sử, không phải chỉ dẫn triển khai hiện hành. Xem `AGENTS.md` và `docs/plan/implementation/README.md` ở gốc repository.
+
 ## 1. Architecture Overview
 
 Dự án đã hoàn tất quá trình chuyển đổi kiến trúc qua 3 thế hệ:
