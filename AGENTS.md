@@ -4,6 +4,10 @@
 
 This is a Rust desktop application built with Slint. Rust entry points and application logic live in `src/`: `telemetry/` collects and models metrics, `preview/` provides deterministic dashboard fixtures, and `renderer/` handles the 3D chart. The Slint interface is in `ui/`, with reusable components under `ui/components/` and icons under `ui/assets/`. Image and app icon assets are in `assets/`; design and preview workflows are documented in `docs/`. Build-time Slint compilation is configured in `build.rs`.
 
+## Migration Plans and Historical Documents
+
+The Go/Wails/React rebuild is planned in [docs/plan/implementation/README.md](docs/plan/implementation/README.md); the current application remains Rust/Slint until migration is approved. Follow its stage gates: obtain approval for metric coverage after stage 1 and performance thresholds after stage 2. Historical documents from the former `agent/` directory are indexed in [docs/archive/legacy-agent/README.md](docs/archive/legacy-agent/README.md); they are reference material, not current implementation instructions. Repository skills, when added, belong in `.agents/skills/<skill-name>/SKILL.md`.
+
 ## Build, Test, and Development
 
 Use Rust and Cargo 1.99.1 or later, plus the platform dependencies required by Slint (Windows requires the MSVC C++ workload).
