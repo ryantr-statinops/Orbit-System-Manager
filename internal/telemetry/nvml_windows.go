@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
-	"syscall"
 	"time"
 	"unsafe"
 
@@ -46,11 +45,13 @@ func loadNVML() (windows.Handle, error) {
 }
 
 func (n *nvidiaSession) call(name string, args ...uintptr) error {
-	address, err := windows.GetProcAddress(n.dll, name)
+	library := &windows.DLL{Name: "nvml.dll", Handle: n.dll}
+	proc, err := library.FindProc(name)
 	if err != nil {
 		return NVMLFailure{name, 13}
 	}
-	code, _, _ := syscall.SyscallN(address, args...)
+	code, _, _ := proc.Call(args...)
+	runtime.KeepAlive(library)
 	if code != 0 {
 		return NVMLFailure{name, uint32(code)}
 	}
