@@ -26,3 +26,11 @@ Bản đầu: Windows và Ubuntu/Fedora x64; dashboard ba cột, Settings, metri
 - [ ] Giữ bản Rust để đối chiếu đến khi bản mới được nghiệm thu.
 
 Chưa triển khai hoặc kiểm chứng.
+
+## Reference guides
+
+- [Documentation index](../../README.md): current application, rebuild requirements, and historical material.
+- [Architecture](../../ARCHITECTURE.md): collector and platform hardening (stages 1, 4).
+- [Web dashboard](../../UI-DESIGN.md): UI PoC and live dashboard (stages 2, 3).
+- [Development and validation](../../DEVELOPMENT.md): environments, tests, baseline, and approval gates.
+- [Distribution and updates](../../DISTRIBUTION.md): packaging, updater, and release acceptance (stages 5, 6).
