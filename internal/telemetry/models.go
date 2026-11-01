@@ -52,7 +52,8 @@ func ErrorStatus(err error) Status {
 		}
 	}
 	// WMI's gopsutil wrapper may flatten COM access-denied HRESULTs to text.
-	if strings.Contains(strings.ToLower(err.Error()), "access denied") {
+	message := strings.ToLower(err.Error())
+	if strings.Contains(message, "access denied") || strings.Contains(message, "access is denied") {
 		return PermissionDenied
 	}
 	if errors.Is(err, os.ErrPermission) {

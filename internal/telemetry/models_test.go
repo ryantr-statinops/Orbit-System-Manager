@@ -32,4 +32,7 @@ func TestWrappedPermissionError(t *testing.T) {
 	if ErrorStatus(errors.New("Exception occurred. (Access denied )")) != PermissionDenied {
 		t.Fatal("flattened WMI access denial")
 	}
+	if ErrorStatus(errors.New("Exception occurred. (Access is denied. )")) != PermissionDenied {
+		t.Fatal("alternate flattened WMI access denial")
+	}
 }
