@@ -4,15 +4,29 @@
 
 ## Current application and target environment
 
-The repository still builds Rust/Slint. Follow the root [README](../README.md) for existing Cargo commands and the [Rust preview guide](current-rust/DASHBOARD-PREVIEW.md) for screenshots. The Go application, frontend scripts, and replacement CI are not available yet; this document defines their required development workflow without inventing runnable commands.
+The desktop application remains Rust/Slint. Follow the root [README](../README.md) for Cargo commands and the [Rust preview guide](current-rust/DASHBOARD-PREVIEW.md) for screenshots. A Windows-only Go Stage 1A collector CLI is available; it does not replace the desktop app. Wails, React, browser preview, and replacement CI remain unimplemented.
 
-The target stack is Go, gopsutil v4, Wails v3, React, TypeScript, Vite, ECharts, and Three.js. During the PoCs, pin compatible toolchain, framework, frontend runtime, and dependency versions. Record Windows and Ubuntu/Fedora x64 versions, CPU/GPU, drivers, and display scaling. Verify native WebView and GTK/WebKitGTK dependencies on each Linux distribution rather than assuming a successful build proves runtime compatibility.
+The planned stack is Go, gopsutil v4, Wails v3, React, TypeScript, Vite, ECharts, and Three.js. The collector module targets Go 1.27.0 and pins gopsutil v4.26.10 in `go.mod`/`go.sum`. Record OS versions, CPU/GPU, drivers, and display scaling for each test machine. Verify native WebView and GTK/WebKitGTK dependencies on Ubuntu/Fedora rather than assuming a successful build proves runtime compatibility.
+
+## Windows collector commands
+
+Run these at repository root:
+
+```powershell
+go test ./...
+go vet ./...
+go build -o bin/telemetry-poc.exe ./cmd/telemetry-poc
+go run ./cmd/telemetry-poc inventory
+go run ./cmd/telemetry-poc sample --interval 1s --count 60
+```
+
+The sample command accepts `1s`, `2s`, or `5s`; `--count 0` streams until Ctrl+C. Inventory emits one JSON document and sampling emits JSONL to stdout; diagnostics go to stderr. To retain raw evidence, create `artifacts/collector-poc/` and redirect stdout and stderr there. This directory is ignored by Git. Review samples for `warming_up`, permission, unsupported, and error states; null values are not zero. Avoid stress tests; compare normal workloads. These commands currently validate Windows only; they do not establish Linux support or availability on untested devices.
 
 ## Development workflow
 
-Provide a browser preview backed by deterministic fixtures, independent of collection or privileged access. Provide desktop development with the same frontend connected to real Go samples through Wails. Demo data must be clearly labeled and cannot count as evidence of hardware support.
+The future browser preview must use deterministic fixtures independent of collection and privileged access. Desktop development should connect the same frontend to real Go samples through Wails. Demo data must be clearly labeled and cannot count as evidence of hardware support.
 
-Introduce documented entry points for preview, desktop development, checks, tests, and release builds when those commands actually exist. Until then, keep the Rust workflow usable. Do not remove the old implementation before the migration approval in [stage 6](plan/implementation/06-migration-release.md).
+Add documented entry points for preview, desktop development, checks, and release builds when they exist. Keep the Rust workflow usable until migration approval in [stage 6](plan/implementation/06-migration-release.md).
 
 ## PoC approvals
 
