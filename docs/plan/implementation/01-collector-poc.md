@@ -26,6 +26,6 @@ Người dùng xác nhận Windows 11 Pro 26H2 (26300.9711), Intel Core i9-9880H
 
 Windows Performance Counter/CIM chặn đối chiếu CPU/RAM/disk/network. Lần inventory mới cũng bị WMI từ chối đọc CPU/GPU; không xem đây là phần cứng không hỗ trợ. Raw JSON/JSONL ở `artifacts/collector-poc/` (Git ignore).
 
-## Điều kiện hoàn thành
+## Trạng thái và gate
 
-Linux inventory/adapters và đối chiếu metric còn thiếu. Stage 1 chưa hoàn thành; người dùng cần duyệt độ phủ trước Stage 2. Không suy rộng kết quả Windows sang phần cứng chưa thử.
+Theo yêu cầu người dùng ngày 2026-11-01, Stage 1 được đánh dấu hoàn thành tạm với bằng chứng hiện có giới hạn ở Windows Stage 1A. Ubuntu/Fedora inventory/adapters và đối chiếu metric vẫn còn chờ; checklist tương ứng giữ chưa đánh dấu. Gate duyệt độ phủ metric vẫn cần được xác nhận riêng trước khi bắt đầu Stage 2. Không suy rộng kết quả Windows sang phần cứng chưa thử.

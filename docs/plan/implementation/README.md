@@ -10,7 +10,7 @@ Bản đầu: Windows và Ubuntu/Fedora x64; dashboard ba cột, Settings, metri
 
 | Stage | Kế hoạch | Trạng thái |
 |---|---|---|
-| 1 | [Collector PoC](01-collector-poc.md) | Đang thực hiện — Windows Stage 1A; Linux và duyệt độ phủ đang chờ |
+| 1 | [Collector PoC](01-collector-poc.md) | Hoàn thành tạm theo yêu cầu người dùng — Windows Stage 1A; Linux còn chờ |
 | 2 | [UI và hiệu năng PoC](02-ui-performance-poc.md) | Chưa bắt đầu |
 | 3 | [Dashboard dữ liệu thật](03-live-dashboard.md) | Chưa bắt đầu |
 | 4 | [Hoàn thiện đa nền tảng](04-platform-hardening.md) | Chưa bắt đầu |
@@ -25,7 +25,7 @@ Bản đầu: Windows và Ubuntu/Fedora x64; dashboard ba cột, Settings, metri
 - [ ] Chưa mua Authenticode; bắt buộc ký gói cập nhật.
 - [ ] Giữ bản Rust để đối chiếu đến khi bản mới được nghiệm thu.
 
-Stage 1A đã có kết quả PoC trên Windows; Linux, đối chiếu đầy đủ và duyệt độ phủ metric còn chờ. Các stage sau chưa bắt đầu.
+Stage 1 được đánh dấu hoàn thành tạm; Linux, đối chiếu đầy đủ và duyệt độ phủ metric còn chờ. Stage 2 chưa bắt đầu.
 
 ## Reference guides
 
