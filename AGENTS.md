@@ -6,7 +6,11 @@ This is a Rust desktop application built with Slint. Rust entry points and appli
 
 ## Migration Plans and Historical Documents
 
-The Go/Wails/React rebuild is planned in [docs/plan/implementation/README.md](docs/plan/implementation/README.md); the current application remains Rust/Slint until migration is approved. Follow its stage gates: obtain approval for metric coverage after stage 1 and performance thresholds after stage 2. Historical documents from the former `agent/` directory are indexed in [docs/archive/legacy-agent/README.md](docs/archive/legacy-agent/README.md); they are reference material, not current implementation instructions. Repository skills, when added, belong in `.agents/skills/<skill-name>/SKILL.md`.
+Start at the [documentation index](docs/README.md). The Go/Wails/React rebuild remains planned; the running application stays Rust/Slint until migration is approved. The [implementation stages](docs/plan/implementation/README.md) govern checklists, progress, and evidence. Obtain user approval for metric coverage after stage 1 and performance thresholds after stage 2, before stage 3.
+
+Use the [architecture](docs/ARCHITECTURE.md), [web UI design](docs/UI-DESIGN.md), [development](docs/DEVELOPMENT.md), and [distribution](docs/DISTRIBUTION.md) guides for target requirements. They do not prove features or commands exist. Current Rust design and preview instructions live in `docs/current-rust/`. Keep dated validation records and stage completion states intact unless new evidence supports an update.
+
+The [legacy archive](docs/archive/legacy-agent/README.md) is historical reference, not current implementation guidance. Repository skills, when added, belong in `.agents/skills/<skill-name>/SKILL.md`.
 
 ## Build, Test, and Development
 
