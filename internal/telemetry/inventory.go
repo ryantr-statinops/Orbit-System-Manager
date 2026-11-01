@@ -19,7 +19,9 @@ type InventorySources struct {
 }
 
 func CollectInventory(ctx context.Context) Inventory {
-	return CollectInventoryFrom(ctx, InventorySources{host.InfoWithContext, cpu.InfoWithContext, cpu.CountsWithContext, mem.VirtualMemoryWithContext})
+	inv := CollectInventoryFrom(ctx, InventorySources{host.InfoWithContext, cpu.InfoWithContext, cpu.CountsWithContext, mem.VirtualMemoryWithContext})
+	addGPUInventory(ctx, &inv)
+	return inv
 }
 
 func CollectInventoryFrom(ctx context.Context, src InventorySources) Inventory {
