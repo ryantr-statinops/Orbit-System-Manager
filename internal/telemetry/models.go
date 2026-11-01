@@ -41,6 +41,15 @@ func ErrorStatus(err error) Status {
 	if errors.As(err, &classified) {
 		return classified.MetricStatus()
 	}
+	var com interface{ Code() uintptr }
+	if errors.As(err, &com) {
+		switch uint32(com.Code()) {
+		case 0x80070005, 0x80041003:
+			return PermissionDenied
+		case 0x8004100c, 0x80041010:
+			return Unsupported
+		}
+	}
 	if errors.Is(err, os.ErrPermission) {
 		return PermissionDenied
 	}
