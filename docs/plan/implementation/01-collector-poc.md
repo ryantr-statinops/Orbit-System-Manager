@@ -2,25 +2,30 @@
 
 ## Mục tiêu
 
-Chứng minh collector Go + gopsutil trên Windows, Ubuntu và Fedora; xác định giới hạn GPU/sensor.
+Kiểm chứng Go + gopsutil trên Windows, Ubuntu và Fedora, gồm giới hạn GPU/sensor. Đợt này chỉ gồm Windows Stage 1A.
 
 ## Checklist
 
-- [ ] Lấy inventory OS/version, CPU, RAM, GPU và driver trên máy thử; để người dùng xác nhận.
-- [ ] Chốt phiên bản OS x64 và dependency PoC.
-- [ ] Tạo CLI Go đọc CPU tổng/từng core, RAM/swap, disk capacity/I/O và network từng interface.
-- [ ] Tính rate bằng thời gian thực giữa mẫu; xử lý warming-up, reset counter và mất mẫu.
-- [ ] Thử NVIDIA NVML: binding Linux, adapter DLL riêng trên Windows.
-- [ ] Khảo sát AMD/Intel qua nguồn OS/driver; Linux dùng DRM/sysfs/hwmon khi có dữ liệu.
-- [ ] Kiểm tra sensor Windows; không gán ACPI thermal zone thành nhiệt độ CPU package.
-- [ ] Lập bảng OS × thiết bị × metric × nguồn × quyền × kết quả ngay trong file này.
-- [ ] Đối chiếu công cụ hệ thống cùng khoảng lấy mẫu; giải thích sai khác.
-- [ ] Đề xuất helper Go chỉ khi tăng quyền thực sự mở được metric cần thiết; không thêm C# hoặc driver riêng.
+- [x] Inventory Windows được người dùng xác nhận; khóa Go 1.27.0 và gopsutil v4.26.10.
+- [x] Windows CLI thu CPU/RAM/swap/disk/network/NVIDIA; rate và reset có unit test.
+- [x] Thử sensor ACPI; không gán nhầm thành nhiệt độ CPU package.
+- [x] Ghi ma trận Windows bên dưới.
+- [ ] Ubuntu/Fedora inventory, Linux NVIDIA/DRM/sysfs/hwmon và metric AMD/Intel.
+- [ ] Đối chiếu đầy đủ; chỉ xét helper nếu quyền cao hơn mở metric cần thiết.
+
+## Kết quả Windows — 2026-11-01
+
+Người dùng xác nhận Windows 11 Pro 26H2 (26300.9711), Intel Core i9-9880H (8/16 core), RAM 34,099,601,408 byte. Go `1.27.0 windows/amd64`, `CGO_ENABLED=0`; gopsutil `v4.26.10`.
+
+| Metric | Kết quả Windows |
+|---|---|
+| CPU, RAM, swap | gopsutil sample `available` sau baseline; swap dùng page-file fallback. |
+| Disk, network | Capacity, I/O và rate/interface `available`; chưa đối chiếu độc lập. |
+| GPU | Quadro T1000 / 580.92 qua NVML. `nvidia-smi` gần cùng lúc khớp utilization, nhiệt độ, power; VRAM lệch cao hơn 159 MiB, chưa rõ nguyên nhân. Intel UHD 630 / driver 31.0.101.2137 từng được WMI phát hiện; chưa có adapter metric. |
+| Sensor | ACPI trả `permission_denied`; không có số đọc. |
+
+Windows Performance Counter/CIM chặn đối chiếu CPU/RAM/disk/network. Lần inventory mới cũng bị WMI từ chối đọc CPU/GPU; không xem đây là phần cứng không hỗ trợ. Raw JSON/JSONL ở `artifacts/collector-poc/` (Git ignore).
 
 ## Điều kiện hoàn thành
 
-Người dùng duyệt độ phủ metric trước khi tiếp tục; nêu rõ metric quan trọng còn thiếu.
-
-## Kết quả và blocker
-
-Chưa thực hiện. Ghi kết quả/blocker và bằng chứng tại đây.
+Linux inventory/adapters và đối chiếu metric còn thiếu. Stage 1 chưa hoàn thành; người dùng cần duyệt độ phủ trước Stage 2. Không suy rộng kết quả Windows sang phần cứng chưa thử.
