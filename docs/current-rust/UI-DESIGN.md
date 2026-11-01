@@ -1,5 +1,7 @@
 # Dashboard UI design contract
 
+**Current Rust/Slint application**
+
 ## Reference
 
 The approved target combines the V1 three-column dashboard structure with the dark visual direction of mockup 1. Keep the same panel order: CPU summary, logical processors, and CPU history on the left; CPU utilization surface in the center; memory, GPU, and network on the right.

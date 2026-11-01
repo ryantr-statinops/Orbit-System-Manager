@@ -7,7 +7,7 @@ Thư mục này lưu 15 tài liệu chuyển từ `agent/`, thuộc các giai đ
 - [AGENTS.md](../../../AGENTS.md): hướng dẫn làm việc trong repository.
 - [Kế hoạch triển khai](../../plan/implementation/README.md): các stage rebuild Go/Wails/React và mốc duyệt PoC.
 - [Dashboard preview](../../DASHBOARD-PREVIEW.md): workflow của ứng dụng Rust/Slint hiện còn trong mã nguồn.
-- [UI design](../../UI-DESIGN.md): bố cục và quy tắc dashboard hiện tại.
+- [UI design](../../current-rust/UI-DESIGN.md): bố cục và quy tắc dashboard hiện tại.
 
 ## Phân loại bản lưu
 
