@@ -4,6 +4,7 @@ package telemetry
 import (
 	"errors"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -49,6 +50,10 @@ func ErrorStatus(err error) Status {
 		case 0x8004100c, 0x80041010:
 			return Unsupported
 		}
+	}
+	// WMI's gopsutil wrapper may flatten COM access-denied HRESULTs to text.
+	if strings.Contains(strings.ToLower(err.Error()), "access denied") {
+		return PermissionDenied
 	}
 	if errors.Is(err, os.ErrPermission) {
 		return PermissionDenied
