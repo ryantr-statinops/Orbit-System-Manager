@@ -19,7 +19,7 @@ Use Rust and Cargo 1.99.1 or later, plus the platform dependencies required by S
 - `cargo clippy --locked --all-targets -- -D warnings` checks all targets for lint issues.
 - `cargo build --locked --release` creates an optimized build in `target/release/`.
 
-For UI review, follow `docs/DASHBOARD-PREVIEW.md` to capture screenshots with `--features dashboard-screenshot` and fixed fixture values.
+For UI review, follow `docs/current-rust/DASHBOARD-PREVIEW.md` to capture screenshots with `--features dashboard-screenshot` and fixed fixture values.
 
 ## Style and Naming
 

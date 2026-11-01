@@ -46,7 +46,7 @@ The binary is written to `target/release/`.
 
 ### Preview and screenshot
 
-Run the interactive demo with `cargo run --locked`. To capture a deterministic PNG at a chosen size and scenario, build with the optional screenshot feature. See [the dashboard preview workflow](docs/DASHBOARD-PREVIEW.md) for commands, supported fixture values, CI artifacts, and review steps.
+Run the interactive demo with `cargo run --locked`. To capture a deterministic PNG at a chosen size and scenario, build with the optional screenshot feature. See [the dashboard preview workflow](docs/current-rust/DASHBOARD-PREVIEW.md) for commands, supported fixture values, CI artifacts, and review steps.
 
 ## Release artifacts
 

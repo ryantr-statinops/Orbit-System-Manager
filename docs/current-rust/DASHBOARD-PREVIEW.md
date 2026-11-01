@@ -1,5 +1,7 @@
 # Dashboard preview workflow
 
+**Current Rust/Slint application**
+
 The app starts in deterministic `DEMO DATA` mode. It shows a 60-second history (61 points at one-second intervals) and adds one sample per second. Use **Pause** to hold the values and charts while reviewing the layout. Restarting the app resets the fixture to its initial state.
 
 ## Run the interactive preview
