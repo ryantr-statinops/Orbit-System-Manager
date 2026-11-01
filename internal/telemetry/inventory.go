@@ -63,8 +63,8 @@ func CollectInventoryFrom(ctx context.Context, src InventorySources) Inventory {
 	} else {
 		issue("gopsutil/mem", fmt.Errorf("no memory capacity"))
 	}
-	for _, name := range []string{"cpu", "memory", "swap", "disk_capacity", "disk_io", "network"} {
-		inv.Capabilities[name] = Capability{Source: "gopsutil", Implementation: "planned", Validation: "not_tested", Reason: "sampling collector not implemented yet"}
+	for _, name := range []string{"cpu", "memory", "swap", "disk_capacity", "disk_io", "network", "sensors"} {
+		inv.Capabilities[name] = Capability{Source: "gopsutil", Implementation: "implemented_windows", Validation: "not_tested", Reason: "PoC collector implemented; live hardware not yet fully cross-checked"}
 	}
 	return inv
 }
