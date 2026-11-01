@@ -37,6 +37,10 @@ func Missing(status Status, unit, source, reason string, at time.Time) Metric {
 }
 
 func ErrorStatus(err error) Status {
+	var classified interface{ MetricStatus() Status }
+	if errors.As(err, &classified) {
+		return classified.MetricStatus()
+	}
 	if errors.Is(err, os.ErrPermission) {
 		return PermissionDenied
 	}

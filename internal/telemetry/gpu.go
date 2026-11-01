@@ -31,7 +31,18 @@ func addGPUInventory(ctx context.Context, inv *Inventory) {
 	inv.Capabilities["gpu"] = Capability{Source: "OS display inventory", Implementation: "discovery_only", Validation: "not_tested", Reason: "device discovery does not establish metric support"}
 	if err != nil {
 		inv.Issues = append(inv.Issues, Issue{"gpu/discovery", ErrorStatus(err), err.Error()})
+	} else {
+		inv.GPUs = devices
+	}
+	provider, nvmlErr := newNVIDIA()
+	inv.Capabilities["nvidia"] = Capability{Source: "NVML", Implementation: "implemented_windows", Validation: "not_tested"}
+	if nvmlErr != nil {
+		inv.Capabilities["nvidia"] = Capability{Source: "NVML", Implementation: "implemented_windows", Validation: "not_tested", Reason: nvmlErr.Error()}
+		inv.Issues = append(inv.Issues, Issue{"NVML", ErrorStatus(nvmlErr), nvmlErr.Error()})
 		return
 	}
-	inv.GPUs = devices
+	defer provider.Close()
+	if len(provider.Devices()) > 0 {
+		mergeNVIDIAInventory(inv, provider.Devices())
+	}
 }
