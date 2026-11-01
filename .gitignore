@@ -17,3 +17,9 @@ target/
 # Cache artifacts
 __pycache__/
 *.py[cod]
+
+# Go collector PoC output
+/artifacts/collector-poc/
+/bin/
+/telemetry-poc
+/telemetry-poc.exe
