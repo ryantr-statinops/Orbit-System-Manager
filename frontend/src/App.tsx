@@ -4,6 +4,7 @@ import {
   createDashboardFixture,
   type FixtureScenario,
 } from "./fixtures";
+import CpuHistoryChart from "./CpuHistoryChart";
 
 const scenarios: Array<{ value: FixtureScenario; label: string }> = [
   { value: "history", label: "60-second history" },
@@ -108,16 +109,15 @@ function App() {
           </article>
         </div>
 
-        <section className="chart-placeholder" aria-label="CPU history fixture">
-          <div>
-            <p className="eyebrow">CPU HISTORY</p>
-            <p className="chart-description">
-              {fixture.samples.length === 0
-                ? "No samples in this fixture."
-                : `${fixture.samples.length} deterministic samples are ready for chart rendering.`}
-            </p>
+        <section className="chart-panel" aria-label="CPU history fixture">
+          <div className="chart-panel-heading">
+            <div>
+              <p className="eyebrow">CPU HISTORY</p>
+              <p className="chart-description">Total logical processor usage</p>
+            </div>
+            <span className="chart-unit">Percent · 60 seconds</span>
           </div>
-          <span className="chart-placeholder-mark" aria-hidden="true">↗</span>
+          <CpuHistoryChart samples={fixture.samples} />
         </section>
       </section>
 
