@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --host 127.0.0.1"
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "vitest run"
   },
   "dependencies": {
     "@wailsio/runtime": "3.0.0",
@@ -18,6 +19,7 @@
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^6.0.0",
     "typescript": "^5.2.2",
-    "vite": "^8.2.4"
+    "vite": "^8.2.4",
+    "vitest": "^5.0.5"
   }
 }

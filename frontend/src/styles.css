@@ -96,27 +96,124 @@ h1 {
   box-shadow: 0 0 12px rgb(80 212 154 / 55%);
 }
 
-.welcome-panel {
-  width: min(680px, 100%);
-  margin: auto;
-  padding: 42px 0;
+.dashboard-preview {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 18px;
+  padding: 54px 0 34px;
 }
 
-.welcome-panel h2 {
-  max-width: 620px;
-  margin: 16px 0 12px;
-  font-size: clamp(30px, 5vw, 48px);
+.preview-heading,
+.fixture-controls,
+.metric-cards,
+.chart-placeholder {
+  display: flex;
+  align-items: center;
+}
+
+.preview-heading,
+.fixture-controls {
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.preview-heading h2 {
+  margin: 9px 0 0;
+  font-size: clamp(28px, 4vw, 40px);
   font-weight: 550;
   letter-spacing: -0.04em;
-  line-height: 1.12;
 }
 
-.welcome-copy {
-  max-width: 560px;
-  margin: 0;
+.fixture-label {
+  color: #6e8299;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.fixture-controls {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  border: 1px solid #202b3a;
+  border-radius: 12px;
+  background: #101722;
+  padding: 12px 15px;
+}
+
+.fixture-controls label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   color: #92a1b4;
-  font-size: 15px;
-  line-height: 1.7;
+  font-size: 12px;
+}
+
+.fixture-controls select {
+  min-width: 138px;
+  border: 1px solid #304158;
+  border-radius: 8px;
+  background: #121e2c;
+  color: #dce7f4;
+  padding: 8px 10px;
+}
+
+.sample-count {
+  margin: 0 0 0 auto;
+  color: #6f8298;
+  font-size: 11px;
+}
+
+.metric-cards {
+  align-items: stretch;
+  gap: 14px;
+}
+
+.metric-card,
+.chart-placeholder {
+  border: 1px solid #202b3a;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #121b28, #0f1621);
+}
+
+.metric-card {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  padding: 17px 18px;
+}
+
+.metric-card strong {
+  overflow-wrap: anywhere;
+  font-size: clamp(18px, 2.2vw, 25px);
+  font-weight: 600;
+}
+
+.metric-card > span {
+  color: #71839a;
+  font-size: 11px;
+}
+
+.chart-placeholder {
+  min-height: 250px;
+  justify-content: space-between;
+  padding: 22px;
+  background-image: linear-gradient(rgb(71 94 120 / 7%) 1px, transparent 1px);
+  background-size: 100% 44px;
+}
+
+.chart-description {
+  margin: 10px 0 0;
+  color: #8394a9;
+  font-size: 13px;
+}
+
+.chart-placeholder-mark {
+  align-self: flex-end;
+  color: #6dbbfa;
+  font-size: 28px;
 }
 
 .page-footer {
@@ -138,5 +235,19 @@ h1 {
   .preview-status .status-dot {
     width: 8px;
     height: 8px;
+  }
+
+  .preview-heading,
+  .fixture-controls {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .metric-cards {
+    flex-direction: column;
+  }
+
+  .sample-count {
+    margin-left: 0;
   }
 }
