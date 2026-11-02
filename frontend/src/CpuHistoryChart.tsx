@@ -5,6 +5,7 @@ import { GridComponent, TooltipComponent } from "echarts/components";
 import { CanvasRenderer } from "echarts/renderers";
 import { toCpuHistoryData } from "./chartData";
 import type { FixtureSample } from "./fixtures";
+import { getRenderPixelRatio } from "./renderPolicy";
 
 echarts.use([LineChart, GridComponent, TooltipComponent, CanvasRenderer]);
 
@@ -21,7 +22,10 @@ function CpuHistoryChart({ samples }: CpuHistoryChartProps) {
     const element = chartElement.current;
     if (!element) return;
 
-    const chart = echarts.init(element, null, { renderer: "canvas" });
+    const chart = echarts.init(element, null, {
+      renderer: "canvas",
+      devicePixelRatio: getRenderPixelRatio(window.devicePixelRatio),
+    });
     chart.setOption({
       animation: false,
       grid: { top: 14, right: 18, bottom: 28, left: 42 },

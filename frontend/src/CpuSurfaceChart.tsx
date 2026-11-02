@@ -13,6 +13,7 @@ import {
 } from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import type { DashboardFixture } from "./fixtures";
+import { getRenderPixelRatio } from "./renderPolicy";
 import { CpuSurfaceBuffer } from "./surfaceBuffer";
 
 interface CpuSurfaceChartProps {
@@ -54,6 +55,7 @@ function CpuSurfaceChart({ fixture }: CpuSurfaceChartProps) {
         antialias: false,
         powerPreference: "low-power",
       });
+      renderer.setPixelRatio(getRenderPixelRatio(window.devicePixelRatio));
       renderer.setClearColor(0x111a26, 0);
       element.appendChild(renderer.domElement);
 
@@ -81,14 +83,24 @@ function CpuSurfaceChart({ fixture }: CpuSurfaceChartProps) {
       });
 
       const requestRender = () => {
-        if (frameHandle !== 0) return;
+        if (document.hidden || frameHandle !== 0) return;
         frameHandle = requestAnimationFrame(() => {
           frameHandle = 0;
           renderer.render(scene, camera);
         });
       };
 
+      const onVisibilityChange = () => {
+        if (document.hidden) {
+          if (frameHandle !== 0) cancelAnimationFrame(frameHandle);
+          frameHandle = 0;
+          return;
+        }
+        requestRender();
+      };
+
       controls.addEventListener("change", requestRender);
+      document.addEventListener("visibilitychange", onVisibilityChange);
       const resizeObserver = new ResizeObserver(() => {
         const width = Math.max(1, element.clientWidth);
         const height = Math.max(1, element.clientHeight);
@@ -114,6 +126,7 @@ function CpuSurfaceChart({ fixture }: CpuSurfaceChartProps) {
       return () => {
         resizeObserver.disconnect();
         controls.removeEventListener("change", requestRender);
+        document.removeEventListener("visibilitychange", onVisibilityChange);
         controls.dispose();
         if (frameHandle !== 0) cancelAnimationFrame(frameHandle);
         if (activeViewer.mesh) {
