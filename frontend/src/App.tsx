@@ -5,6 +5,7 @@ import {
   type FixtureScenario,
 } from "./fixtures";
 import CpuHistoryChart from "./CpuHistoryChart";
+import CpuSurfaceChart from "./CpuSurfaceChart";
 
 const scenarios: Array<{ value: FixtureScenario; label: string }> = [
   { value: "history", label: "60-second history" },
@@ -119,6 +120,8 @@ function App() {
           </div>
           <CpuHistoryChart samples={fixture.samples} />
         </section>
+
+        <CpuSurfaceChart fixture={fixture} />
       </section>
 
       <footer className="page-footer">
