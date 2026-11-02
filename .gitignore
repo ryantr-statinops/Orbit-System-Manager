@@ -23,3 +23,9 @@ __pycache__/
 /bin/
 /telemetry-poc
 /telemetry-poc.exe
+
+# Wails and frontend build output
+/frontend/node_modules/
+/frontend/dist/
+/frontend/bindings/
+/frontend/*.tsbuildinfo

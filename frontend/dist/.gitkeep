@@ -1,0 +1,1 @@
+Keep the embedded asset directory present for Go builds before the frontend bundle exists.
