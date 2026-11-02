@@ -20,6 +20,7 @@ __pycache__/
 
 # Go collector PoC output
 /artifacts/collector-poc/
+/artifacts/ui-benchmark/
 /bin/
 /telemetry-poc
 /telemetry-poc.exe
