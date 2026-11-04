@@ -29,23 +29,31 @@ PoC chạy native trên Windows x64; browser và native benchmark có phương p
 - Fixture deterministic có 0/1/4/16/32/64 core; trạng thái history 60 mẫu, empty, single và unavailable.
 - Có ECharts CPU history và Three.js surface với OrbitControls, reset camera, buffer tái sử dụng, pixel ratio tối đa 1.5 và bỏ render khi tab ẩn.
 - Có Playwright harness ghi thời gian đến UI trong browser preview và p95 frame interval khi tương tác. Chỉ số này không đại diện cho native Wails.
-- Có `cmd/ui-benchmark` xuất JSONL gồm CPU toàn máy và RSS/process count của cây tiến trình được chọn.
+- Có `cmd/ui-benchmark` xuất JSONL gồm CPU toàn máy và RSS/process count của cây tiến trình được chọn. Đã sửa lỗi kiểu tham số ở `cpu.Percent`.
 
 Windows inventory của môi trường phát triển: Windows 11 Pro 26H2 build 26300, Go 1.27.0, Node 22.23.1, npm 10.9.8, WebView2 156.0.4314.58. `wails3 doctor` báo môi trường Windows sẵn sàng, `CGO_ENABLED=0`.
 
-**Kiểm tra đang chờ theo yêu cầu người dùng:** chạy lại `npm ci`, `npm run build`, `npm test`, `npm run benchmark:browser`, `go test ./...`, `go vet ./...`, build và mở ứng dụng Wails native. Cần cài Playwright Chromium trước khi chạy browser harness.
+**Kiểm tra hoàn thành ngày 2026-11-04:** `npm ci` thành công; `npm test` — 4 file/14 test đạt; `npm run build` thành công; `go test ./...` và `go vet ./...` đạt; Go CLI, UI benchmark sampler và Wails app đều build được. Sửa riêng lỗi TypeScript tooltip, Vitest quét nhầm thư mục e2e và selector heading không duy nhất. Bundle production khoảng 1.2 MB, vượt cảnh báo 500 kB.
 
-**Blocker nghiệm thu:** chưa xem được giao diện trực tiếp; chưa chạy phép đo idle/tương tác 30 phút trên Windows; chưa có baseline hoặc ngưỡng được duyệt. Linux/Fedora nằm ngoài phạm vi hiện tại, không còn là blocker. Chưa đánh dấu checklist Stage 2 hoàn thành. Stage 3 chờ đủ bằng chứng Windows và duyệt baseline.
+Browser benchmark Playwright đạt với 64 core/60 fixture samples: UI ready `614.8 ms`, 11 frame intervals, p95 `16.7 ms`. Đây chỉ là browser preview; số mẫu tương tác còn ít và không thay thế native Wails baseline.
 
-Lệnh kiểm tra frontend sau này:
+**Blocker native:** Wails app build được nhưng không mở UI trong môi trường này. WebView2 báo không thể đọc/ghi thư mục dữ liệu mặc định dưới `%APPDATA%\orbit-system-manager.exe\EBWebView`; không có cửa sổ native để review. Vì vậy chưa đo GPU/native frame-time, chưa chạy idle/tương tác 30 phút và chưa có baseline được duyệt. Không đánh dấu Stage 2 hoàn thành.
 
-```sh
-cd frontend
-npm ci
-npx playwright install chromium
+## Gate còn mở
+
+- Khắc phục hoặc xác định giới hạn WebView2 data-folder trên Windows để review native.
+- Thu GPU/frame-time native; chạy idle và tương tác 30 phút mỗi chế độ.
+- Đánh giá cảnh báo bundle lớn trong baseline; xin người dùng duyệt baseline/ngưỡng.
+- Stage 3 vẫn chờ baseline Windows và duyệt metric Stage 1. Linux/Fedora ngoài phạm vi hiện tại.
+
+Lệnh browser benchmark đã dùng:
+
+```powershell
+Set-Location frontend
 npm test
-npm run benchmark:browser
 npm run build
+npm run benchmark:browser
+Set-Location ..
 ```
 
 Lệnh native sampler sau khi mở ứng dụng và lấy PID:
