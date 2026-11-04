@@ -2,7 +2,7 @@
 
 ## Mục tiêu
 
-Xác minh surface và đo baseline trên Windows, Ubuntu, Fedora trước khi xây dashboard.
+Xác minh surface và đo baseline native trên Windows x64 trước khi xây dashboard hoàn chỉnh.
 
 ## Checklist
 
@@ -12,7 +12,7 @@ Xác minh surface và đo baseline trên Windows, Ubuntu, Fedora trước khi x�
 - [ ] Tạo fixture 0/1/4/16/32/64 core, lịch sử 60 giây; có trạng thái empty, single và unavailable.
 - [ ] Tái sử dụng buffer mesh; tách cập nhật metric khỏi render, tránh React state cho từng frame.
 - [ ] Kiểm tra rotate/pan/zoom/reset; giới hạn pixel ratio và giảm render khi cửa sổ bị ẩn.
-- [ ] Xác minh GTK/WebKitGTK/WebView từng OS; ghi dependency và lỗi rendering.
+- [ ] Xác minh WebView2 trên Windows; ghi phiên bản runtime và lỗi rendering.
 - [ ] Đo bản release: thời gian đến UI/mẫu đầu, RAM cả cây tiến trình, CPU toàn máy và frame time p95 khi tương tác.
 - [ ] Chạy idle và tương tác 30 phút; ghi cấu hình, scaling, độ phân giải và phương pháp đo.
 - [ ] Người dùng duyệt baseline/ngưỡng trước stage 3.
@@ -35,7 +35,7 @@ Windows inventory của môi trường phát triển: Windows 11 Pro 26H2 build 
 
 **Kiểm tra đang chờ theo yêu cầu người dùng:** chạy lại `npm ci`, `npm run build`, `npm test`, `npm run benchmark:browser`, `go test ./...`, `go vet ./...`, build và mở ứng dụng Wails native. Cần cài Playwright Chromium trước khi chạy browser harness.
 
-**Blocker nghiệm thu:** chưa xem được giao diện trực tiếp; chưa chạy phép đo idle/tương tác 30 phút; chưa kiểm chứng native trên Ubuntu/Fedora; chưa có baseline hoặc ngưỡng được duyệt. Chưa đánh dấu checklist Stage 2 hoàn thành. Stage 3 tiếp tục chờ đủ bằng chứng và duyệt baseline.
+**Blocker nghiệm thu:** chưa xem được giao diện trực tiếp; chưa chạy phép đo idle/tương tác 30 phút trên Windows; chưa có baseline hoặc ngưỡng được duyệt. Linux/Fedora nằm ngoài phạm vi hiện tại, không còn là blocker. Chưa đánh dấu checklist Stage 2 hoàn thành. Stage 3 chờ đủ bằng chứng Windows và duyệt baseline.
 
 Lệnh kiểm tra frontend sau này:
 
