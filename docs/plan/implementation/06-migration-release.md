@@ -2,7 +2,7 @@
 
 ## Mục tiêu
 
-Chuyển Go thành bản chính sau duyệt; lưu mốc Rust trong Git, thử nghiệm trước stable.
+Chuyển Go/Wails thành bản Windows x64 chính sau duyệt; lưu mốc Rust trong Git, thử nghiệm trước stable.
 
 ## Checklist
 
@@ -10,7 +10,7 @@ Chuyển Go thành bản chính sau duyệt; lưu mốc Rust trong Git, thử ng
 - [ ] Người dùng duyệt chuyển đổi trước khi bỏ build Rust/Slint.
 - [ ] Lưu commit/tag mốc Rust cuối; chuyển entrypoint và build chính sang Go/Wails.
 - [ ] Bỏ dependency/build cũ; giữ asset/tài liệu bản mới còn dùng.
-- [ ] Cập nhật CI: Go tests/checks, frontend lint/typecheck/tests/build và package trên ba OS.
+- [ ] Cập nhật CI Windows: Go checks, frontend lint/typecheck/tests/build và Windows package.
 - [ ] Chuẩn hóa lệnh browser preview, desktop dev, test và release; cập nhật README, AGENTS.md và tài liệu UI/preview.
 - [ ] Công bố metric/thiết bị đã kiểm chứng, giới hạn sensor, dependency và cách bật helper nếu có.
 - [ ] Kiểm tra license dependency/asset; hướng dẫn cài, cập nhật, gỡ cài và khôi phục bản trước.
