@@ -2,35 +2,33 @@
 
 ## Stack và phạm vi
 
-Go + gopsutil v4 + Wails v3; React + TypeScript + Vite, ECharts 2D và Three.js surface. Khóa dependency sau PoC.
-
-Bản đầu: Windows và Ubuntu/Fedora x64; dashboard ba cột, Settings, metric thật, lịch sử 60 giây trong RAM. GPU/sensor theo khả năng kiểm chứng; đóng cửa sổ thoát hoàn toàn. Chưa thêm macOS, process explorer, cảnh báo, export, tray hoặc monitoring từ xa.
+Mục tiêu hỗ trợ hiện tại là Windows x64. Stack rebuild: Go + gopsutil v4 + Wails v3; React + TypeScript + Vite, ECharts 2D và Three.js surface. Bản đầu có dashboard ba cột, Settings, metric thật và lịch sử 60 giây trong RAM. Chỉ quảng bá GPU/sensor đã kiểm chứng. Không triển khai Linux/macOS trong phạm vi hiện tại.
 
 ## Thứ tự và trạng thái
 
 | Stage | Kế hoạch | Trạng thái |
 |---|---|---|
-| 1 | [Collector PoC](01-collector-poc.md) | Hoàn thành tạm theo yêu cầu người dùng — Windows Stage 1A; Linux còn chờ |
-| 2 | [UI và hiệu năng PoC](02-ui-performance-poc.md) | Đang triển khai — kiểm tra và benchmark chờ xử lý |
-| 3 | [Dashboard dữ liệu thật](03-live-dashboard.md) | Chưa bắt đầu |
-| 4 | [Hoàn thiện đa nền tảng](04-platform-hardening.md) | Chưa bắt đầu |
+| 1 | [Collector PoC](01-collector-poc.md) | Hoàn thành tạm — Windows Stage 1A; chờ duyệt độ phủ metric |
+| 2 | [UI và hiệu năng PoC](02-ui-performance-poc.md) | Đang triển khai — kiểm tra và baseline Windows còn chờ |
+| 3 | [Dashboard dữ liệu thật](03-live-dashboard.md) | Chưa bắt đầu; chờ gate Stage 1/2 |
+| 4 | [Hoàn thiện trên Windows](04-platform-hardening.md) | Chưa bắt đầu |
 | 5 | [Đóng gói và cập nhật](05-packaging-updates.md) | Chưa bắt đầu |
 | 6 | [Chuyển đổi và phát hành](06-migration-release.md) | Chưa bắt đầu |
 
-## Quy tắc thực hiện
+## Quy tắc và gate
 
-- [ ] Người dùng duyệt độ phủ metric sau stage 1.
-- [ ] Người dùng duyệt baseline và ngưỡng hiệu năng sau stage 2, trước stage 3.
-- [ ] Đánh dấu khi có bằng chứng; ghi kết quả/blocker trong stage.
-- [ ] Chưa mua Authenticode; bắt buộc ký gói cập nhật.
-- [ ] Giữ bản Rust để đối chiếu đến khi bản mới được nghiệm thu.
+- [ ] Người dùng duyệt độ phủ metric Windows sau Stage 1.
+- [ ] Người dùng duyệt baseline/ngưỡng hiệu năng Windows sau Stage 2, trước Stage 3.
+- [ ] Chỉ đánh dấu checklist khi có bằng chứng; ghi blocker ngay trong stage.
+- [ ] Chưa mua Authenticode; gói cập nhật phải có chữ ký được xác minh.
+- [ ] Giữ bản Rust đến khi bản Go/Wails được nghiệm thu.
 
-Stage 1 được đánh dấu hoàn thành tạm; Linux, đối chiếu đầy đủ và duyệt độ phủ metric còn chờ. Stage 2 đã có các commit triển khai local; kiểm tra trên Windows/Linux/Fedora và duyệt baseline còn chờ.
+Linux/macOS và lịch sử kiểm chứng cũ không bị xóa, nhưng không thuộc ma trận hỗ trợ hiện tại. Stage 1 vẫn cần duyệt độ phủ metric; Stage 2 chưa nghiệm thu và chưa có baseline được duyệt.
 
-## Reference guides
+## Tài liệu tham chiếu
 
-- [Documentation index](../../README.md): current application, rebuild requirements, and historical material.
-- [Architecture](../../ARCHITECTURE.md): collector and platform hardening (stages 1, 4).
-- [Web dashboard](../../UI-DESIGN.md): UI PoC and live dashboard (stages 2, 3).
-- [Development and validation](../../DEVELOPMENT.md): environments, tests, baseline, and approval gates.
-- [Distribution and updates](../../DISTRIBUTION.md): packaging, updater, and release acceptance (stages 5, 6).
+- [Documentation index](../../README.md)
+- [Architecture](../../ARCHITECTURE.md)
+- [Dashboard design](../../UI-DESIGN.md)
+- [Development and validation](../../DEVELOPMENT.md)
+- [Distribution and updates](../../DISTRIBUTION.md)
