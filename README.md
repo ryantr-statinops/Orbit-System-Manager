@@ -6,9 +6,9 @@ A native desktop dashboard built with Rust and Slint. It starts with determinist
 
 ## Rebuild status
 
-The Go + gopsutil + Wails rebuild, with React/TypeScript, ECharts, and Three.js, is **planned — not implemented**. It targets Windows and Ubuntu/Fedora x64, live metrics, and a 60-second in-memory history. GPU and sensor support will depend on measured hardware capabilities.
+Windows x64 is the sole supported target in the current project scope. The Go + gopsutil + Wails rebuild, with React/TypeScript, ECharts, and Three.js, is **planned — not implemented**. It targets live metrics and a 60-second in-memory history. GPU and sensor support will depend on measured Windows hardware capabilities.
 
-The [implementation stages](docs/plan/implementation/README.md) track progress and evidence. Metric coverage requires approval after the collector PoC; performance thresholds require approval after the UI PoC. The commands and dashboard below describe the current Rust/Slint application, which remains in place until migration is approved.
+The [implementation stages](docs/plan/implementation/README.md) track progress and evidence. Windows metric coverage requires approval after the collector PoC; performance thresholds require approval after the UI PoC. The commands and dashboard below describe the current Rust/Slint application, which remains in place until migration is approved. Existing multi-platform releases are historical; future CI and releases target Windows x64 only.
 
 ## Dashboard
 
@@ -23,7 +23,7 @@ The default preview starts with 60 seconds of history (61 one-second samples), t
 ## Requirements
 
 - Rust and Cargo 1.99.1 or later.
-- Platform build dependencies required by Slint. On Windows, install Visual Studio Build Tools with the MSVC C++ workload.
+- Windows build dependencies required by Slint: Visual Studio Build Tools with the MSVC C++ workload.
 
 ## Development
 
@@ -64,4 +64,4 @@ Run the interactive demo with `cargo run --locked`. To capture a deterministic P
 
 ## Current Rust release artifacts
 
-Pushing a version tag such as `v2.2.0` starts `.github/workflows/release.yml`. The workflow builds Windows x86_64, Linux x86_64, macOS Intel, and macOS Apple Silicon archives, then attaches them and `SHA256SUMS.txt` to the GitHub Release.
+Pushing a version tag such as `v2.2.0` starts `.github/workflows/release.yml`. Future runs build a Windows x86_64 archive and attach it with `SHA256SUMS.txt` to the GitHub Release. Previously published Linux and macOS artifacts are unchanged.
