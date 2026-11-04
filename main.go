@@ -13,7 +13,7 @@ var frontend embed.FS
 func main() {
 	app := application.New(application.Options{
 		Name:        "Orbit System Manager",
-		Description: "Cross-platform system telemetry dashboard",
+		Description: "Windows system telemetry dashboard",
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(frontend),
 		},
