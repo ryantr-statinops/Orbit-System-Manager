@@ -31,7 +31,7 @@ function CpuHistoryChart({ samples }: CpuHistoryChartProps) {
       grid: { top: 14, right: 18, bottom: 28, left: 42 },
       tooltip: {
         trigger: "axis",
-        valueFormatter: (value) =>
+        valueFormatter: (value: unknown) =>
           value == null ? "Unavailable" : `${Number(value).toFixed(1)}%`,
       },
       xAxis: {
