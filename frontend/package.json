@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "vitest run",
+    "test": "vitest run src",
     "benchmark:browser": "playwright test e2e/benchmark.spec.ts --workers=1"
   },
   "dependencies": {
