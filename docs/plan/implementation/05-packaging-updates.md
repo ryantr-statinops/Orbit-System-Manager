@@ -19,7 +19,7 @@ Installer Windows x64; cập nhật qua GitHub Releases, hỏi trước khi tả
 
 ## Điều kiện hoàn thành
 
-Ba gói cài/nâng cấp được kiểm chứng; không báo thành công giả hoặc cam kết rollback chưa kiểm chứng.
+Installer Windows x64 và đường nâng cấp được kiểm chứng; không báo thành công giả hoặc cam kết rollback chưa kiểm chứng.
 
 ## Kết quả và blocker
 
