@@ -68,7 +68,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 		default:
 		}
 
-		hostCPU, cpuErr := cpu.Percent((*interval).Seconds(), false)
+		hostCPU, cpuErr := cpu.Percent(*interval, false)
 		if cpuErr != nil {
 			fmt.Fprintf(stderr, "read whole-machine CPU: %v\n", cpuErr)
 		}
