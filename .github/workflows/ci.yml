@@ -1,4 +1,4 @@
-name: CI / Cross-Platform Slint Build & Check
+name: CI / Windows Slint Build & Check
 
 on:
   push:
@@ -8,31 +8,14 @@ on:
 
 jobs:
   slint-check:
-    name: Check Slint & Rust (${{ matrix.platform }})
+    name: Check Slint & Rust (Windows x64)
     strategy:
       fail-fast: false
       matrix:
-        platform: [windows-latest, macos-latest, ubuntu-22.04]
         rust: ["1.99.1"]
-    runs-on: ${{ matrix.platform }}
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Linux GUI dependencies (Ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            build-essential \
-            pkg-config \
-            libfontconfig1-dev \
-            libx11-dev \
-            libxkbcommon-dev \
-            libwayland-dev \
-            libxrandr-dev \
-            libxi-dev \
-            libgl1-mesa-dev \
-            libegl1-mesa-dev
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -54,24 +37,9 @@ jobs:
 
   dashboard-preview:
     name: Capture dashboard preview
-    runs-on: ubuntu-22.04
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Linux GUI dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            build-essential \
-            pkg-config \
-            libfontconfig1-dev \
-            libx11-dev \
-            libxkbcommon-dev \
-            libwayland-dev \
-            libxrandr-dev \
-            libxi-dev \
-            libgl1-mesa-dev \
-            libegl1-mesa-dev
 
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
