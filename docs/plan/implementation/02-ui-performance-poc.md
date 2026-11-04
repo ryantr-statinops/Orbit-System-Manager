@@ -23,7 +23,7 @@ PoC chạy native trên Windows x64; browser và native benchmark có phương p
 
 ## Kết quả và blocker
 
-Đã triển khai một phần trên `main`; toàn bộ commit đang ở local và chưa push.
+Đã triển khai một phần trên `main`; các commit hiện có đã được push. Kiểm chứng Windows và duyệt baseline vẫn còn chờ.
 
 - Có Wails v3.0.0 host, React/TypeScript/Vite browser preview và lockfile frontend.
 - Fixture deterministic có 0/1/4/16/32/64 core; trạng thái history 60 mẫu, empty, single và unavailable.
