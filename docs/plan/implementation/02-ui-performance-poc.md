@@ -37,7 +37,9 @@ Windows inventory của môi trường phát triển: Windows 11 Pro 26H2 build 
 
 Browser benchmark Playwright đạt với 64 core/60 fixture samples: UI ready `614.8 ms`, 11 frame intervals, p95 `16.7 ms`. Đây chỉ là browser preview; số mẫu tương tác còn ít và không thay thế native Wails baseline.
 
-**Blocker native:** Wails app build được nhưng không mở UI trong môi trường này. WebView2 báo không thể đọc/ghi thư mục dữ liệu mặc định dưới `%APPDATA%\orbit-system-manager.exe\EBWebView`; không có cửa sổ native để review. Vì vậy chưa đo GPU/native frame-time, chưa chạy idle/tương tác 30 phút và chưa có baseline được duyệt. Không đánh dấu Stage 2 hoàn thành.
+**Native startup update — 2026-11-04:** WebView2 ban đầu không ghi được vào profile mặc định dưới `%APPDATA%`. Sau khi cấu hình profile riêng trong `%LOCALAPPDATA%\OrbitSystemManager\WebView2`, Wails khởi động, tạo WebView2 environment và phục vụ frontend assets. Tuy nhiên, công cụ điều khiển desktop hết thời gian chờ khi bind cửa sổ để review; native UI chưa được quan sát trực tiếp. Sampler chỉ thu được dữ liệu partial với RSS `null` sau khi tiến trình đích kết thúc, nên không dùng làm baseline.
+
+**Blocker native:** chưa review được tương tác trực tiếp, chưa thu GPU/native frame-time và chưa chạy idle/tương tác 30 phút. Baseline chưa đủ bằng chứng để duyệt. Không đánh dấu Stage 2 hoàn thành.
 
 ## Gate còn mở
 
