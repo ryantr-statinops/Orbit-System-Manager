@@ -2,7 +2,7 @@
 
 ## Mục tiêu
 
-Xây dashboard metric thật, giữ ba cột và màu tối; bắt đầu sau duyệt PoC.
+Xây dashboard metric thật cho Windows x64, giữ ba cột và màu tối; bắt đầu sau khi duyệt các gate PoC.
 
 ## Checklist
 
