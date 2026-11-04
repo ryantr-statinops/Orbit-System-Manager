@@ -2,7 +2,7 @@
 
 ## Mục tiêu
 
-Kiểm chứng Go + gopsutil trên Windows, Ubuntu và Fedora, gồm giới hạn GPU/sensor. Đợt này chỉ gồm Windows Stage 1A.
+Kiểm chứng Go + gopsutil cho Windows x64, gồm giới hạn GPU/sensor. Phạm vi hiện tại chỉ gồm Windows Stage 1A.
 
 ## Checklist
 
@@ -10,7 +10,7 @@ Kiểm chứng Go + gopsutil trên Windows, Ubuntu và Fedora, gồm giới hạ
 - [x] Windows CLI thu CPU/RAM/swap/disk/network/NVIDIA; rate và reset có unit test.
 - [x] Thử sensor ACPI; không gán nhầm thành nhiệt độ CPU package.
 - [x] Ghi ma trận Windows bên dưới.
-- [ ] Ubuntu/Fedora inventory, Linux NVIDIA/DRM/sysfs/hwmon và metric AMD/Intel.
+- [ ] Linux inventory/adapters được hoãn ngoài phạm vi Windows-only hiện tại; không chặn nghiệm thu Windows.
 - [ ] Đối chiếu đầy đủ; chỉ xét helper nếu quyền cao hơn mở metric cần thiết.
 
 ## Kết quả Windows — 2026-11-01
@@ -28,4 +28,4 @@ Windows Performance Counter/CIM chặn đối chiếu CPU/RAM/disk/network. Lầ
 
 ## Trạng thái và gate
 
-Theo yêu cầu người dùng ngày 2026-11-01, Stage 1 được đánh dấu hoàn thành tạm với bằng chứng hiện có giới hạn ở Windows Stage 1A. Ubuntu/Fedora inventory/adapters và đối chiếu metric vẫn còn chờ; checklist tương ứng giữ chưa đánh dấu. Gate duyệt độ phủ metric vẫn cần được xác nhận riêng trước khi bắt đầu Stage 2. Không suy rộng kết quả Windows sang phần cứng chưa thử.
+Theo yêu cầu người dùng ngày 2026-11-01, Stage 1 được đánh dấu hoàn thành tạm với bằng chứng giới hạn ở Windows Stage 1A. Linux inventory/adapters nằm ngoài phạm vi hỗ trợ hiện tại và chưa được kiểm chứng; không suy rộng kết quả sang phần cứng Windows chưa thử. Gate duyệt độ phủ metric Windows vẫn cần được xác nhận riêng trước Stage 3.
