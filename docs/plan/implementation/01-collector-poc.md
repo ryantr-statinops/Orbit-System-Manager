@@ -29,3 +29,12 @@ Windows Performance Counter/CIM chặn đối chiếu CPU/RAM/disk/network. Lầ
 ## Trạng thái và gate
 
 Theo yêu cầu người dùng ngày 2026-11-01, Stage 1 được đánh dấu hoàn thành tạm với bằng chứng giới hạn ở Windows Stage 1A. Linux inventory/adapters nằm ngoài phạm vi hỗ trợ hiện tại và chưa được kiểm chứng; không suy rộng kết quả sang phần cứng Windows chưa thử. Gate duyệt độ phủ metric Windows vẫn cần được xác nhận riêng trước Stage 3.
+
+## Kiểm chứng Windows bổ sung — 2026-11-04
+
+- `go test ./...`, `go vet ./...`, và build CLI thành công sau khi sửa sampler UI benchmark.
+- Inventory mới đọc Windows 11 Pro 26H2 build `26300.9818` và RAM `34,099,601,408` byte; CPU inventory trả `permission_denied`, WMI GPU discovery cũng bị từ chối. Không có CPU model mới được xác nhận trong lần này.
+- Ba mẫu Go cho thấy CPU `warming_up` ở mẫu đầu rồi `available`; memory/swap/disk/network và NVIDIA NVML đều `available`. Sensor ACPI vẫn `permission_denied`.
+- NVIDIA được đọc qua NVML; `nvidia-smi` chạy được, nhưng chưa thu cùng thời điểm/cửa sổ để xác nhận sai khác VRAM cũ. `Get-Counter` và CIM đều bị quyền hệ thống từ chối nên chưa đối chiếu độc lập được CPU/RAM/disk/network.
+
+Gate duyệt độ phủ metric vẫn chờ. Không quảng bá CPU inventory, sensor ACPI, Intel GPU metrics hoặc metric chưa đối chiếu như đã được xác minh.
