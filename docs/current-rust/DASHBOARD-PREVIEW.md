@@ -68,7 +68,7 @@ Record the commit SHA, capture command, fixture state, processor count, size, an
 |---|---|---|---|
 |  |  |  |  |
 
-For native review, run the app at 1465×955, 1280×800, 1060×800, and 720×520. On Windows, check 100%, 150%, and 200% display scaling; resize repeatedly; drag, collapse, and restore both sidebars; scroll to the last processor; pause and resume; and rotate, pan, zoom, and reset the terrain. Record which operating systems and scaling factors were actually checked.
+For native Windows review, run the app at 1465×955, 1280×800, 1060×800, and 720×520. Check 100%, 150%, and 200% display scaling; resize repeatedly; drag, collapse, and restore both sidebars; scroll to the last processor; pause and resume; and rotate, pan, zoom, and reset the terrain. Record the Windows build and scaling factors checked.
 
 The screenshot feature still needs the Rust platform toolchain to compile. On Windows this includes the MSVC linker `link.exe`; the headless backend does not remove that build requirement. If it is unavailable locally, use the CI artifact and mark local native checks as blocked until a suitable toolchain is available.
 
