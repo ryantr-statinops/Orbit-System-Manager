@@ -19,7 +19,7 @@ Xác minh surface và đo baseline native trên Windows x64 trước khi xây da
 
 ## Điều kiện hoàn thành
 
-PoC chạy native trên ba môi trường, benchmark tái lập; giải quyết vấn đề stack trước stage 3.
+PoC chạy native trên Windows x64; browser và native benchmark có phương pháp tái lập, kết quả và blocker được ghi rõ; người dùng duyệt baseline trước Stage 3.
 
 ## Kết quả và blocker
 
