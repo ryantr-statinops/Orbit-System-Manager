@@ -1,4 +1,4 @@
-name: Release / Multi-Platform Build & Publish
+name: Release / Windows x64 Build & Publish
 
 on:
   push:
@@ -19,39 +19,11 @@ jobs:
             os: windows-latest
             artifact: orbit-system-manager-windows-x86_64.zip
             bin: orbit-system-manager.exe
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-22.04
-            artifact: orbit-system-manager-linux-x86_64.tar.gz
-            bin: orbit-system-manager
-          - target: x86_64-apple-darwin
-            os: macos-latest
-            artifact: orbit-system-manager-macos-x86_64.zip
-            bin: orbit-system-manager
-          - target: aarch64-apple-darwin
-            os: macos-latest
-            artifact: orbit-system-manager-macos-aarch64.zip
-            bin: orbit-system-manager
 
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Install Linux GUI dependencies (Ubuntu only)
-        if: matrix.os == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            build-essential \
-            pkg-config \
-            libfontconfig1-dev \
-            libx11-dev \
-            libxkbcommon-dev \
-            libwayland-dev \
-            libxrandr-dev \
-            libxi-dev \
-            libgl1-mesa-dev \
-            libegl1-mesa-dev
 
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -67,16 +39,6 @@ jobs:
         run: |
           Compress-Archive -Path target/${{ matrix.target }}/release/${{ matrix.bin }} -DestinationPath ${{ matrix.artifact }}
 
-      - name: Package archive (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          tar -czvf ${{ matrix.artifact }} -C target/${{ matrix.target }}/release ${{ matrix.bin }}
-
-      - name: Package archive (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          zip -j ${{ matrix.artifact }} target/${{ matrix.target }}/release/${{ matrix.bin }}
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -87,7 +49,7 @@ jobs:
   create-github-release:
     name: Publish GitHub Release
     needs: [build-binaries]
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -100,9 +62,13 @@ jobs:
 
       - name: Generate SHA-256 checksums
         working-directory: release-artifacts
+        shell: pwsh
         run: |
-          sha256sum * > SHA256SUMS.txt
-          cat SHA256SUMS.txt
+          Get-ChildItem -File | Where-Object Name -ne 'SHA256SUMS.txt' | ForEach-Object {
+            $hash = (Get-FileHash -Algorithm SHA256 $_.FullName).Hash.ToLowerInvariant()
+            "$hash *$($_.Name)"
+          } | Set-Content -Encoding ascii SHA256SUMS.txt
+          Get-Content SHA256SUMS.txt
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
