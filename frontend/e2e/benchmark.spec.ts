@@ -30,7 +30,7 @@ test("records browser preview readiness and interaction frame times", async ({ p
 
   const navigationStarted = performance.now();
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "System overview" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "System overview" })).toBeVisible();
   const browserUiReadyMs = performance.now() - navigationStarted;
 
   await page.getByLabel("Logical cores").selectOption("64");
