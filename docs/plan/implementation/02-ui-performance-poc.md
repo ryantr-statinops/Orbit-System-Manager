@@ -6,13 +6,14 @@ Xác minh surface và đo baseline native trên Windows x64 trước khi xây da
 
 ## Checklist
 
-- [ ] Dựng Wails v3 + React + TypeScript + Vite; khóa dependency tương thích và runtime frontend tương ứng.
-- [ ] Thiết lập browser preview bằng fixture deterministic, không phụ thuộc collector.
-- [ ] Dùng ECharts theo module cho 2D; Three.js trực tiếp cho surface, camera và vòng render.
-- [ ] Tạo fixture 0/1/4/16/32/64 core, lịch sử 60 giây; có trạng thái empty, single và unavailable.
-- [ ] Tái sử dụng buffer mesh; tách cập nhật metric khỏi render, tránh React state cho từng frame.
-- [ ] Kiểm tra rotate/pan/zoom/reset; giới hạn pixel ratio và giảm render khi cửa sổ bị ẩn.
-- [ ] Xác minh WebView2 trên Windows; ghi phiên bản runtime và lỗi rendering.
+- [x] Dựng Wails v3 + React + TypeScript + Vite; khóa dependency tương thích và runtime frontend tương ứng.
+- [x] Thiết lập browser preview bằng fixture deterministic, không phụ thuộc collector.
+- [x] Dùng ECharts theo module cho 2D; Three.js trực tiếp cho surface, camera và vòng render.
+- [x] Tạo fixture 0/1/4/16/32/64 core, lịch sử 60 giây; có trạng thái empty, single và unavailable.
+- [x] Tái sử dụng buffer mesh; tách cập nhật fixture khỏi render và không dùng React state cho từng frame.
+- [x] Giới hạn pixel ratio và giảm render khi cửa sổ bị ẩn; code và unit test pixel-ratio đã kiểm tra.
+- [ ] Native review camera: orbit/rotate và reset đã hoạt động; pan/zoom chưa được xác minh.
+- [x] Xác minh WebView2 trên Windows; ghi phiên bản runtime và xác nhận fixture render được.
 - [ ] Đo bản release: thời gian đến UI/mẫu đầu, RAM cả cây tiến trình, CPU toàn máy và frame time p95 khi tương tác.
 - [ ] Chạy idle và tương tác 30 phút; ghi cấu hình, scaling, độ phân giải và phương pháp đo.
 - [ ] Người dùng duyệt baseline/ngưỡng trước stage 3.
@@ -68,7 +69,7 @@ Tạo thư mục `artifacts/ui-benchmark/` trước khi chuyển hướng output
 
 ## Native Windows recheck — 2026-11-05
 
-- `go test ./...`, `go vet ./...`, build CLI, build UI sampler và build Wails thoát thành công. File Wails build bị Windows Application Control chặn khi chạy trực tiếp; `go run .` khởi động được Wails v3 trên WebView2 `156.0.4314.58` và phục vụ fixture.
+- `go test ./...`, `go vet ./...`, build CLI, build UI sampler và build Wails thoát thành công. Optimized release build (`go build -trimpath -ldflags "-s -w"`) tạo file 13,720,064 byte; Windows Application Control chặn chạy trực tiếp file build. `go run .` khởi động được Wails v3 trên WebView2 `156.0.4314.58` và phục vụ fixture.
 - Review native qua cửa sổ Wails: tiêu đề, metric cards, history chart và surface 3D hiển thị; đổi fixture sang 64 core và kéo xoay surface hoạt động. Zoom chưa xác nhận rõ. Đây là review fixture, không phải live dashboard.
 - Preflight sampler 10 giây: CPU toàn máy có dữ liệu; process tree `partial` trong cả 10 mẫu, chỉ thấy một process và RSS là `null`. Chẩn đoán `gopsutil.Process.MemoryInfo` trả `Access is denied`; không dùng dữ liệu này làm baseline.
 - `PresentMon` chưa cài. Hướng dẫn chính thức yêu cầu Performance Log Users hoặc chạy elevated để thu ETW; `typeperf` cũng xác nhận tài khoản hiện tại không có quyền đó. Không đổi nhóm/quyền và không chạy elevated. Vì vậy GPU/frame-time native và RSS cây tiến trình chưa thu được; không chạy hai phép đo 30 phút khi preflight không hợp lệ. ([PresentMon access requirements](https://github.com/GameTechDev/PresentMon#troubleshooting))
