@@ -38,3 +38,13 @@ Theo yêu cầu người dùng ngày 2026-11-01, Stage 1 được đánh dấu h
 - NVIDIA được đọc qua NVML; `nvidia-smi` chạy được, nhưng chưa thu cùng thời điểm/cửa sổ để xác nhận sai khác VRAM cũ. `Get-Counter` và CIM đều bị quyền hệ thống từ chối nên chưa đối chiếu độc lập được CPU/RAM/disk/network.
 
 Gate duyệt độ phủ metric vẫn chờ. Không quảng bá CPU inventory, sensor ACPI, Intel GPU metrics hoặc metric chưa đối chiếu như đã được xác minh.
+
+## Đối chiếu Windows bổ sung — 2026-11-05
+
+- `go test ./...`, `go vet ./...`, build CLI và build Wails đều thoát thành công. Windows Application Control chặn chạy trực tiếp các file `.exe` vừa build; chạy collector bằng `go run` vẫn hoạt động. Cảnh báo ghi Go module stat-cache bị từ chối không làm lệnh build thất bại.
+- Inventory tiếp tục trả CPU model `null` do SMBIOS access denied; RAM tổng `34,099,601,408` byte và Quadro T1000 / driver `580.92` được đọc. CIM/WMI bị từ chối.
+- Sample 1 giây: CPU warming-up ở mẫu đầu, sau đó `available` (khoảng 5.5–13.4% trong các mẫu ngắn); RAM, swap, disk capacity/I/O, network và NVIDIA đều có dữ liệu. ACPI sensor vẫn `permission_denied`.
+- NVML và `nvidia-smi` được lấy trong cùng khoảng thời gian: utilization `0%`, nhiệt độ khoảng `57–59°C`, power khoảng `4.7–4.9 W`, VRAM tổng `4096 MiB`. VRAM used không khớp: NVML khoảng `319.3 MiB`, `nvidia-smi` `161 MiB` (lệch khoảng `158.3 MiB`); VRAM used chưa được xác minh và không nên quảng bá.
+- `Get-CimInstance` bị từ chối. `typeperf` không chạy vì tài khoản không thuộc Performance Log Users và không elevated; Task Manager không mở được qua phiên điều khiển này. Vì vậy CPU/RAM used/disk/network chưa có đối chiếu độc lập. Không thay đổi quyền hệ thống.
+
+Raw inventory/sample/NVIDIA output nằm trong `artifacts/collector-poc/` (Git ignore). Các giá trị có trạng thái `available` chỉ xác nhận collector đọc được trên máy này, không thay thế đối chiếu độc lập.
