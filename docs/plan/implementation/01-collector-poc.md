@@ -37,7 +37,7 @@ Theo yêu cầu người dùng ngày 2026-11-01, Stage 1 được đánh dấu h
 - Ba mẫu Go cho thấy CPU `warming_up` ở mẫu đầu rồi `available`; memory/swap/disk/network và NVIDIA NVML đều `available`. Sensor ACPI vẫn `permission_denied`.
 - NVIDIA được đọc qua NVML; `nvidia-smi` chạy được, nhưng chưa thu cùng thời điểm/cửa sổ để xác nhận sai khác VRAM cũ. `Get-Counter` và CIM đều bị quyền hệ thống từ chối nên chưa đối chiếu độc lập được CPU/RAM/disk/network.
 
-Gate duyệt độ phủ metric vẫn chờ. Không quảng bá CPU inventory, sensor ACPI, Intel GPU metrics hoặc metric chưa đối chiếu như đã được xác minh.
+Tại thời điểm ghi nhận ngày 2026-11-04, gate duyệt độ phủ vẫn chờ. Không quảng bá CPU inventory, sensor ACPI, Intel GPU metrics hoặc metric chưa đối chiếu như đã được xác minh.
 
 ## Đối chiếu Windows bổ sung — 2026-11-05
 
@@ -48,3 +48,7 @@ Gate duyệt độ phủ metric vẫn chờ. Không quảng bá CPU inventory, s
 - `Get-CimInstance` bị từ chối. `typeperf` không chạy vì tài khoản không thuộc Performance Log Users và không elevated; Task Manager không mở được qua phiên điều khiển này. Vì vậy CPU/RAM used/disk/network chưa có đối chiếu độc lập. Không thay đổi quyền hệ thống.
 
 Raw inventory/sample/NVIDIA output nằm trong `artifacts/collector-poc/` (Git ignore). Các giá trị có trạng thái `available` chỉ xác nhận collector đọc được trên máy này, không thay thế đối chiếu độc lập.
+
+## Kết quả gate độ phủ
+
+Người dùng đã duyệt hai gate trước Stage 3 trong cuộc trao đổi hiện tại. Gate Stage 1 được ghi nhận cho phạm vi Windows Stage 1A và các giới hạn nêu trong ma trận; đây không phải xác nhận rằng mọi metric đã được đối chiếu hoặc mọi thiết bị Windows được hỗ trợ. Không công bố CPU inventory, sensor ACPI, Intel GPU metrics hay VRAM used là đã xác minh.

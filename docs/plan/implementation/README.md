@@ -8,7 +8,7 @@ Mục tiêu hỗ trợ hiện tại là Windows x64. Stack rebuild: Go + gopsuti
 
 | Stage | Kế hoạch | Trạng thái |
 |---|---|---|
-| 1 | [Collector PoC](01-collector-poc.md) | Hoàn thành tạm — Windows Stage 1A; chờ duyệt độ phủ metric |
+| 1 | [Collector PoC](01-collector-poc.md) | Độ phủ Windows Stage 1A đã được duyệt; giữ nguyên các metric và phần cứng chưa xác minh |
 | 2 | [UI và hiệu năng PoC](02-ui-performance-poc.md) | Đang triển khai — browser checks đạt; native WebView2 và baseline còn blocker |
 | 3 | [Dashboard dữ liệu thật](03-live-dashboard.md) | Chưa bắt đầu — chờ duyệt độ phủ metric Stage 1 và baseline Stage 2 |
 | 4 | [Hoàn thiện trên Windows](04-platform-hardening.md) | Chưa bắt đầu |
@@ -23,7 +23,7 @@ Mục tiêu hỗ trợ hiện tại là Windows x64. Stack rebuild: Go + gopsuti
 - [ ] Chưa mua Authenticode; gói cập nhật phải có chữ ký được xác minh.
 - [ ] Giữ bản Rust đến khi bản Go/Wails được nghiệm thu.
 
-Linux/macOS và lịch sử kiểm chứng cũ không bị xóa, nhưng không thuộc ma trận hỗ trợ hiện tại. Kiểm tra Stage 1 đạt trên máy; đối chiếu metric và duyệt độ phủ còn chờ. Unit test/build frontend và browser benchmark Stage 2 đạt; native launch, đo native và duyệt baseline còn chờ. Chưa bắt đầu Stage 3 cho đến khi cả hai gate được duyệt.
+Linux/macOS và lịch sử kiểm chứng cũ không bị xóa, nhưng không thuộc ma trận hỗ trợ hiện tại. Stage 1 được duyệt với phạm vi và giới hạn ghi trong tài liệu stage; không suy rộng sang metric chưa đối chiếu. Stage 2 đã build và review được Wails native fixture, nhưng phép đo native hợp lệ và duyệt baseline còn chờ. Chưa bắt đầu Stage 3 cho đến khi baseline Stage 2 có bằng chứng hợp lệ và được duyệt.
 
 ## Tài liệu tham chiếu
 
