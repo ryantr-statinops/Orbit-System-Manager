@@ -65,3 +65,14 @@ go run ./cmd/ui-benchmark --pid <pid> --interval 1s --duration 30m > artifacts/u
 ```
 
 Tạo thư mục `artifacts/ui-benchmark/` trước khi chuyển hướng output. Thư mục này được Git ignore.
+
+## Native Windows recheck — 2026-11-05
+
+- `go test ./...`, `go vet ./...`, build CLI, build UI sampler và build Wails thoát thành công. File Wails build bị Windows Application Control chặn khi chạy trực tiếp; `go run .` khởi động được Wails v3 trên WebView2 `156.0.4314.58` và phục vụ fixture.
+- Review native qua cửa sổ Wails: tiêu đề, metric cards, history chart và surface 3D hiển thị; đổi fixture sang 64 core và kéo xoay surface hoạt động. Zoom chưa xác nhận rõ. Đây là review fixture, không phải live dashboard.
+- Preflight sampler 10 giây: CPU toàn máy có dữ liệu; process tree `partial` trong cả 10 mẫu, chỉ thấy một process và RSS là `null`. Chẩn đoán `gopsutil.Process.MemoryInfo` trả `Access is denied`; không dùng dữ liệu này làm baseline.
+- `PresentMon` chưa cài. Hướng dẫn chính thức yêu cầu Performance Log Users hoặc chạy elevated để thu ETW; `typeperf` cũng xác nhận tài khoản hiện tại không có quyền đó. Không đổi nhóm/quyền và không chạy elevated. Vì vậy GPU/frame-time native và RSS cây tiến trình chưa thu được; không chạy hai phép đo 30 phút khi preflight không hợp lệ. ([PresentMon access requirements](https://github.com/GameTechDev/PresentMon#troubleshooting))
+- `npm test`: 4 file, 14 test đạt. `npm run build` đạt; bundle JavaScript `1,201.99 kB` raw / `353.14 kB` gzip và còn cảnh báo chunk trên 500 kB. Chưa code-split khi chưa có số đo native startup để đánh giá tác động.
+- `npm run benchmark:browser` được thử lại nhưng Vite/Playwright không thể truy cập socket `127.0.0.1:9245` do quyền mạng của môi trường; lần chạy bị dừng. Kết quả browser gần nhất vẫn là 2026-11-04: UI ready `614.8 ms`, 11 frame intervals, p95 `16.7 ms`; không xem đây là native baseline.
+
+Raw sampler preflight nằm trong `artifacts/ui-benchmark/` (Git ignore). Native baseline vẫn bị chặn bởi quyền đọc tiến trình/ETW; cần một môi trường có quyền đo hợp lệ trước khi duyệt Stage 2.
