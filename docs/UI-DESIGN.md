@@ -4,7 +4,9 @@
 
 ## Layout and visual direction
 
-Retain the dark, three-column dashboard: CPU summary, logical processors, and history on the left; CPU surface in the center; memory, GPU, and network on the right. Add a collapsible disk card. Keep explicit units, readable labels, and a clear distinction between measured values and availability messages.
+The approved target is direction C: a single-window dashboard with an icon-only rail for **Dashboard** and **Settings**, CPU information on the left, the 3D surface and CPU history in the center, and resource cards on the right. The disk card may collapse when space is constrained. Keep labels, units, and unavailable states visible without scrolling the document.
+
+At 1060×800 logical pixels and above, show all three dashboard columns together. Below that breakpoint, show a compact overview and open a selected chart or metric detail inside the same viewport. The Settings destination in this Stage 2 fixture preview only hosts deterministic fixture controls; it does not represent real persisted settings. CPU logical-core tiles are generated from the fixture's actual core array, not a fixed processor count. Keep tiles square, adapt their grid to the panel aspect ratio, and allow selection for detail.
 
 Use charcoal surfaces, subtle borders, cyan accents, green network-send indicators, and the existing CPU surface color direction. The [current Rust design](current-rust/UI-DESIGN.md) is visual reference, not the rendering architecture. Review layouts at 720×520, 1060×800, 1280×800, and 1465×955 logical pixels, including Windows display scaling and resizing.
 
@@ -24,4 +26,4 @@ Browser preview uses clearly labeled deterministic fixtures, including full, emp
 
 ## Settings and acceptance
 
-Settings select sampling interval, GPU, disk, and network interface, plus an optional helper only when the Windows collector PoC justifies it. [Stage 2](plan/implementation/02-ui-performance-poc.md) establishes the Windows performance baseline; [Stage 3](plan/implementation/03-live-dashboard.md) implements the dashboard against real data.
+In the planned live application, Settings select sampling interval, GPU, disk, and network interface, plus an optional helper only when the Windows collector PoC justifies it. [Stage 2](plan/implementation/02-ui-performance-poc.md) establishes the Windows performance baseline and reviews this fixture layout; [Stage 3](plan/implementation/03-live-dashboard.md) implements the dashboard against real data.
