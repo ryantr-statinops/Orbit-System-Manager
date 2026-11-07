@@ -4,6 +4,7 @@ import {
   createDashboardFixture,
   type FixtureScenario,
 } from "./fixtures";
+import CoreGrid from "./LogicalCoreGrid";
 import CpuHistoryChart from "./CpuHistoryChart";
 import CpuSurfaceChart from "./CpuSurfaceChart";
 
@@ -107,48 +108,73 @@ function App() {
           <p className="fixture-label">DETERMINISTIC · NO LIVE TELEMETRY</p>
         </div>
 
-        <div className="metric-cards">
-          <article className="metric-card">
-            <p className="eyebrow">CPU TOTAL</p>
-            <strong>
-              {latest?.cpuTotalPercent == null
-                ? "Unavailable"
-                : `${latest.cpuTotalPercent.toFixed(1)}%`}
-            </strong>
-            <span>{fixture.coreCount} logical cores</span>
-          </article>
-          <article className="metric-card">
-            <p className="eyebrow">MEMORY</p>
-            <strong>
-              {latest?.memoryPercent == null
-                ? "Unavailable"
-                : `${latest.memoryPercent.toFixed(1)}%`}
-            </strong>
-            <span>Fixture value</span>
-          </article>
-          <article className="metric-card">
-            <p className="eyebrow">NETWORK RX</p>
-            <strong>
-              {latest?.networkRxMiBPerSecond == null
-                ? "Unavailable"
-                : `${latest.networkRxMiBPerSecond.toFixed(2)} MiB/s`}
-            </strong>
-            <span>Fixture value</span>
-          </article>
-        </div>
-
-        <section className="chart-panel" aria-label="CPU history fixture">
-          <div className="chart-panel-heading">
-            <div>
-              <p className="eyebrow">CPU HISTORY</p>
-              <p className="chart-description">Total logical processor usage</p>
+        <div className="dashboard-layout">
+          <section className="cpu-column data-panel" aria-label="CPU overview">
+            <div className="column-heading">
+              <div>
+                <p className="eyebrow">CPU TOTAL</p>
+                <strong className="cpu-total-value">
+                  {latest?.cpuTotalPercent == null
+                    ? "Unavailable"
+                    : `${latest.cpuTotalPercent.toFixed(1)}%`}
+                </strong>
+              </div>
+              <span className="metric-badge">{fixture.coreCount} cores</span>
             </div>
-            <span className="chart-unit">Percent · 60 seconds</span>
+            <div className="core-section-heading">
+              <p className="eyebrow">LOGICAL PROCESSORS</p>
+              <span>{fixture.coreCount} detected</span>
+            </div>
+            <CoreGrid values={latest?.cpuCorePercentages ?? []} />
+          </section>
+          <div className="center-column">
+            <CpuSurfaceChart fixture={fixture} />
+            <section className="chart-panel" aria-label="CPU history fixture">
+              <div className="chart-panel-heading">
+                <div>
+                  <p className="eyebrow">CPU HISTORY</p>
+                  <p className="chart-description">Total logical processor usage</p>
+                </div>
+                <span className="chart-unit">Percent · 60 seconds</span>
+              </div>
+              <CpuHistoryChart samples={fixture.samples} />
+            </section>
           </div>
-          <CpuHistoryChart samples={fixture.samples} />
-        </section>
-
-        <CpuSurfaceChart fixture={fixture} />
+          <section className="resource-column" aria-label="Resource metrics">
+            <article className="metric-card resource-card">
+              <p className="eyebrow">MEMORY</p>
+              <strong>
+                {latest?.memoryPercent == null
+                  ? "Unavailable"
+                  : `${latest.memoryPercent.toFixed(1)}%`}
+              </strong>
+              <span>Fixture value</span>
+            </article>
+            <article className="metric-card resource-card unavailable-card">
+              <p className="eyebrow">GPU</p>
+              <strong>Not in fixture</strong>
+              <span>No GPU sample supplied</span>
+            </article>
+            <article className="metric-card resource-card">
+              <p className="eyebrow">DISK READ</p>
+              <strong>
+                {latest?.diskReadMiBPerSecond == null
+                  ? "Unavailable"
+                  : `${latest.diskReadMiBPerSecond.toFixed(1)} MiB/s`}
+              </strong>
+              <span>Fixture value</span>
+            </article>
+            <article className="metric-card resource-card">
+              <p className="eyebrow">NETWORK RX</p>
+              <strong>
+                {latest?.networkRxMiBPerSecond == null
+                  ? "Unavailable"
+                  : `${latest.networkRxMiBPerSecond.toFixed(2)} MiB/s`}
+              </strong>
+              <span>Fixture value</span>
+            </article>
+          </section>
+        </div>
       </section>
       ) : (
         <section className="settings-view" aria-labelledby="settings-title">
