@@ -13,6 +13,7 @@ declare global {
 }
 
 test("records browser preview readiness and interaction frame times", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
   await page.addInitScript(() => {
     const probe: FrameProbe = { active: false, lastFrame: null, intervals: [] };
     window.__orbitFrameProbe = probe;
@@ -33,9 +34,11 @@ test("records browser preview readiness and interaction frame times", async ({ p
   await expect(page.getByRole("heading", { level: 1, name: "System overview" })).toBeVisible();
   const browserUiReadyMs = performance.now() - navigationStarted;
 
+  await page.getByRole("button", { name: "Settings" }).click();
   await page.getByLabel("Logical cores").selectOption("64");
   await page.getByLabel("Fixture state").selectOption("history");
   await expect(page.getByText("60 samples · 64 cores")).toBeVisible();
+  await page.getByRole("button", { name: "Dashboard" }).click();
   await page.evaluate(() => {
     const probe = window.__orbitFrameProbe;
     if (!probe) return;

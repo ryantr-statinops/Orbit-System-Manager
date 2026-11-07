@@ -30,3 +30,4 @@ __pycache__/
 /frontend/dist/
 /frontend/bindings/
 /frontend/*.tsbuildinfo
+/frontend/test-results/
