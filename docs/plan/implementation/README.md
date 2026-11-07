@@ -9,8 +9,8 @@ Mục tiêu hỗ trợ hiện tại là Windows x64. Stack rebuild: Go + gopsuti
 | Stage | Kế hoạch | Trạng thái |
 |---|---|---|
 | 1 | [Collector PoC](01-collector-poc.md) | Độ phủ Windows Stage 1A đã được duyệt; giữ nguyên các metric và phần cứng chưa xác minh |
-| 2 | [UI và hiệu năng PoC](02-ui-performance-poc.md) | Đang triển khai — native fixture đã review; process RSS/ETW chặn baseline hợp lệ |
-| 3 | [Dashboard dữ liệu thật](03-live-dashboard.md) | Chưa bắt đầu — chờ baseline native Stage 2 hợp lệ và được duyệt |
+| 2 | [UI và hiệu năng PoC](02-ui-performance-poc.md) | Baseline đã được duyệt; chờ đính kèm bằng chứng và hoàn tất/review layout C |
+| 3 | [Dashboard dữ liệu thật](03-live-dashboard.md) | Chưa bắt đầu — chờ artifact baseline được ghi nhận và duyệt UI C cuối |
 | 4 | [Hoàn thiện trên Windows](04-platform-hardening.md) | Chưa bắt đầu |
 | 5 | [Đóng gói và cập nhật](05-packaging-updates.md) | Chưa bắt đầu |
 | 6 | [Chuyển đổi và phát hành](06-migration-release.md) | Chưa bắt đầu |
@@ -18,12 +18,12 @@ Mục tiêu hỗ trợ hiện tại là Windows x64. Stack rebuild: Go + gopsuti
 ## Quy tắc và gate
 
 - [x] Người dùng duyệt độ phủ metric Windows Stage 1A với các giới hạn đã ghi.
-- [ ] Người dùng duyệt baseline/ngưỡng hiệu năng Windows sau Stage 2, trước Stage 3.
+- [x] Người dùng duyệt baseline/ngưỡng hiệu năng Windows ngày 2026-11-07; artifact bằng chứng chờ đính kèm.
 - [ ] Chỉ đánh dấu checklist khi có bằng chứng; ghi blocker ngay trong stage.
 - [ ] Chưa mua Authenticode; gói cập nhật phải có chữ ký được xác minh.
 - [ ] Giữ bản Rust đến khi bản Go/Wails được nghiệm thu.
 
-Linux/macOS và lịch sử kiểm chứng cũ không bị xóa, nhưng không thuộc ma trận hỗ trợ hiện tại. Stage 1 được duyệt cho phạm vi Windows Stage 1A; các metric chưa đối chiếu hoặc sai khác VRAM vẫn bị giới hạn như ghi trong stage file. Stage 2 build và review được Wails native fixture, nhưng sampler không đọc được RSS tiến trình và ETW bị chặn bởi quyền hiện tại; browser benchmark mới không chạy được trong sandbox. Chưa có baseline native 30 phút hoặc duyệt baseline, vì vậy Stage 3 chưa sẵn sàng.
+Linux/macOS và lịch sử kiểm chứng cũ không bị xóa, nhưng không thuộc ma trận hỗ trợ hiện tại. Stage 1 được duyệt cho phạm vi Windows Stage 1A; các metric chưa đối chiếu hoặc sai khác VRAM vẫn bị giới hạn như ghi trong stage file. Người dùng đã duyệt baseline Stage 2; artifact vẫn chờ đính kèm vào repository. Stage 3 chưa bắt đầu cho đến khi bằng chứng được ghi nhận và layout C được review cuối.
 
 ## Tài liệu tham chiếu
 

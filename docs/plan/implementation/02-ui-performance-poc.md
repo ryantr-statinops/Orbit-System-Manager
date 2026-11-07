@@ -16,7 +16,7 @@ Xác minh surface và đo baseline native trên Windows x64 trước khi xây da
 - [x] Xác minh WebView2 trên Windows; ghi phiên bản runtime và xác nhận fixture render được.
 - [ ] Đo bản release: thời gian đến UI/mẫu đầu, RAM cả cây tiến trình, CPU toàn máy và frame time p95 khi tương tác.
 - [ ] Chạy idle và tương tác 30 phút; ghi cấu hình, scaling, độ phân giải và phương pháp đo.
-- [ ] Người dùng duyệt baseline/ngưỡng trước stage 3.
+- [x] Người dùng duyệt baseline/ngưỡng ngày 2026-11-07; đính kèm artifact bằng chứng còn chờ.
 
 ## Điều kiện hoàn thành
 
@@ -77,3 +77,7 @@ Tạo thư mục `artifacts/ui-benchmark/` trước khi chuyển hướng output
 - `npm run benchmark:browser` được thử lại nhưng Vite/Playwright không thể truy cập socket `127.0.0.1:9245` do quyền mạng của môi trường; lần chạy bị dừng. Kết quả browser gần nhất vẫn là 2026-11-04: UI ready `614.8 ms`, 11 frame intervals, p95 `16.7 ms`; không xem đây là native baseline.
 
 Raw sampler preflight nằm trong `artifacts/ui-benchmark/` (Git ignore). Native baseline vẫn bị chặn bởi quyền đọc tiến trình/ETW; cần một môi trường có quyền đo hợp lệ trước khi duyệt Stage 2.
+
+## Baseline approval update — 2026-11-07
+
+Người dùng xác nhận đã duyệt baseline Stage 2 và có bộ bằng chứng. Artifact chưa được đính kèm vào repository; chưa ghi số đo hay đường dẫn chưa kiểm chứng. Các lần đo/giới hạn nêu ở trên là lịch sử của ngày 2026-11-05 và không thay thế bằng chứng mới. Stage 2 vẫn chờ hoàn tất layout C, native review bản UI mới và ghi nhận artifact khi được cung cấp.
