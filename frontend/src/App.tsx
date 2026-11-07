@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CORE_COUNTS,
   createDashboardFixture,
@@ -19,11 +19,25 @@ function App() {
   const [coreCount, setCoreCount] = useState<number>(16);
   const [scenario, setScenario] = useState<FixtureScenario>("history");
   const [activeView, setActiveView] = useState<"dashboard" | "settings">("dashboard");
+  const [compactViewport, setCompactViewport] = useState(false);
+  const [detailView, setDetailView] = useState<string | null>(null);
   const fixture = useMemo(
     () => createDashboardFixture(coreCount, scenario),
     [coreCount, scenario],
   );
   const latest = fixture.samples[fixture.samples.length - 1];
+
+  useEffect(() => {
+    const updateViewport = () =>
+      setCompactViewport(window.innerWidth < 1060 || window.innerHeight < 800);
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    return () => window.removeEventListener("resize", updateViewport);
+  }, []);
+
+  const openDetail = (name: string) => {
+    if (compactViewport) setDetailView(name);
+  };
 
   const fixtureControls = (
     <div className="fixture-controls" aria-label="Fixture controls">
@@ -108,6 +122,40 @@ function App() {
           <p className="fixture-label">DETERMINISTIC · NO LIVE TELEMETRY</p>
         </div>
 
+        {compactViewport && detailView ? (
+          <section className="compact-detail" aria-label={`${detailView} detail`}>
+            <button className="detail-back" type="button" onClick={() => setDetailView(null)}>
+              ← Overview
+            </button>
+            {detailView === "surface" ? (
+              <CpuSurfaceChart fixture={fixture} />
+            ) : detailView === "cores" ? (
+              <section className="core-detail-view" aria-label="Logical processor details">
+                <h3>Logical processors</h3>
+                <CoreGrid values={latest?.cpuCorePercentages ?? []} />
+              </section>
+            ) : detailView === "history" ? (
+              <section className="chart-panel detail-chart">
+                <h3>CPU history</h3>
+                <CpuHistoryChart samples={fixture.samples} />
+              </section>
+            ) : (
+              <article className="detail-metric">
+                <p className="eyebrow">{detailView.toUpperCase()}</p>
+                <strong>{
+                  detailView === "memory"
+                    ? latest?.memoryPercent == null ? "Unavailable" : `${latest.memoryPercent.toFixed(1)}%`
+                    : detailView === "disk"
+                      ? latest?.diskReadMiBPerSecond == null ? "Unavailable" : `${latest.diskReadMiBPerSecond.toFixed(1)} MiB/s`
+                      : detailView === "network"
+                        ? latest?.networkRxMiBPerSecond == null ? "Unavailable" : `${latest.networkRxMiBPerSecond.toFixed(2)} MiB/s`
+                        : "Not in fixture"
+                }</strong>
+                <span>{detailView === "gpu" ? "No GPU sample supplied in this fixture." : "Deterministic fixture value."}</span>
+              </article>
+            )}
+          </section>
+        ) : (
         <div className="dashboard-layout">
           <section className="cpu-column data-panel" aria-label="CPU overview">
             <div className="column-heading">
@@ -126,22 +174,32 @@ function App() {
               <span>{fixture.coreCount} detected</span>
             </div>
             <CoreGrid values={latest?.cpuCorePercentages ?? []} />
+            <button className="core-detail-link" type="button" onClick={() => openDetail("cores")}>
+              View core details
+            </button>
           </section>
           <div className="center-column">
-            <CpuSurfaceChart fixture={fixture} />
-            <section className="chart-panel" aria-label="CPU history fixture">
+            <div className="surface-detail-target" onClick={() => openDetail("surface")}>
+              <CpuSurfaceChart fixture={fixture} />
+              <button className="panel-detail-link" type="button" onClick={(event) => { event.stopPropagation(); openDetail("surface"); }}>
+                View surface detail
+              </button>
+            </div>
+            <section className="chart-panel" aria-label="CPU history fixture" onDoubleClick={() => openDetail("history")}>
               <div className="chart-panel-heading">
                 <div>
                   <p className="eyebrow">CPU HISTORY</p>
                   <p className="chart-description">Total logical processor usage</p>
                 </div>
-                <span className="chart-unit">Percent · 60 seconds</span>
+                <button className="panel-detail-link" type="button" onClick={() => openDetail("history")}>
+                  View detail
+                </button>
               </div>
               <CpuHistoryChart samples={fixture.samples} />
             </section>
           </div>
           <section className="resource-column" aria-label="Resource metrics">
-            <article className="metric-card resource-card">
+            <button className="metric-card resource-card" type="button" onClick={() => openDetail("memory")} aria-label="Memory metric details">
               <p className="eyebrow">MEMORY</p>
               <strong>
                 {latest?.memoryPercent == null
@@ -149,13 +207,13 @@ function App() {
                   : `${latest.memoryPercent.toFixed(1)}%`}
               </strong>
               <span>Fixture value</span>
-            </article>
-            <article className="metric-card resource-card unavailable-card">
+            </button>
+            <button className="metric-card resource-card unavailable-card" type="button" onClick={() => openDetail("gpu")} aria-label="GPU metric details">
               <p className="eyebrow">GPU</p>
               <strong>Not in fixture</strong>
               <span>No GPU sample supplied</span>
-            </article>
-            <article className="metric-card resource-card">
+            </button>
+            <button className="metric-card resource-card" type="button" onClick={() => openDetail("disk")} aria-label="Disk metric details">
               <p className="eyebrow">DISK READ</p>
               <strong>
                 {latest?.diskReadMiBPerSecond == null
@@ -163,8 +221,8 @@ function App() {
                   : `${latest.diskReadMiBPerSecond.toFixed(1)} MiB/s`}
               </strong>
               <span>Fixture value</span>
-            </article>
-            <article className="metric-card resource-card">
+            </button>
+            <button className="metric-card resource-card" type="button" onClick={() => openDetail("network")} aria-label="Network metric details">
               <p className="eyebrow">NETWORK RX</p>
               <strong>
                 {latest?.networkRxMiBPerSecond == null
@@ -172,9 +230,10 @@ function App() {
                   : `${latest.networkRxMiBPerSecond.toFixed(2)} MiB/s`}
               </strong>
               <span>Fixture value</span>
-            </article>
+            </button>
           </section>
         </div>
+        )}
       </section>
       ) : (
         <section className="settings-view" aria-labelledby="settings-title">
