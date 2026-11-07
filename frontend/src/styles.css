@@ -21,6 +21,63 @@ body {
     #0c111a;
 }
 
+.app-shell {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.app-rail {
+  position: sticky;
+  top: 0;
+  display: flex;
+  width: 64px;
+  height: 100vh;
+  flex: 0 0 64px;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  border-right: 1px solid #202b3a;
+  background: #0d141e;
+  padding: 18px 8px;
+}
+
+.rail-brand,
+.rail-button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border: 1px solid #28394c;
+  border-radius: 12px;
+  background: #121e2c;
+  color: #86c9ff;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.rail-brand {
+  margin-bottom: 12px;
+}
+
+.rail-button {
+  color: #8294aa;
+  cursor: pointer;
+}
+
+.rail-button.active {
+  border-color: #3476a8;
+  background: #17304a;
+  color: #9bd4ff;
+  box-shadow: inset 3px 0 #65baff;
+}
+
+.rail-button:focus-visible {
+  outline: 2px solid #75c2ff;
+  outline-offset: 2px;
+}
+
 button,
 input {
   font: inherit;
@@ -28,11 +85,30 @@ input {
 
 .page-shell {
   display: flex;
-  width: min(1440px, 100%);
+  width: min(1440px, calc(100% - 64px));
+  flex: 1;
   min-height: 100vh;
   flex-direction: column;
   margin: 0 auto;
   padding: 28px 36px 22px;
+}
+
+.settings-view {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 22px;
+  padding: 54px 0 34px;
+}
+
+.settings-view h2 {
+  margin: 9px 0 0;
+  font-size: 34px;
+}
+
+.settings-description {
+  color: #8394a9;
+  font-size: 13px;
 }
 
 .top-bar,
